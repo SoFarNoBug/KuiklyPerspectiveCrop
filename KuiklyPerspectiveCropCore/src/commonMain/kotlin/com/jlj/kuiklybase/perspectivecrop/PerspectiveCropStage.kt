@@ -1,6 +1,8 @@
 package com.jlj.kuiklybase.perspectivecrop
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,7 +15,9 @@ import com.tencent.kuikly.compose.coil3.rememberAsyncImagePainter
 import com.tencent.kuikly.compose.foundation.Canvas
 import com.tencent.kuikly.compose.foundation.Image
 import com.tencent.kuikly.compose.foundation.background
-import com.tencent.kuikly.compose.foundation.gestures.detectDragGestures
+import com.tencent.kuikly.compose.foundation.gestures.awaitEachGesture
+import com.tencent.kuikly.compose.foundation.gestures.awaitFirstDown
+import com.tencent.kuikly.compose.foundation.gestures.drag
 import com.tencent.kuikly.compose.foundation.layout.Box
 import com.tencent.kuikly.compose.foundation.layout.BoxWithConstraints
 import com.tencent.kuikly.compose.foundation.layout.fillMaxSize
@@ -27,10 +31,14 @@ import com.tencent.kuikly.compose.ui.graphics.graphicsLayer
 import com.tencent.kuikly.compose.ui.input.pointer.pointerInput
 import com.tencent.kuikly.compose.ui.layout.ContentScale
 import com.tencent.kuikly.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.min
 
 /**
  * 透视裁剪主入口（Compose）：`Image(imageSrc)` + 六层叠层 + 手势 → [CropSession]。
+ *
+ * @param onDragActiveChanged 拖动手势开始/结束（Q28）；未命中且 [PerspectiveCropConfig.unhitPassthrough] 时不回调。
  */
 @Composable
 fun PerspectiveCropStage(
@@ -40,6 +48,7 @@ fun PerspectiveCropStage(
     config: PerspectiveCropConfig = controller.config,
     contentScale: ContentScale = ContentScale.Fit,
     painters: CropOverlayPainters = controller.painters,
+    onDragActiveChanged: ((Boolean) -> Unit)? = null,
 ) {
     SideEffect {
         if (imageSrc != controller.imageSrc) controller.applyImageSrc(imageSrc)
@@ -58,6 +67,32 @@ fun PerspectiveCropStage(
     val src = controller.imageSrc
 
     var touchView by remember { mutableStateOf(Offset.Unspecified) }
+    var magnifierPatch by remember { mutableStateOf<MagnifierPatch?>(null) }
+    val sampler = remember { MagnifierSampler() }
+    DisposableEffect(Unit) {
+        onDispose { sampler.clear() }
+    }
+
+    // 后台预热降采样缓存；手势路径 sample 只读缓存（关 P1-main-thread-io）
+    LaunchedEffect(
+        src,
+        rotationSteps,
+        imageW,
+        activeConfig.showMagnifier,
+        activeConfig.magnifierCacheMaxEdgePx,
+    ) {
+        if (src.isEmpty() || imageW <= 0f || !activeConfig.showMagnifier) return@LaunchedEffect
+        val warmSrc = src
+        val warmRot = rotationSteps
+        val warmW = imageW
+        val warmCfg = activeConfig
+        withContext(Dispatchers.IO) {
+            sampler.warmCache(warmSrc, warmRot, warmW, warmCfg)
+        }
+    }
+
+    val onDragActiveChangedState = rememberUpdatedState(onDragActiveChanged)
+    val configState = rememberUpdatedState(activeConfig)
 
     Box(
         modifier = modifier
@@ -93,7 +128,6 @@ fun PerspectiveCropStage(
                 null
             }
 
-            // M1：预览旋转用 graphicsLayer（像素级旋转出图留给 M2）。
             // 奇次 90° 后 Fit 尺度与「宽高对调后再 Fit」不一致，需补 scale。
             Image(
                 painter = painter,
@@ -124,44 +158,71 @@ fun PerspectiveCropStage(
             val viewMids = midpointsInView(viewPoints)
 
             // 选区 points 每帧 publish 都会变，绝不能进 pointerInput key，否则拖动手势立刻被取消。
-            // 映射/配置用 rememberUpdatedState 读最新值（L2：勿捕获过期闭包）。
             val mappingState = rememberUpdatedState(mapping)
+            val srcState = rememberUpdatedState(src)
+            val rotationState = rememberUpdatedState(rotationSteps)
+            val imageSizeState = rememberUpdatedState(imageW to imageH)
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(imageW, imageH, containerW, containerH) {
                         val session = controller.sessionOrNull()
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                val map = mappingState.value
-                                if (map != null) {
-                                    touchView = offset
-                                    val img = map.viewToImageClamped(offset.x, offset.y)
-                                    session.onDragStart(img.x, img.y, map.scale)
-                                    controller.publish()
-                                }
-                            },
-                            onDrag = { change, _ ->
-                                val map = mappingState.value
-                                if (map != null) {
-                                    val offset = change.position
-                                    touchView = offset
-                                    val img = map.viewToImageClamped(offset.x, offset.y)
-                                    session.onDrag(img.x, img.y)
-                                    controller.publish()
-                                }
-                            },
-                            onDragEnd = {
-                                session.onDragEnd()
-                                touchView = Offset.Unspecified
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val map = mappingState.value ?: return@awaitEachGesture
+                            val downImg = map.viewToImageClamped(down.position.x, down.position.y)
+                            val hit = session.hitTest(downImg.x, downImg.y, map.scale)
+                            val cfg = configState.value
+                            if (hit == HitTarget.None && cfg.unhitPassthrough) {
+                                // Q26：未命中不 consume，透传父容器
+                                return@awaitEachGesture
+                            }
+                            down.consume()
+                            touchView = down.position
+                            session.onDragStart(downImg.x, downImg.y, map.scale)
+                            controller.publish()
+                            onDragActiveChangedState.value?.invoke(true)
+                            refreshMagnifier(
+                                sampler = sampler,
+                                src = srcState.value,
+                                rotation = rotationState.value,
+                                imageSize = imageSizeState.value,
+                                map = map,
+                                touch = down.position,
+                                config = cfg,
+                            )?.also { magnifierPatch = it }
+                            var magTick = 0
+
+                            drag(pointerId = down.id) { change ->
+                                change.consume()
+                                val m = mappingState.value ?: return@drag
+                                val offset = change.position
+                                touchView = offset
+                                val img = m.viewToImageClamped(offset.x, offset.y)
+                                session.onDrag(img.x, img.y)
                                 controller.publish()
-                            },
-                            onDragCancel = {
-                                session.onDragEnd()
-                                touchView = Offset.Unspecified
-                                controller.publish()
-                            },
-                        )
+                                // 每 2 次 MOVE 采一次样，减轻 getPixels + 重绘压力
+                                magTick++
+                                if (magTick % 2 == 0) {
+                                    refreshMagnifier(
+                                        sampler = sampler,
+                                        src = srcState.value,
+                                        rotation = rotationState.value,
+                                        imageSize = imageSizeState.value,
+                                        map = m,
+                                        touch = offset,
+                                        config = configState.value,
+                                    )?.also { magnifierPatch = it }
+                                }
+                            }
+
+                            session.onDragEnd()
+                            touchView = Offset.Unspecified
+                            magnifierPatch = null
+                            controller.publish()
+                            onDragActiveChangedState.value?.invoke(false)
+                        }
                     },
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
@@ -173,7 +234,13 @@ fun PerspectiveCropStage(
                         with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, activeConfig) }
                         if (activeConfig.showMagnifier && touchView.isSpecified) {
                             with(overlayPainters.magnifier) {
-                                drawMagnifier(viewPoints, touchView.x, touchView.y, activeConfig)
+                                drawMagnifier(
+                                    viewPoints,
+                                    touchView.x,
+                                    touchView.y,
+                                    activeConfig,
+                                    magnifierPatch,
+                                )
                             }
                         }
                     }
@@ -181,4 +248,31 @@ fun PerspectiveCropStage(
             }
         }
     }
+}
+
+private fun refreshMagnifier(
+    sampler: MagnifierSampler,
+    src: String,
+    rotation: Int,
+    imageSize: Pair<Float, Float>,
+    map: ImageFitMapping,
+    touch: Offset,
+    config: PerspectiveCropConfig,
+): MagnifierPatch? {
+    if (!config.showMagnifier) return null
+    val (iw, ih) = imageSize
+    val img = map.viewToImageClamped(touch.x, touch.y)
+    return sampler.sample(
+        imageSrc = src,
+        uiRotationSteps = rotation,
+        imageX = img.x,
+        imageY = img.y,
+        imageWidth = iw,
+        imageHeight = ih,
+        touchViewX = touch.x,
+        touchViewY = touch.y,
+        viewWidth = map.containerW,
+        viewScale = map.scale,
+        config = config,
+    )
 }

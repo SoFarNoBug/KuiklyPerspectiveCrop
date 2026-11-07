@@ -1,0 +1,41 @@
+package com.jlj.kuiklybase.perspectivecrop
+
+/**
+ * @CreateDate: 2026/11/07
+ * @Author: jlj
+ * @Description: 放大镜绘制输入：降采样缓存裁出的 ARGB 像素块 + 视口几何（Q25）。
+ */
+data class MagnifierPatch(
+    /** 行优先 ARGB8888（非预乘）。 */
+    val argbPixels: IntArray,
+    val width: Int,
+    val height: Int,
+    /** 触点（视图坐标）。 */
+    val touchViewX: Float,
+    val touchViewY: Float,
+    /** 圆镜半径（视图 px）。 */
+    val displayRadiusPx: Float,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as MagnifierPatch
+        if (width != other.width) return false
+        if (height != other.height) return false
+        if (touchViewX != other.touchViewX) return false
+        if (touchViewY != other.touchViewY) return false
+        if (displayRadiusPx != other.displayRadiusPx) return false
+        if (!argbPixels.contentEquals(other.argbPixels)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = argbPixels.contentHashCode()
+        result = 31 * result + width
+        result = 31 * result + height
+        result = 31 * result + touchViewX.hashCode()
+        result = 31 * result + touchViewY.hashCode()
+        result = 31 * result + displayRadiusPx.hashCode()
+        return result
+    }
+}

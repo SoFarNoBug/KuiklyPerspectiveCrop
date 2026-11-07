@@ -1,6 +1,7 @@
 package com.jlj.kuiklybase.perspectivecrop.overlay
 
 import com.jlj.kuiklybase.perspectivecrop.CropPoint
+import com.jlj.kuiklybase.perspectivecrop.MagnifierPatch
 import com.jlj.kuiklybase.perspectivecrop.PerspectiveCropConfig
 import com.tencent.kuikly.compose.ui.graphics.drawscope.DrawScope
 
@@ -33,6 +34,7 @@ fun interface MagnifierOverlayPainter {
         touchViewX: Float,
         touchViewY: Float,
         config: PerspectiveCropConfig,
+        patch: MagnifierPatch?,
     )
 }
 
@@ -42,5 +44,5 @@ data class CropOverlayPainters(
     val corner: CornerOverlayPainter = DefaultCornerOverlayPainter,
     val edgeMid: EdgeMidOverlayPainter = DefaultEdgeMidOverlayPainter,
     val guide: GuideOverlayPainter = DefaultGuideOverlayPainter,
-    val magnifier: MagnifierOverlayPainter = NoOpMagnifierOverlayPainter,
+    val magnifier: MagnifierOverlayPainter = DefaultMagnifierOverlayPainter,
 )

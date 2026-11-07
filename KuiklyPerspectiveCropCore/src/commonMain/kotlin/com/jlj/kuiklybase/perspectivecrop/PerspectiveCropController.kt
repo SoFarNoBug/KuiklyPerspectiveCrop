@@ -83,10 +83,17 @@ class PerspectiveCropController(
 
     fun readPoints(): List<CropPoint> = points
 
+    /**
+     * 写入四点选区（图像素，TL-TR-BR-BL）。
+     * 亦作为外部 autoScan **注入钩子**（Q27）：宿主可把边缘检测结果写入；库内无算法。
+     */
     fun writePoints(newPoints: List<CropPoint>) {
         _session.setPoints(newPoints)
         publish()
     }
+
+    /** autoScan 注入别名，等价 [writePoints]（Q27）。 */
+    fun applyAutoScanPoints(newPoints: List<CropPoint>) = writePoints(newPoints)
 
     fun resetFullImage() {
         _session.resetFullImage()
