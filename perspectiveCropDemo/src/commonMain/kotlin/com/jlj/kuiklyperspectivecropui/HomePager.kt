@@ -68,25 +68,38 @@ private fun HomeScreen() {
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(DemoTheme.Primary)
-                .clickable { openCropDemo(localPager) }
-                .padding(horizontal = 40.dp, vertical = 16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "进入透视裁剪演示",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = DemoTheme.TextPrimary,
-            )
-        }
+        HomeButton(
+            label = "最小实现演示",
+            onClick = { openPage(localPager, "perspective_crop_demo") },
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        HomeButton(
+            label = "全能全配置 Lab",
+            onClick = { openPage(localPager, "perspective_crop_lab") },
+        )
     }
 }
 
-private fun openCropDemo(pager: Pager) {
+@Composable
+private fun HomeButton(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(DemoTheme.Primary)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 40.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = DemoTheme.TextPrimary,
+        )
+    }
+}
+
+private fun openPage(pager: Pager, pageName: String) {
     pager.acquireModule<RouterModule>(RouterModule.MODULE_NAME)
-        .openPage("perspective_crop_demo", JSONObject())
+        .openPage(pageName, JSONObject())
 }
