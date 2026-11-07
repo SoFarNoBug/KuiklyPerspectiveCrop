@@ -53,7 +53,7 @@ PerspectiveCropStage(controller = controller, imageSrc = controller.imageSrc)
 | `magnifierRadiusRatio` 等 | 见 Config | 放大镜外观（Q29） |
 | `magnifierPlacement` | **`TopAutoFlip`** | 圆镜摆放：顶角自动翻 / 顶左 / 顶右 / 触点上方（Q32） |
 | `magnifierCacheMaxEdgePx` | **2048** | 降采样缓存最长边（Q31） |
-| `guideLineWidth` / `guideLineColor` | 1 / 半透明白 | 辅助线样式 |
+| `guideLineWidth` / `guideLineColor` | 1 / 半透明白 | 辅助线样式（整图 Fit 九宫格，对齐 freequadcrop） |
 | `maskAlpha` / `border*` / `corner*` | … | 蒙版与描边 |
 | `outputFormat` / `jpegQuality` | JPEG / 92 | 出图导出（Q19） |
 

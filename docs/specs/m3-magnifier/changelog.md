@@ -1,5 +1,11 @@
 # M3 放大镜 / 旋钮 / 双页 Demo · changelog
 
+## 2026-11-07（辅助线对齐 freequadcrop）
+
+- `DefaultGuideOverlayPainter`：改为整图 Fit 矩形横平竖直九宫格（不再沿选区透视插值）；`GuideOverlayPainter` 增 `contentLeft/Top/Width/Height`
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：对齐旧库默认画家｜待批 0（已达标 0）
+- 真机验证：本单无真机验证（Lab 开辅助线目视即可）
+
 ## 2026-11-07（放大镜停指加密 · 方案 B）
 
 - 拖动中圆镜 `drawGrid=12` 保帧；触点静止 ~120ms 后升到 `32`（同 patch 像素，不重解码）

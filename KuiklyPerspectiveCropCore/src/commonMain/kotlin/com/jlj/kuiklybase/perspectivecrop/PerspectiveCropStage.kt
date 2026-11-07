@@ -247,7 +247,19 @@ fun PerspectiveCropStage(
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     if (viewPoints.size == 4) {
                         with(overlayPainters.mask) { drawMask(viewPoints, activeConfig) }
-                        with(overlayPainters.guide) { drawGuides(viewPoints, activeConfig) }
+                        val map = mapping
+                        if (map != null) {
+                            with(overlayPainters.guide) {
+                                drawGuides(
+                                    viewPoints,
+                                    activeConfig,
+                                    map.contentLeft,
+                                    map.contentTop,
+                                    map.contentW,
+                                    map.contentH,
+                                )
+                            }
+                        }
                         with(overlayPainters.border) { drawBorder(viewPoints, activeConfig) }
                         with(overlayPainters.corner) { drawCorners(viewPoints, activeConfig) }
                         with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, activeConfig) }

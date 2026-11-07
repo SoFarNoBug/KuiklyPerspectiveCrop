@@ -26,7 +26,7 @@
 
 ## 工程 · 剩余 Config 旋钮
 
-- [x] 辅助线（如三分线）开关 + **辅助线层**默认 Painter
+- [x] 辅助线（整图 Fit 九宫格，对齐 freequadcrop）开关 + **辅助线层**默认 Painter
 - [x] 边中点：与 M1 接线对齐；样式/默认与文档一致（绘制默认仍关）
 - [x] 捕捉距离：`touch*CatchDistance ≤ 0` 关闭对应命中源
 - [x] `unhitPassthrough`（未命中透传，便于外层滑动容器）

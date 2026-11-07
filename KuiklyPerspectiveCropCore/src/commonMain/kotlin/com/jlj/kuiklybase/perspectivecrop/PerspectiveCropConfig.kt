@@ -33,7 +33,7 @@ data class PerspectiveCropConfig(
     val showMagnifier: Boolean = true,
     /** 是否绘制边中点（默认关）。 */
     val showEdgeMidPoints: Boolean = false,
-    /** 是否绘制九宫格辅助线。 */
+    /** 是否绘制九宫格辅助线（整图 Fit 矩形；对齐 freequadcrop）。 */
     val showGuideLines: Boolean = false,
     val maskAlpha: Float = 0.55f,
     val borderWidthPx: Float = 2f,

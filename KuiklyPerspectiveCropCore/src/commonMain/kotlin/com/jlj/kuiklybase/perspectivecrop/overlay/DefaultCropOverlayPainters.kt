@@ -79,25 +79,46 @@ object DefaultEdgeMidOverlayPainter : EdgeMidOverlayPainter {
 }
 
 object DefaultGuideOverlayPainter : GuideOverlayPainter {
-    override fun DrawScope.drawGuides(viewPoints: List<CropPoint>, config: PerspectiveCropConfig) {
-        if (!config.showGuideLines || viewPoints.size != 4) return
+    override fun DrawScope.drawGuides(
+        viewPoints: List<CropPoint>,
+        config: PerspectiveCropConfig,
+        contentLeft: Float,
+        contentTop: Float,
+        contentWidth: Float,
+        contentHeight: Float,
+    ) {
+        // 整图 Fit 矩形九宫格（对齐 freequadcrop DefaultQuadCropGuideLineDrawer；不用 cropPoints）
+        if (!config.showGuideLines || contentWidth <= 0f || contentHeight <= 0f) return
         val color = Color(config.guideLineColor)
         val stroke = config.guideLineWidth.coerceAtLeast(0.5f)
-        // 三分线：沿对边线性插值（优于 AABB）
-        fun lerp(a: CropPoint, b: CropPoint, t: Float) =
-            Offset(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)
-        val tl = viewPoints[0]
-        val tr = viewPoints[1]
-        val br = viewPoints[2]
-        val bl = viewPoints[3]
-        for (t in listOf(1f / 3f, 2f / 3f)) {
-            val top = lerp(tl, tr, t)
-            val bottom = lerp(bl, br, t)
-            drawLine(color, top, bottom, strokeWidth = stroke)
-            val left = lerp(tl, bl, t)
-            val right = lerp(tr, br, t)
-            drawLine(color, left, right, strokeWidth = stroke)
-        }
+        val widthStep = contentWidth / 3f
+        val heightStep = contentHeight / 3f
+        val bottom = contentTop + contentHeight
+        val right = contentLeft + contentWidth
+        drawLine(
+            color,
+            Offset(contentLeft + widthStep, contentTop),
+            Offset(contentLeft + widthStep, bottom),
+            strokeWidth = stroke,
+        )
+        drawLine(
+            color,
+            Offset(contentLeft + widthStep * 2f, contentTop),
+            Offset(contentLeft + widthStep * 2f, bottom),
+            strokeWidth = stroke,
+        )
+        drawLine(
+            color,
+            Offset(contentLeft, contentTop + heightStep),
+            Offset(right, contentTop + heightStep),
+            strokeWidth = stroke,
+        )
+        drawLine(
+            color,
+            Offset(contentLeft, contentTop + heightStep * 2f),
+            Offset(right, contentTop + heightStep * 2f),
+            strokeWidth = stroke,
+        )
     }
 }
 

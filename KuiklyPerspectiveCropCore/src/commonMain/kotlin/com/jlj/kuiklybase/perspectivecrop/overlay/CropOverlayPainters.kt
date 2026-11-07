@@ -25,7 +25,17 @@ fun interface EdgeMidOverlayPainter {
 }
 
 fun interface GuideOverlayPainter {
-    fun DrawScope.drawGuides(viewPoints: List<CropPoint>, config: PerspectiveCropConfig)
+    /**
+     * @param contentLeft/Top/Width/Height 图片 Fit 内容矩形（视图坐标），对齐 freequadcrop `realLeft/Top/Width/Height`
+     */
+    fun DrawScope.drawGuides(
+        viewPoints: List<CropPoint>,
+        config: PerspectiveCropConfig,
+        contentLeft: Float,
+        contentTop: Float,
+        contentWidth: Float,
+        contentHeight: Float,
+    )
 }
 
 fun interface MagnifierOverlayPainter {
