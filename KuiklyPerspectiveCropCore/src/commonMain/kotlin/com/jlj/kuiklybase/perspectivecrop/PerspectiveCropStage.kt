@@ -164,6 +164,12 @@ fun PerspectiveCropStage(
             val insetB = mapping?.effectiveInsetBottom ?: 0f
             val availW = mapping?.availW ?: containerW
             val availH = mapping?.availH ?: containerH
+            SideEffect {
+                val map = mapping
+                if (map != null) {
+                    controller.sessionOrNull().updateFitScale(map.scale)
+                }
+            }
 
             // 奇次 90° 后 Fit 尺度与「宽高对调后再 Fit」不一致，需补 scale（用扣 inset 后的 avail）。
             Image(

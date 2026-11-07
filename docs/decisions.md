@@ -77,6 +77,12 @@
 |---|---|---|---|
 | **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**（当前 **仅 Android** `BitmapShader`）；**H5 / iOS / 鸿蒙暂网格兜底**（H5 待 BlitStore 单例后再开 Canvas）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标（Android 主路径） | ADR 0006；M5 |
 
+## Q39（交互对齐 · minCrop / 角点 grab）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q39** | minCrop / 自由角抓取 | `minCropWidth` **视图逻辑 px**（默认 100，`/ Fit.scale`）；自由角 **帧增量** + `cornerGrabOffsetEnabled`（默认关）+ `cornerMaxStepPx`（图像素，默认 0）；catch 默认 20/20/30 | ADR 0007；Config / CropSession |
+
 ## 分期映射（不得挪已定能力出 v0.1）
 
 ```text

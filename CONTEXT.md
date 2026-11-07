@@ -51,6 +51,18 @@ _Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；c
 边命中沿边投影外延（视图逻辑像素，默认 100）；≤0 为严格线段。
 _Avoid_: 配成 Android dp；与 contentInset 混为一谈
 
+**minCropWidth**:
+最小边长（视图逻辑像素，默认 100）；运行时 `/ Fit.scale` 进图像素再校验。
+_Avoid_: 当成图像素直填；配成 Android dp
+
+**cornerGrabOffset**:
+自由角点抓取偏移开关（默认关）；开则保留按下时 touch−corner，角点不吸向指心。仅自由模式。
+_Avoid_: 与 edgeSnapToTouch 混名；rectMode 下指望生效
+
+**cornerMaxStep**:
+自由角点单帧最大位移（图像素，默认 0=不限制）。仅自由模式。
+_Avoid_: 配成视图 px；与 minCropWidth 单位混用
+
 **contentInset**:
 内容区内缩四边（视图逻辑像素，默认 0）；经 ImageFitMapping 扣可用区再 Fit；蒙版仍铺满 Stage。与宿主绘制外扩成对。
 _Avoid_: 库内实现「绘制外扩」；默认非 0 破坏兼容

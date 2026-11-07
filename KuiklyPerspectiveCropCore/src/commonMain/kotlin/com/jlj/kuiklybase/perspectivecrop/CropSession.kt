@@ -25,6 +25,29 @@ class CropSession(
     private var activeHit: HitTarget = HitTarget.None
     private var lastTouchImage: CropPoint? = null
 
+    /**
+     * [ImageFitMapping.scale]；视图逻辑 px → 图像素换算。
+     * `≤0` = 尚未由 Stage / [onDragStart] 推入，不可当 1 用（ADR 0007 / P2-fitscale-default-one）。
+     */
+    private var _fitScale: Float = 0f
+
+    /** 自由角帧增量跟踪：上一帧参考点（grab 时为 desired，否则为触摸）。 */
+    private var _lastCornerRef: CropPoint? = null
+    private var _cornerGrabOffset: CropPoint = CropPoint(0f, 0f)
+    private var _cornerTouchTracking: Boolean = false
+
+    /** 最小边长（图像素）= 配置视图逻辑 px / Fit.scale；scale 未就绪时返回极大值使校验失败而非偏松。 */
+    private fun minCropImage(): Float {
+        val s = _fitScale
+        if (s <= 0f) return Float.MAX_VALUE
+        return config.minCropWidth / s.coerceAtLeast(1e-3f)
+    }
+
+    /** Stage 在 mapping 就绪时推入；拖动手势也会经 [onDragStart] 同步。 */
+    fun updateFitScale(scale: Float) {
+        if (scale > 0f) _fitScale = scale
+    }
+
     fun updateConfig(config: PerspectiveCropConfig) {
         this.config = config
         if (config.rectMode && points.size == 4) {
@@ -44,6 +67,7 @@ class CropSession(
             uiRotationSteps = 0
             lastTouchImage = null
             activeHit = HitTarget.None
+            clearCornerTracking()
         }
     }
 
@@ -55,6 +79,8 @@ class CropSession(
         uiRotationSteps = 0
         lastTouchImage = null
         activeHit = HitTarget.None
+        _fitScale = 0f
+        clearCornerTracking()
     }
 
     fun setPoints(newPoints: List<CropPoint>) {
@@ -83,13 +109,15 @@ class CropSession(
         uiRotationSteps = (uiRotationSteps + 1) % 4
         lastTouchImage = null
         activeHit = HitTarget.None
+        clearCornerTracking()
     }
 
     fun canCrop(): Boolean {
         if (points.size != 4 || imageWidth <= 0f || imageHeight <= 0f) return false
+        if (_fitScale <= 0f) return false
         return CropGeometry.isValidQuad(
             points, imageWidth, imageHeight,
-            config.minCropWidth, config.minAngleLimit,
+            minCropImage(), config.minAngleLimit,
         )
     }
 
@@ -168,8 +196,23 @@ class CropSession(
     }
 
     fun onDragStart(imageX: Float, imageY: Float, viewToImageScale: Float = 1f): HitTarget {
+        updateFitScale(viewToImageScale)
         activeHit = hitTest(imageX, imageY, viewToImageScale)
         lastTouchImage = CropPoint(imageX, imageY)
+        clearCornerTracking()
+        if (activeHit.isCorner() && !config.rectMode) {
+            val index = cornerIndex(activeHit) ?: return activeHit
+            val corner = points[index]
+            val touch = CropPoint(imageX, imageY)
+            if (config.cornerGrabOffsetEnabled) {
+                _cornerGrabOffset = CropPoint(touch.x - corner.x, touch.y - corner.y)
+                _lastCornerRef = CropPoint(touch.x - _cornerGrabOffset.x, touch.y - _cornerGrabOffset.y)
+            } else {
+                _cornerGrabOffset = CropPoint(0f, 0f)
+                _lastCornerRef = touch
+            }
+            _cornerTouchTracking = true
+        }
         return activeHit
     }
 
@@ -189,28 +232,69 @@ class CropSession(
     fun onDragEnd() {
         activeHit = HitTarget.None
         lastTouchImage = null
+        clearCornerTracking()
+    }
+
+    private fun clearCornerTracking() {
+        _lastCornerRef = null
+        _cornerGrabOffset = CropPoint(0f, 0f)
+        _cornerTouchTracking = false
+    }
+
+    private fun cornerIndex(hit: HitTarget): Int? = when (hit) {
+        HitTarget.Corner0 -> 0
+        HitTarget.Corner1 -> 1
+        HitTarget.Corner2 -> 2
+        HitTarget.Corner3 -> 3
+        else -> null
     }
 
     private fun isValidCandidate(candidate: List<CropPoint>): Boolean =
         CropGeometry.isValidQuad(
             candidate, imageWidth, imageHeight,
-            config.minCropWidth, config.minAngleLimit,
+            minCropImage(), config.minAngleLimit,
         )
 
     private fun moveCorner(hit: HitTarget, touch: CropPoint) {
-        val index = when (hit) {
-            HitTarget.Corner0 -> 0
-            HitTarget.Corner1 -> 1
-            HitTarget.Corner2 -> 2
-            HitTarget.Corner3 -> 3
-            else -> return
-        }
+        val index = cornerIndex(hit) ?: return
         if (config.rectMode) {
             moveRectCorner(index, touch)
             return
         }
+        // 自由角：帧增量 + 可选 grabOffset / maxStep（对齐 freequadcrop applyCornerMoveSoft）
+        val useGrab = config.cornerGrabOffsetEnabled
+        val ref = if (useGrab) {
+            CropPoint(touch.x - _cornerGrabOffset.x, touch.y - _cornerGrabOffset.y)
+        } else {
+            touch
+        }
+        if (!_cornerTouchTracking) {
+            if (useGrab) {
+                val corner = points[index]
+                _cornerGrabOffset = CropPoint(touch.x - corner.x, touch.y - corner.y)
+                _lastCornerRef = CropPoint(touch.x - _cornerGrabOffset.x, touch.y - _cornerGrabOffset.y)
+            } else {
+                _lastCornerRef = touch
+            }
+            _cornerTouchTracking = true
+            return
+        }
+        val lastRef = _lastCornerRef ?: ref
         val current = points[index]
-        val desired = touch.coerceIn(0f, 0f, imageWidth, imageHeight)
+        var candX = current.x + (ref.x - lastRef.x)
+        var candY = current.y + (ref.y - lastRef.y)
+        val maxStep = config.cornerMaxStepPx
+        if (maxStep > 0f) {
+            val ddx = candX - current.x
+            val ddy = candY - current.y
+            val len = kotlin.math.sqrt(ddx * ddx + ddy * ddy)
+            if (len > maxStep && len > 1e-6f) {
+                val s = maxStep / len
+                candX = current.x + ddx * s
+                candY = current.y + ddy * s
+            }
+        }
+        val desired = CropPoint(candX, candY).coerceIn(0f, 0f, imageWidth, imageHeight)
         val accepted = CropGeometry.farthestValid(current, desired) { p ->
             val next = points.toMutableList()
             next[index] = p
@@ -219,6 +303,7 @@ class CropSession(
         val next = points.toMutableList()
         next[index] = accepted
         points = next
+        _lastCornerRef = ref
     }
 
     private fun moveRectCorner(index: Int, touch: CropPoint) {
@@ -228,7 +313,7 @@ class CropSession(
         val maxX = cur[1].x
         val minY = cur[0].y
         val maxY = cur[2].y
-        val minW = config.minCropWidth
+        val minW = minCropImage()
         var nMinX = minX
         var nMaxX = maxX
         var nMinY = minY
@@ -279,22 +364,26 @@ class CropSession(
             if (config.edgeSnapToTouchEnabled) {
                 when (hit) {
                     HitTarget.EdgeTop, HitTarget.MidTop -> {
-                        val y = touch.y.coerceIn(0f, points[2].y - config.minCropWidth)
+                        val minW = minCropImage()
+                        val y = touch.y.coerceIn(0f, points[2].y - minW)
                         applyRectEdgeY(top = true, y = y)
                         return
                     }
                     HitTarget.EdgeBottom, HitTarget.MidBottom -> {
-                        val y = touch.y.coerceIn(points[0].y + config.minCropWidth, imageHeight)
+                        val minW = minCropImage()
+                        val y = touch.y.coerceIn(points[0].y + minW, imageHeight)
                         applyRectEdgeY(top = false, y = y)
                         return
                     }
                     HitTarget.EdgeLeft, HitTarget.MidLeft -> {
-                        val x = touch.x.coerceIn(0f, points[1].x - config.minCropWidth)
+                        val minW = minCropImage()
+                        val x = touch.x.coerceIn(0f, points[1].x - minW)
                         applyRectEdgeX(left = true, x = x)
                         return
                     }
                     HitTarget.EdgeRight, HitTarget.MidRight -> {
-                        val x = touch.x.coerceIn(points[0].x + config.minCropWidth, imageWidth)
+                        val minW = minCropImage()
+                        val x = touch.x.coerceIn(points[0].x + minW, imageWidth)
                         applyRectEdgeX(left = false, x = x)
                         return
                     }
@@ -341,7 +430,7 @@ class CropSession(
         val maxX = cur[1].x
         val minY = if (top) y else cur[0].y
         val maxY = if (top) cur[2].y else y
-        if (maxY - minY < config.minCropWidth) return
+        if (maxY - minY < minCropImage()) return
         var ny0 = minY
         var ny1 = maxY
         if (config.edgeClampToBoundsEnabled) {
@@ -362,7 +451,7 @@ class CropSession(
         val maxY = cur[2].y
         val minX = if (left) x else cur[0].x
         val maxX = if (left) cur[1].x else x
-        if (maxX - minX < config.minCropWidth) return
+        if (maxX - minX < minCropImage()) return
         var nx0 = minX
         var nx1 = maxX
         if (config.edgeClampToBoundsEnabled) {

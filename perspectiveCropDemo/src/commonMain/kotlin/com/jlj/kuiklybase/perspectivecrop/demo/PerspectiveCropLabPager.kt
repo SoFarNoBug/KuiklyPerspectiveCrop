@@ -195,23 +195,31 @@ private fun PerspectiveCropLabScreen() {
                     )
                 }
                 LabTab.Gesture -> {
+                    // 文案用场景话，避免「吸附/钳制/抓取」黑话；默认态即库默认建议。
                     DemoToggleChip(
-                        label = if (cfg.edgeSnapToTouchEnabled) "吸附·开" else "吸附·关",
+                        label = if (cfg.edgeSnapToTouchEnabled) "矩形边贴手指·开" else "矩形边贴手指·关",
                         active = cfg.edgeSnapToTouchEnabled,
                         onClick = {
                             applyCfg { copy(edgeSnapToTouchEnabled = !edgeSnapToTouchEnabled) }
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.edgeClampToBoundsEnabled) "钳制·开" else "钳制·关",
+                        label = if (cfg.edgeClampToBoundsEnabled) "拖边顶界齐步·开" else "拖边顶界齐步·关",
                         active = cfg.edgeClampToBoundsEnabled,
                         onClick = {
                             applyCfg { copy(edgeClampToBoundsEnabled = !edgeClampToBoundsEnabled) }
                         },
                     )
+                    DemoToggleChip(
+                        label = if (cfg.cornerGrabOffsetEnabled) "角按压偏移·少用开" else "角按压偏移·关(常用)",
+                        active = cfg.cornerGrabOffsetEnabled,
+                        onClick = {
+                            applyCfg { copy(cornerGrabOffsetEnabled = !cornerGrabOffsetEnabled) }
+                        },
+                    )
                     val projOn = cfg.touchEdgeProjectionError > 0f
                     DemoToggleChip(
-                        label = if (projOn) "投影·默认" else "投影·关",
+                        label = if (projOn) "抓边延长线·开" else "抓边延长线·关",
                         active = projOn,
                         onClick = {
                             applyCfg {
@@ -220,21 +228,21 @@ private fun PerspectiveCropLabScreen() {
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.unhitPassthrough) "透传·开" else "透传·关",
+                        label = if (cfg.unhitPassthrough) "未点中交给外层·开" else "未点中交给外层·关",
                         active = cfg.unhitPassthrough,
                         onClick = { applyCfg { copy(unhitPassthrough = !unhitPassthrough) } },
                     )
                     val catchOff = cfg.touchCornerCatchDistance <= 0f
                     DemoToggleChip(
-                        label = if (catchOff) "命中·关" else "命中·默认",
+                        label = if (catchOff) "手柄好点·关" else "手柄好点·开",
                         active = !catchOff,
                         onClick = {
                             if (catchOff) {
                                 applyCfg {
                                     copy(
-                                        touchCornerCatchDistance = 48f,
-                                        touchEdgeCatchDistance = 28f,
-                                        touchMidCatchDistance = 36f,
+                                        touchCornerCatchDistance = 20f,
+                                        touchEdgeCatchDistance = 20f,
+                                        touchMidCatchDistance = 30f,
                                     )
                                 }
                             } else {

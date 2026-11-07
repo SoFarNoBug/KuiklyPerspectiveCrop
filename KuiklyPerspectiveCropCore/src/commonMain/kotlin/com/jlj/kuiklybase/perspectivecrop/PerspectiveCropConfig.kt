@@ -9,32 +9,58 @@ package com.jlj.kuiklybase.perspectivecrop
 data class PerspectiveCropConfig(
     /** 自由凸四边形为默认；true 时为矩形模式（Q7）。 */
     val rectMode: Boolean = false,
-    /** 边拖吸附手指（默认开，Q9；M1 接线）。 */
+    /**
+     * 矩形模式下拖边是否贴到手指（默认开，Q9）。
+     * 场景：只要轴对齐矩形、希望边跟着指尖走；自由四边形无感。
+     */
     val edgeSnapToTouchEnabled: Boolean = true,
     /**
-     * 边拖越界钳制（默认开，Q9；自由 / 矩形均生效）。
-     * 开：两端位移取交集饱和（齐步贴边、不斜边）；关（自由）：越界整帧丢弃。
+     * 拖边顶到图边时两端齐步钳制（默认开，Q9；自由 / 矩形均生效）。
+     * 开：齐步贴边、不斜边；关（自由）：越界整帧丢弃。场景：几乎总开。
      */
     val edgeClampToBoundsEnabled: Boolean = true,
     /** 框内拖动整框。 */
     val insideDragEnabled: Boolean = true,
     /**
-     * DOWN 未命中锚点时透传父容器（Q26）。默认 false。
+     * DOWN 未命中手柄时透传父容器（Q26）。默认 false。
+     * 场景：嵌在 ViewPager / 横滑容器里、要点空白处翻页时开。
      */
     val unhitPassthrough: Boolean = false,
-    /** 角点命中半径（**视图像素**，内部按 Fit scale 换算）；≤0 关闭。 */
-    val touchCornerCatchDistance: Float = 48f,
-    /** 边命中带宽（视图像素）；≤0 关闭。 */
-    val touchEdgeCatchDistance: Float = 28f,
     /**
-     * 边命中投影外延（视图逻辑像素，默认 100；对齐 freequadcrop）。
-     * 命中时除以 Fit scale 进图像坐标；≤0 为严格线段（无外延）。
+     * 角点命中半径（视图逻辑像素，内部 `/ Fit.scale`）；≤0 关闭。默认 20。
+     * 场景：嫌角难点→加大；要禁用角拖→置 0。
+     */
+    val touchCornerCatchDistance: Float = 20f,
+    /**
+     * 边命中带宽（视图逻辑像素）；≤0 关闭。默认 20。
+     * 场景：嫌边难抓→加大；只要角/中点→置 0。
+     */
+    val touchEdgeCatchDistance: Float = 20f,
+    /**
+     * 抓边时沿边延长线的命中外延（视图逻辑像素，默认 100）。
+     * ≤0 为严格线段。场景：角外不好抓边→保持默认；只要贴线才中→置 0。
      */
     val touchEdgeProjectionError: Float = 100f,
-    /** 边中点命中半径（视图像素）；≤0 关闭。 */
-    val touchMidCatchDistance: Float = 36f,
-    /** 最小边长（图像素）。 */
-    val minCropWidth: Float = 48f,
+    /**
+     * 边中点命中半径（视图逻辑像素）；≤0 关闭。默认 30。
+     * 场景：开了边中点绘制后调好点程度。
+     */
+    val touchMidCatchDistance: Float = 30f,
+    /**
+     * 最小边长（视图逻辑像素，默认 100；`/ Fit.scale` 进图像素，ADR 0007）。
+     * 场景：要允许更小框→调小；要防缩没→调大。
+     */
+    val minCropWidth: Float = 100f,
+    /**
+     * 自由角是否保留「手指−角点」按压偏移（默认 false）。
+     * 场景：**少用**——默认帧增量已不吸指心；仅要对齐旧库「按手柄边死记偏移」时开。
+     */
+    val cornerGrabOffsetEnabled: Boolean = false,
+    /**
+     * 自由角单帧最大位移（**图像素**；默认 0=不限制）。
+     * 场景：快速甩动偶发大跳时再限；默认不用。
+     */
+    val cornerMaxStepPx: Float = 0f,
     /** 最小内角（度）；0 表示不校验。 */
     val minAngleLimit: Float = 20f,
     /** 是否绘制放大镜（真像素实现在 M3，属 v0.1 / Q14）。 */
