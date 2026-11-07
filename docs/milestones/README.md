@@ -13,7 +13,7 @@
 | **M0** | 空架 + 文档 | [M0-checklist.md](./M0-checklist.md) | **已完成**（编译通过） |
 | **M1** | 几何触控 + 默认叠层 | [M1-checklist.md](./M1-checklist.md) | **已完成**（真机验收通过） |
 | **M2** | Android 透视出图 | [M2-checklist.md](./M2-checklist.md) | **已完成**（真机验收通过；非法四点拖拽 N/A） |
-| **M3** | 放大镜 + 剩余旋钮 + 对接说明 | [M3-checklist.md](./M3-checklist.md) | 未开始 |
+| **M3** | 放大镜 + 剩余旋钮 + 对接说明 | [M3-checklist.md](./M3-checklist.md) | **工程完成**（编译通过；真机表待勾 → v0.1） |
 
 ## 依赖
 

@@ -1,4 +1,4 @@
-doc_version: 20261107_2
+doc_version: 20261107_3
 layer: L3
 
 # 透视裁剪 API 准则（L3 · 本仓）
@@ -20,6 +20,9 @@ layer: L3
 8. **出图失败（Q16）**：抛 `CropException(code, message, cause?)`；**禁止** null / 改 `Result` 签名 / 非法点或 stub 时静默返回原图。
 9. **旋转对齐（Q17）**：出图先按 `uiRotationSteps` 旋源图，再对当前显示坐标四点透视；**禁止**对结果再叠一遍同等 degrees。
 10. **Android init（Q20）**：宿主调用 `PerspectiveCropAndroid.init(application)`；未 init 须明确失败（带 code）。
+11. **放大镜采样（Q14/Q23–Q25/Q31）**：真像素经 `MagnifierSampler` + 降采样缓存（键含 src/旋转/maxEdge）；Stage 以 `MagnifierPatch` 喂放大镜层；**禁止**每帧全分辨率解码；`magnifierCacheMaxEdgePx` 默认 2048 可配。
+12. **未命中透传（Q26）**：`unhitPassthrough` 默认 **false**；开启时未命中不得吞父容器手势。
+13. **autoScan 钩子（Q27）**：只提供 `writePoints`（或别名）注入四点；**禁止**库内边缘检测 / OCR 算法。
 
 ## 判据速查
 
@@ -34,3 +37,6 @@ layer: L3
 | 出图失败返回 null / 静默原图 / 无 code 可区分 stub | **FAIL** → `CropException`（Q16） |
 | 出图对结果重复旋转导致双旋 | **FAIL** → 只旋源图（Q17） |
 | 仅改文档 / 纯 Demo 换皮且未改库契约 | 相关条可 `N/A` |
+| 放大镜每帧全分辨率解码或无降采样缓存键 | **FAIL** → Sampler 缓存（Q14/Q24） |
+| `unhitPassthrough` 默认改 true | **FAIL** → 默认 false（Q26） |
+| 库内实现 autoScan / OCR | **FAIL** → 仅钩子（Q27） |

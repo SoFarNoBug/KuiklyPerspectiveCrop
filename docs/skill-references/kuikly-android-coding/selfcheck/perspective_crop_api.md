@@ -10,7 +10,10 @@
 | P4 | 六层 Painter SPI / 皮肤边界 | 六层可分别注入（或本轮未削弱）；业务皮肤仅 Demo；库默认无业务绑死 |
 | P5 | Q9 边拖默认 | `edgeSnapToTouch`/`edgeClampToBounds` 仍默认 true（或本轮未改默认/语义） |
 | P6 | 命名与模块边界 | 公开 API 使用 `PerspectiveCrop*` 前缀；processor 平台边界清晰 |
+| P7 | 放大镜采样 | 有降采样缓存键（src/旋转/maxEdge）或本轮未削弱；未每帧全分辨率解码 |
+| P8 | unhitPassthrough | 默认仍为 false（或本轮未改默认） |
+| P9 | autoScan 边界 | 仅钩子注入四点；库内无边缘检测/OCR |
 
 ## 说明
 
-命中条件：改 `KuiklyPerspectiveCropCore/` 库模块公开 API 或 Stage/Controller/Session/Processor/Painter。纯 Demo UI 文案/布局且未改库契约 → 全表 `N/A` +「未改库」。
+命中条件：改 `KuiklyPerspectiveCropCore/` 库模块公开 API 或 Stage/Controller/Session/Processor/Painter/Sampler。纯 Demo UI 文案/布局且未改库契约 → 全表 `N/A` +「未改库」。

@@ -4,8 +4,9 @@
 |---|---|
 | `KuiklyPerspectiveCropCore/` | 库模块（common + android/ios/js） |
 | `…/CropProcessor*.kt` / `PlatformImage*.kt` / `PerspectiveCropAndroid.kt` | M2 出图 expect/actual + Android init |
+| `…/MagnifierSampler*.kt` / `MagnifierPatch.kt` | M3 放大镜采样 expect/actual + Patch |
 | `…/CropException.kt` / `CropOutputFormat.kt` | 出图失败与导出格式 |
-| `perspectiveCropDemo/` | Demo 业务页（含确认裁切） |
+| `perspectiveCropDemo/` | Demo：`perspective_crop_demo` 最小 + `perspective_crop_lab` 全能 |
 | `androidApp/` `iosApp/` `h5App/` `ohosApp/` | 各端壳（Android `KRApplication` 调 init） |
 | `docs/milestones/` | M0–M3 清单 |
 | `docs/adr/` | 架构决策（含 0003 出图契约） |

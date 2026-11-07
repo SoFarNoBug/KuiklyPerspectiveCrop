@@ -1,6 +1,6 @@
 # 开发决策台账（已锁定）
 
-> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；**Q16–Q22 @ 2026-11-07 M2**）。  
+> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；Q16–Q22 @ 2026-11-07 M2；**Q23–Q32 @ 2026-11-07 M3**）。  
 > ADR 只收「难逆转 + 需后果说明」的子集；里程碑是**分期施工单**，不得改写本表已定项。  
 > 冲突时：**本表 > ADR 摘要 > milestones 措辞 > 代码注释**。
 
@@ -45,6 +45,21 @@
 | **Q20** | Android Context | 宿主 **`PerspectiveCropAndroid.init(application)`** 一次；未 init 明确失败 | ADR 0003；M2 |
 | **Q21** | 结果尺寸 | 宽≈上边长、高≈左边长 | Processor；M2 |
 | **Q22** | Demo 确认裁切 | 按钮始终可点；失败 **toast/文案** 展示 `CropException` 的 code/message | Demo；M2 |
+
+## Q23–Q31（M3 放大镜 / 旋钮 / Demo）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q23** | 放大镜采样 | `MagnifierSampler` **expect/actual**；Android 真采样；iOS/JS stub | ADR 0004；M3 |
+| **Q24** | 采样缓存键 | 键含 `imageSrc` + **`uiRotationSteps`**（及 maxEdge）；旋转/换图失效重建 | ADR 0004；M3 |
+| **Q25** | 放大镜绘制输入 | Stage 组 **`MagnifierPatch`**（像素块 + 几何）→ 默认放大镜 Painter | ADR 0004；SPI |
+| **Q26** | 未命中透传 | **`unhitPassthrough` 默认 false**；未命中时不吞父容器手势 | Config；Stage |
+| **Q27** | autoScan 钩子 | 复用 / 别名现有 **`writePoints`**（可注入四点）；库内无算法 | Controller |
+| **Q28** | 拖动手势回调 | Stage 暴露 **`onDragActiveChanged`**（开始/结束） | Stage |
+| **Q29** | 放大镜外观 | Config 对齐旧库量级：半径比、边框、十字开关/色/线宽线长等 | Config |
+| **Q30** | Demo 结构 | **双页**：`perspective_crop_demo` 最小实现 + `perspective_crop_lab` 全能全配置 | Demo |
+| **Q31** | 降采样上限 | **`magnifierCacheMaxEdgePx` Config 可配，默认 2048** | Config；ADR 0004 |
+| **Q32** | 放大镜摆放 | **`magnifierPlacement`**：`TopAutoFlip`（默认，对齐旧库）/ `TopLeft` / `TopRight` / `AboveTouch` | Config；Painter |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

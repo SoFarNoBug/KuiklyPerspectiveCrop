@@ -51,4 +51,21 @@ _Avoid_: 写成「仅 rectMode 才有」或拖到后期才暴露字段
 将斜拍四边形选区变换为正面矩形图的出图过程（非 OCR、非边缘检测）。
 _Avoid_: 扫描识别, deskew（仅旋转校正）
 
+**MagnifierSampler**:
+放大镜降采样采样器（expect/actual）；Android 建最长边受限的采样缓存并裁 patch，其它端 stub。
+_Avoid_: 每帧全分辨率解码；依赖残缺 ImageBitmap.readPixels
+
+**MagnifierPatch**:
+Stage 交给放大镜 Painter 的像素块 + 触点几何（非平台 Bitmap 公开类型）。
+_Avoid_: 把 Android Bitmap 挂到 common 公开 API
+
+**unhitPassthrough**:
+DOWN 未命中选区手柄时透传父容器手势；**默认 false**。
+_Avoid_: 默认改成 true 或当作「仅 Demo」行为
+
+**writePoints / applyAutoScanPoints**:
+写入四点选区；亦作为外部 autoScan **注入钩子**（库内无边缘检测算法）。
+_Avoid_: 在库内实现 OCR / 边缘检测 / 内置 autoScan
+
 已定决策全文见 [docs/decisions.md](docs/decisions.md)。
+
