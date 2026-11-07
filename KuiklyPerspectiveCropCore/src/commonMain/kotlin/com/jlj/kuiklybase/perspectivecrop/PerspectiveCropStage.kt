@@ -32,6 +32,7 @@ import com.tencent.kuikly.compose.ui.input.pointer.pointerInput
 import com.tencent.kuikly.compose.ui.layout.ContentScale
 import com.tencent.kuikly.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.min
 
@@ -89,6 +90,20 @@ fun PerspectiveCropStage(
         withContext(Dispatchers.IO) {
             sampler.warmCache(warmSrc, warmRot, warmW, warmCfg)
         }
+    }
+
+    // 方案 B：触点静止一段时间后把同一 patch 升到密网格（不重采样）
+    LaunchedEffect(touchView, magnifierPatch?.touchViewX, magnifierPatch?.touchViewY) {
+        val patch = magnifierPatch ?: return@LaunchedEffect
+        if (!touchView.isSpecified || !activeConfig.showMagnifier) return@LaunchedEffect
+        if (patch.drawGrid >= MagnifierDrawGrid.SETTLED) return@LaunchedEffect
+        delay(MagnifierDrawGrid.SETTLE_DELAY_MS)
+        val latest = magnifierPatch ?: return@LaunchedEffect
+        if (!touchView.isSpecified) return@LaunchedEffect
+        if (latest.touchViewX != patch.touchViewX || latest.touchViewY != patch.touchViewY) {
+            return@LaunchedEffect
+        }
+        magnifierPatch = latest.copy(drawGrid = MagnifierDrawGrid.SETTLED)
     }
 
     val onDragActiveChangedState = rememberUpdatedState(onDragActiveChanged)
