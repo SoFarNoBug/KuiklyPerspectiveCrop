@@ -51,6 +51,10 @@ _Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；c
 边命中沿边投影外延（视图逻辑像素，默认 100）；≤0 为严格线段。
 _Avoid_: 配成 Android dp；与 contentInset 混为一谈
 
+**contentInset**:
+内容区内缩四边（视图逻辑像素，默认 0）；经 ImageFitMapping 扣可用区再 Fit；蒙版仍铺满 Stage。与宿主绘制外扩成对。
+_Avoid_: 库内实现「绘制外扩」；默认非 0 破坏兼容
+
 **showMagnifierCropLineMirror**:
 放大镜圆内再画选区框线镜像；**默认开**；样式复用框线色宽。
 _Avoid_: 旧名 need2DrawInsideAreaLineMirror；只改 Compose 兜底而 Android 原生圆镜不画

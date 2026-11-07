@@ -168,6 +168,31 @@ private fun PerspectiveCropLabScreen() {
                         active = cfg.rectMode,
                         onClick = { applyCfg { copy(rectMode = !rectMode) } },
                     )
+                    val insetOn = cfg.contentInsetLeft > 0f || cfg.contentInsetTop > 0f ||
+                        cfg.contentInsetRight > 0f || cfg.contentInsetBottom > 0f
+                    DemoToggleChip(
+                        label = if (insetOn) "内缩·示例" else "内缩·关",
+                        active = insetOn,
+                        onClick = {
+                            applyCfg {
+                                if (insetOn) {
+                                    copy(
+                                        contentInsetLeft = 0f,
+                                        contentInsetTop = 0f,
+                                        contentInsetRight = 0f,
+                                        contentInsetBottom = 0f,
+                                    )
+                                } else {
+                                    copy(
+                                        contentInsetLeft = 24f,
+                                        contentInsetTop = 24f,
+                                        contentInsetRight = 24f,
+                                        contentInsetBottom = 24f,
+                                    )
+                                }
+                            }
+                        },
+                    )
                 }
                 LabTab.Gesture -> {
                     DemoToggleChip(

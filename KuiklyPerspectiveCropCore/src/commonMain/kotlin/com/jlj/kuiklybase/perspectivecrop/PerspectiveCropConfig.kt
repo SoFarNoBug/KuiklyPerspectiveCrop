@@ -81,4 +81,13 @@ data class PerspectiveCropConfig(
     val outputFormat: CropOutputFormat = CropOutputFormat.Jpeg,
     /** JPEG 质量 0–100（仅 [CropOutputFormat.Jpeg] 生效）；默认 92。 */
     val jpegQuality: Int = 92,
+    /**
+     * 内容内缩（视图逻辑像素，默认 0；对齐 freequadcrop contentInset*）。
+     * Fit / 命中 / 框线 / 辅助线共用 [ImageFitMapping]；蒙版仍铺满 Stage。
+     * 与宿主「绘制外扩」成对使用；外扩本身不进库。
+     */
+    val contentInsetLeft: Float = 0f,
+    val contentInsetTop: Float = 0f,
+    val contentInsetRight: Float = 0f,
+    val contentInsetBottom: Float = 0f,
 )

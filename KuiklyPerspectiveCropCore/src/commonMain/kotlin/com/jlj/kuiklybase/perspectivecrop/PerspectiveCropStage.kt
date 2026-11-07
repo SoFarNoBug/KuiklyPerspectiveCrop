@@ -22,6 +22,7 @@ import com.tencent.kuikly.compose.foundation.gestures.drag
 import com.tencent.kuikly.compose.foundation.layout.Box
 import com.tencent.kuikly.compose.foundation.layout.BoxWithConstraints
 import com.tencent.kuikly.compose.foundation.layout.fillMaxSize
+import com.tencent.kuikly.compose.foundation.layout.padding
 import com.tencent.kuikly.compose.material3.Text
 import com.tencent.kuikly.compose.ui.Alignment
 import com.tencent.kuikly.compose.ui.Modifier
@@ -31,6 +32,7 @@ import com.tencent.kuikly.compose.ui.graphics.Color
 import com.tencent.kuikly.compose.ui.graphics.graphicsLayer
 import com.tencent.kuikly.compose.ui.input.pointer.pointerInput
 import com.tencent.kuikly.compose.ui.layout.ContentScale
+import com.tencent.kuikly.compose.ui.platform.LocalDensity
 import com.tencent.kuikly.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -141,23 +143,45 @@ fun PerspectiveCropStage(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val containerW = constraints.maxWidth.toFloat().coerceAtLeast(1f)
             val containerH = constraints.maxHeight.toFloat().coerceAtLeast(1f)
+            val density = LocalDensity.current
             val mapping = if (imageW > 0f && imageH > 0f) {
-                ImageFitMapping(containerW, containerH, imageW, imageH)
+                ImageFitMapping(
+                    containerW = containerW,
+                    containerH = containerH,
+                    imageW = imageW,
+                    imageH = imageH,
+                    insetLeft = activeConfig.contentInsetLeft,
+                    insetTop = activeConfig.contentInsetTop,
+                    insetRight = activeConfig.contentInsetRight,
+                    insetBottom = activeConfig.contentInsetBottom,
+                )
             } else {
                 null
             }
+            val insetL = mapping?.effectiveInsetLeft ?: 0f
+            val insetT = mapping?.effectiveInsetTop ?: 0f
+            val insetR = mapping?.effectiveInsetRight ?: 0f
+            val insetB = mapping?.effectiveInsetBottom ?: 0f
+            val availW = mapping?.availW ?: containerW
+            val availH = mapping?.availH ?: containerH
 
-            // 奇次 90° 后 Fit 尺度与「宽高对调后再 Fit」不一致，需补 scale。
+            // 奇次 90° 后 Fit 尺度与「宽高对调后再 Fit」不一致，需补 scale（用扣 inset 后的 avail）。
             Image(
                 painter = painter,
                 contentDescription = "crop source",
                 modifier = Modifier
+                    .padding(
+                        start = with(density) { insetL.toDp() },
+                        top = with(density) { insetT.toDp() },
+                        end = with(density) { insetR.toDp() },
+                        bottom = with(density) { insetB.toDp() },
+                    )
                     .fillMaxSize()
                     .graphicsLayer {
                         rotationZ = rotationSteps * 90f
                         if (rotationSteps % 2 != 0 && naturalW > 0f && naturalH > 0f) {
-                            val sNat = min(containerW / naturalW, containerH / naturalH)
-                            val sDisp = min(containerW / naturalH, containerH / naturalW)
+                            val sNat = min(availW / naturalW, availH / naturalH)
+                            val sDisp = min(availW / naturalH, availH / naturalW)
                             if (sNat > 1e-6f) {
                                 val fix = sDisp / sNat
                                 scaleX = fix
