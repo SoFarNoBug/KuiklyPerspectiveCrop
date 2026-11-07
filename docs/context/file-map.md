@@ -6,7 +6,8 @@
 | `…/CropProcessor*.kt` / `PlatformImage*.kt` / `PerspectiveCropAndroid.kt` | M2 出图 expect/actual + Android init |
 | `…/MagnifierSampler*.kt` / `MagnifierPatch.kt` | M3 放大镜采样 expect/actual + Patch |
 | `…/CropException.kt` / `CropOutputFormat.kt` | 出图失败与导出格式 |
-| `perspectiveCropDemo/` | Demo：`perspective_crop_demo` 最小 + `perspective_crop_lab` 全能 |
+| `perspectiveCropDemo/` | Demo：`perspective_crop_demo` 产品演示 + `perspective_crop_lab` 全能配置 |
+| `…/demo/DemoChrome.kt` | Demo 共用顶栏/底栏/Toggle/裁切结果·失败浮窗 |
 | `androidApp/` `iosApp/` `h5App/` `ohosApp/` | 各端壳（Android `KRApplication` 调 init） |
 | `h5App/webpack.config.d/output.js` | H5：IIFE，防 UMD 覆盖 `window.com`（必留） |
 | `static_server/serve/` + `fetch-yarn-ivy.js` | H5：8083 业务包静态服；Yarn ivy 镜像兜底 |

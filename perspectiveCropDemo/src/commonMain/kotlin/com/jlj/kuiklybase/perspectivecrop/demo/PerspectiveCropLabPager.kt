@@ -19,22 +19,21 @@ import com.tencent.kuikly.compose.foundation.layout.Box
 import com.tencent.kuikly.compose.foundation.layout.Column
 import com.tencent.kuikly.compose.foundation.layout.ExperimentalLayoutApi
 import com.tencent.kuikly.compose.foundation.layout.FlowRow
+import com.tencent.kuikly.compose.foundation.layout.Row
 import com.tencent.kuikly.compose.foundation.layout.fillMaxSize
 import com.tencent.kuikly.compose.foundation.layout.fillMaxWidth
 import com.tencent.kuikly.compose.foundation.layout.padding
-import com.tencent.kuikly.compose.material3.Text
 import com.tencent.kuikly.compose.setContent
 import com.tencent.kuikly.compose.ui.Modifier
 import com.tencent.kuikly.compose.ui.platform.LocalActivity
 import com.tencent.kuikly.compose.ui.unit.dp
-import com.tencent.kuikly.compose.ui.unit.sp
 import com.tencent.kuikly.core.annotations.Page
 import kotlinx.coroutines.launch
 
 /**
  * @CreateDate: 2026/11/07
  * @Author: jlj
- * @Description: 全能全配置演示（Q30）：Toggle + 换皮；工具条 FlowRow 适配窄屏/折叠屏。
+ * @Description: 全能配置 Lab（Q30）：分组 Tab + Stage + 底栏 + 裁切结果/失败浮窗。
  */
 @Page("perspective_crop_lab", supportInLocal = true)
 internal class PerspectiveCropLabPager : BasePager() {
@@ -46,6 +45,12 @@ internal class PerspectiveCropLabPager : BasePager() {
     }
 }
 
+private enum class LabTab {
+    Appearance,
+    Gesture,
+    Magnifier,
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PerspectiveCropLabScreen() {
@@ -54,13 +59,48 @@ private fun PerspectiveCropLabScreen() {
     val scope = rememberCoroutineScope()
     var cfg by remember { mutableStateOf(PerspectiveCropConfig()) }
     var altSkin by remember { mutableStateOf(false) }
-    var dragActive by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf("") }
+    var tab by remember { mutableStateOf(LabTab.Appearance) }
+    var resultSrc by remember { mutableStateOf<String?>(null) }
+    var errorText by remember { mutableStateOf<String?>(null) }
     var cropping by remember { mutableStateOf(false) }
 
     fun applyCfg(block: PerspectiveCropConfig.() -> PerspectiveCropConfig) {
         cfg = cfg.block()
         controller.updateConfig(cfg)
+    }
+
+    fun runCrop() {
+        if (cropping) return
+        cropping = true
+        scope.launch {
+            try {
+                resultSrc = controller.cropToFile()
+                errorText = null
+            } catch (e: CropException) {
+                resultSrc = null
+                errorText = "${e.code}: ${e.message}"
+            } catch (e: Exception) {
+                resultSrc = null
+                errorText = "ERROR: ${e.message}"
+            } finally {
+                cropping = false
+            }
+        }
+    }
+
+    fun injectPoints() {
+        val w = controller.imageWidth
+        val h = controller.imageHeight
+        if (w <= 0f || h <= 0f) return
+        val inset = minOf(w, h) * 0.15f
+        controller.applyAutoScanPoints(
+            listOf(
+                CropPoint(inset, inset),
+                CropPoint(w - inset, inset * 1.2f),
+                CropPoint(w - inset * 1.1f, h - inset),
+                CropPoint(inset * 1.2f, h - inset * 0.9f),
+            ),
+        )
     }
 
     Column(
@@ -69,129 +109,147 @@ private fun PerspectiveCropLabScreen() {
             .background(DemoTheme.Background)
             .padding(top = statusBarHeight.dp),
     ) {
-        Text(
-            text = "全能 Lab · drag=${if (dragActive) "ON" else "off"}",
-            color = DemoTheme.TextSecondary,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-        )
-        // FlowRow：窄屏/折叠外屏自动换行，避免 chip 被裁掉（勿依赖横滑）
+        DemoTopBar(title = DemoCopy.TITLE_LAB)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+        ) {
+            DemoTabChip(
+                label = DemoCopy.TAB_APPEARANCE,
+                selected = tab == LabTab.Appearance,
+                onClick = { tab = LabTab.Appearance },
+            )
+            DemoTabChip(
+                label = DemoCopy.TAB_GESTURE,
+                selected = tab == LabTab.Gesture,
+                onClick = { tab = LabTab.Gesture },
+            )
+            DemoTabChip(
+                label = DemoCopy.TAB_MAGNIFIER,
+                selected = tab == LabTab.Magnifier,
+                onClick = { tab = LabTab.Magnifier },
+            )
+        }
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 2.dp),
         ) {
-            DemoChip("magnifier", onClick = { applyCfg { copy(showMagnifier = !showMagnifier) } })
-            DemoChip("guides", onClick = { applyCfg { copy(showGuideLines = !showGuideLines) } })
-            DemoChip("mids", onClick = { applyCfg { copy(showEdgeMidPoints = !showEdgeMidPoints) } })
-            DemoChip("passthrough", onClick = { applyCfg { copy(unhitPassthrough = !unhitPassthrough) } })
-            DemoChip("snap", onClick = { applyCfg { copy(edgeSnapToTouchEnabled = !edgeSnapToTouchEnabled) } })
-            DemoChip("clamp", onClick = { applyCfg { copy(edgeClampToBoundsEnabled = !edgeClampToBoundsEnabled) } })
-            DemoChip("cross", onClick = { applyCfg { copy(showMagnifierCenterCross = !showMagnifierCenterCross) } })
-            DemoChip(
-                "pos:${shortPlacement(cfg.magnifierPlacement)}",
-                onClick = {
-                    applyCfg {
-                        val next = MagnifierPlacement.entries.let { all ->
-                            all[(all.indexOf(magnifierPlacement) + 1) % all.size]
-                        }
-                        copy(magnifierPlacement = next)
-                    }
-                },
-            )
-            DemoChip(
-                "catch=0",
-                onClick = {
-                    applyCfg {
-                        copy(
-                            touchCornerCatchDistance = 0f,
-                            touchEdgeCatchDistance = 0f,
-                            touchMidCatchDistance = 0f,
-                        )
-                    }
-                },
-            )
-            DemoChip(
-                "catch=def",
-                onClick = {
-                    applyCfg {
-                        copy(
-                            touchCornerCatchDistance = 48f,
-                            touchEdgeCatchDistance = 28f,
-                            touchMidCatchDistance = 36f,
-                        )
-                    }
-                },
-            )
-            DemoChip(
-                if (cfg.magnifierCacheMaxEdgePx >= 2048) "cache:2k" else "cache:1k",
-                onClick = {
-                    applyCfg {
-                        copy(
-                            magnifierCacheMaxEdgePx = if (magnifierCacheMaxEdgePx >= 2048) 1024 else 2048,
-                        )
-                    }
-                },
-            )
-            DemoChip(
-                if (altSkin) "skin:alt" else "skin:def",
-                onClick = {
-                    altSkin = !altSkin
-                    controller.updatePainters(if (altSkin) altSkinPainters() else defaultLabPainters())
-                },
-            )
-            DemoChip(
-                "injectPts",
-                onClick = {
-                    val w = controller.imageWidth
-                    val h = controller.imageHeight
-                    if (w > 0f && h > 0f) {
-                        val inset = minOf(w, h) * 0.15f
-                        controller.applyAutoScanPoints(
-                            listOf(
-                                CropPoint(inset, inset),
-                                CropPoint(w - inset, inset * 1.2f),
-                                CropPoint(w - inset * 1.1f, h - inset),
-                                CropPoint(inset * 1.2f, h - inset * 0.9f),
-                            ),
-                        )
-                        statusText = "ok · writePoints injected"
-                    }
-                },
-            )
-            DemoChip("rect", onClick = { applyCfg { copy(rectMode = !rectMode) } })
-            DemoChip("rotate", onClick = { controller.rotateClockwise() })
-            DemoChip("reset", onClick = { controller.resetFullImage() })
-            DemoChip(
-                if (cropping) "…" else "裁切",
-                onClick = {
-                    if (cropping) return@DemoChip
-                    cropping = true
-                    scope.launch {
-                        try {
-                            val path = controller.cropToFile()
-                            statusText = "ok · $path"
-                        } catch (e: CropException) {
-                            statusText = "${e.code}: ${e.message}"
-                        } catch (e: Exception) {
-                            statusText = "ERROR: ${e.message}"
-                        } finally {
-                            cropping = false
-                        }
-                    }
-                },
-            )
+            when (tab) {
+                LabTab.Appearance -> {
+                    DemoToggleChip(
+                        label = if (cfg.showMagnifier) "放大镜·开" else "放大镜·关",
+                        active = cfg.showMagnifier,
+                        onClick = { applyCfg { copy(showMagnifier = !showMagnifier) } },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.showGuideLines) "辅助线·开" else "辅助线·关",
+                        active = cfg.showGuideLines,
+                        onClick = { applyCfg { copy(showGuideLines = !showGuideLines) } },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.showEdgeMidPoints) "中点·开" else "中点·关",
+                        active = cfg.showEdgeMidPoints,
+                        onClick = { applyCfg { copy(showEdgeMidPoints = !showEdgeMidPoints) } },
+                    )
+                    DemoToggleChip(
+                        label = if (altSkin) "换皮·开" else "换皮·关",
+                        active = altSkin,
+                        onClick = {
+                            altSkin = !altSkin
+                            controller.updatePainters(
+                                if (altSkin) altSkinPainters() else defaultLabPainters(),
+                            )
+                        },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.rectMode) DemoCopy.RECT_ON else DemoCopy.RECT_OFF,
+                        active = cfg.rectMode,
+                        onClick = { applyCfg { copy(rectMode = !rectMode) } },
+                    )
+                }
+                LabTab.Gesture -> {
+                    DemoToggleChip(
+                        label = if (cfg.edgeSnapToTouchEnabled) "吸附·开" else "吸附·关",
+                        active = cfg.edgeSnapToTouchEnabled,
+                        onClick = {
+                            applyCfg { copy(edgeSnapToTouchEnabled = !edgeSnapToTouchEnabled) }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.edgeClampToBoundsEnabled) "钳制·开" else "钳制·关",
+                        active = cfg.edgeClampToBoundsEnabled,
+                        onClick = {
+                            applyCfg { copy(edgeClampToBoundsEnabled = !edgeClampToBoundsEnabled) }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.unhitPassthrough) "透传·开" else "透传·关",
+                        active = cfg.unhitPassthrough,
+                        onClick = { applyCfg { copy(unhitPassthrough = !unhitPassthrough) } },
+                    )
+                    val catchOff = cfg.touchCornerCatchDistance <= 0f
+                    DemoToggleChip(
+                        label = if (catchOff) "命中·关" else "命中·默认",
+                        active = !catchOff,
+                        onClick = {
+                            if (catchOff) {
+                                applyCfg {
+                                    copy(
+                                        touchCornerCatchDistance = 48f,
+                                        touchEdgeCatchDistance = 28f,
+                                        touchMidCatchDistance = 36f,
+                                    )
+                                }
+                            } else {
+                                applyCfg {
+                                    copy(
+                                        touchCornerCatchDistance = 0f,
+                                        touchEdgeCatchDistance = 0f,
+                                        touchMidCatchDistance = 0f,
+                                    )
+                                }
+                            }
+                        },
+                    )
+                }
+                LabTab.Magnifier -> {
+                    DemoToggleChip(
+                        label = "位置·${placementLabel(cfg.magnifierPlacement)}",
+                        active = true,
+                        onClick = {
+                            applyCfg {
+                                val next = MagnifierPlacement.entries.let { all ->
+                                    all[(all.indexOf(magnifierPlacement) + 1) % all.size]
+                                }
+                                copy(magnifierPlacement = next)
+                            }
+                        },
+                    )
+                    val cache2k = cfg.magnifierCacheMaxEdgePx >= 2048
+                    DemoToggleChip(
+                        label = if (cache2k) "缓存·2k" else "缓存·1k",
+                        active = cache2k,
+                        onClick = {
+                            applyCfg {
+                                copy(
+                                    magnifierCacheMaxEdgePx =
+                                        if (magnifierCacheMaxEdgePx >= 2048) 1024 else 2048,
+                                )
+                            }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.showMagnifierCenterCross) "十字·开" else "十字·关",
+                        active = cfg.showMagnifierCenterCross,
+                        onClick = {
+                            applyCfg { copy(showMagnifierCenterCross = !showMagnifierCenterCross) }
+                        },
+                    )
+                }
+            }
         }
-        DemoStatusLine(statusText)
-        Text(
-            text = "mag=${cfg.showMagnifier} guide=${cfg.showGuideLines} mid=${cfg.showEdgeMidPoints} " +
-                "pass=${cfg.unhitPassthrough} snap=${cfg.edgeSnapToTouchEnabled} " +
-                "clamp=${cfg.edgeClampToBoundsEnabled} edge=${cfg.magnifierCacheMaxEdgePx} " +
-                "pos=${cfg.magnifierPlacement}",
-            color = DemoTheme.TextSecondary,
-            fontSize = 10.sp,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-        )
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             PerspectiveCropStage(
                 modifier = Modifier.fillMaxSize(),
@@ -199,15 +257,41 @@ private fun PerspectiveCropLabScreen() {
                 imageSrc = SAMPLE_SRC,
                 config = cfg,
                 painters = if (altSkin) altSkinPainters() else defaultLabPainters(),
-                onDragActiveChanged = { dragActive = it },
+            )
+        }
+        DemoBottomBar {
+            DemoBarButton(label = DemoCopy.RESET, onClick = { controller.resetFullImage() })
+            DemoBarButton(label = DemoCopy.ROTATE, onClick = { controller.rotateClockwise() })
+            DemoBarButton(label = DemoCopy.INJECT_POINTS, onClick = { injectPoints() })
+            DemoBarButton(
+                label = if (cropping) DemoCopy.CROP_BUSY else DemoCopy.CROP_SHORT,
+                primary = true,
+                enabled = !cropping,
+                onClick = { runCrop() },
             )
         }
     }
+
+    val preview = resultSrc
+    if (preview != null) {
+        DemoResultModal(
+            imageSrc = preview,
+            onAgain = { resultSrc = null },
+            onDone = { resultSrc = null },
+        )
+    }
+    val err = errorText
+    if (err != null) {
+        DemoErrorModal(
+            message = err,
+            onDismiss = { errorText = null },
+        )
+    }
 }
 
-private fun shortPlacement(p: MagnifierPlacement): String = when (p) {
-    MagnifierPlacement.TopAutoFlip -> "auto"
-    MagnifierPlacement.TopLeft -> "TL"
-    MagnifierPlacement.TopRight -> "TR"
-    MagnifierPlacement.AboveTouch -> "above"
+private fun placementLabel(p: MagnifierPlacement): String = when (p) {
+    MagnifierPlacement.TopAutoFlip -> "自动"
+    MagnifierPlacement.TopLeft -> "左上"
+    MagnifierPlacement.TopRight -> "右上"
+    MagnifierPlacement.AboveTouch -> "触点上"
 }

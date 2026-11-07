@@ -54,6 +54,7 @@ private fun HomeScreen() {
         Text(
             text = "透视裁剪",
             fontSize = 28.sp,
+            lineHeight = 28.sp,
             fontWeight = FontWeight.Bold,
             color = DemoTheme.TextPrimary,
             textAlign = TextAlign.Center,
@@ -62,6 +63,7 @@ private fun HomeScreen() {
         Text(
             text = "KuiklyPerspectiveCrop Demo",
             fontSize = 15.sp,
+            lineHeight = 15.sp,
             color = DemoTheme.TextSecondary,
             textAlign = TextAlign.Center,
         )
@@ -69,12 +71,12 @@ private fun HomeScreen() {
         Spacer(modifier = Modifier.height(40.dp))
 
         HomeButton(
-            label = "最小实现演示",
+            label = "产品演示",
             onClick = { openPage(localPager, "perspective_crop_demo") },
         )
         Spacer(modifier = Modifier.height(16.dp))
         HomeButton(
-            label = "全能全配置 Lab",
+            label = "全能配置",
             onClick = { openPage(localPager, "perspective_crop_lab") },
         )
     }
@@ -82,6 +84,7 @@ private fun HomeScreen() {
 
 @Composable
 private fun HomeButton(label: String, onClick: () -> Unit) {
+    // H5：竖向 padding 放 Box，Text 仅设 lineHeight=fontSize，避免字画在块顶
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
@@ -93,8 +96,10 @@ private fun HomeButton(label: String, onClick: () -> Unit) {
         Text(
             text = label,
             fontSize = 16.sp,
+            lineHeight = 16.sp,
             fontWeight = FontWeight.Bold,
             color = DemoTheme.TextPrimary,
+            textAlign = TextAlign.Center,
         )
     }
 }
