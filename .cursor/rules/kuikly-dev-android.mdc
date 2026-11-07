@@ -49,11 +49,6 @@ alwaysApply: false
 - 优先 `val` / 不可变集合接口；慎用 `!!`；公开 API 禁止裸平台类型
 - 全文：`docs/skill-references/coding-norms/base/lang_kotlin.md`
 
-## 硬约束 · L1 Java语言
-
-- **防 NPE（P0）**：解引用前判空/早退；禁 null 列表与裸长链
-- 全文：`docs/skill-references/coding-norms/base/lang_java.md`
-
 ## 硬约束 · L2 Android平台
 
 - 耗时操作切后台线程或协程；仅主线程改 UI
@@ -71,7 +66,7 @@ alwaysApply: false
 
 ## 硬约束 · L3 新建代码文件准则
 
-- **新建文件优先 Kotlin**；新建 Java 须在 changelog 写明原因
+- **新建文件优先 Kotlin**；须带 `@CreateDate` / `@Author` / `@Description`；新建 Java 须在 changelog 写明原因
 - 全文：`docs/skill-references/kuikly-android-coding/project/new_code_file_guidelines.md`
 
 ## 硬约束 · L3 透视裁剪 API
@@ -79,10 +74,6 @@ alwaysApply: false
 - 公开设图用 `imageSrc: String`；common **不暴露** Bitmap / ImageBitmap
 - 必须有 `crop()` + `cropToFile()`；几何进 `CropSession`；换皮走**六层** Painter SPI（业务皮肤只进 Demo）
 - 全文：`docs/skill-references/kuikly-android-coding/project/perspective_crop_api.md`；台账：`docs/decisions.md`
-
-## 混淆安全 · **休眠条款（当前不作要求）**
-
-- 本仓 Demo/库当前不做 release 混淆强制；启用时再按 `project/proguard_when_enabled.md` 恢复
 
 ## 完成门
 

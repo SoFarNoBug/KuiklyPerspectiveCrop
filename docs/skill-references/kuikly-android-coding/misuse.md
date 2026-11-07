@@ -1,4 +1,4 @@
-doc_version: 20261106_1
+doc_version: 20261107_1
 
 # 编码常见错误反例（references/misuse.md）
 
@@ -11,11 +11,11 @@ doc_version: 20261106_1
 
 ### 错误 1：新建文件用 Java（本项目新代码优先 Kotlin）
 
-**错误写法**：新增数据类 / 工具类时跟着所在目录的语言走，写成 `.java`。
+**错误写法**：新增数据类 / 工具类 / expect·actual 时写成 `.java`，或省略 `@CreateDate` / `@Author` / `@Description` 文件头。
 
-**为什么错**：本仓 Java 存量占绝大多数，一旦「跟着旁边走」，新文件永远继续用 Java，空安全 / 数据类 / 扩展等表达力永远用不上，Java 生态被反向固化。该约束**只针对新建**，不存在「改老代码被迫大改」的代价。
+**为什么错**：本仓是纯 Kotlin/KMP；新建 Java 无收益却增加双语言维护面。文件头是审查硬项（缺头即 P2）。
 
-**正确写法**：新建默认 `.kt`（见 L3 [`project/new_code_file_guidelines.md`](project/new_code_file_guidelines.md)）。会被 Java 调用时：静态入口 `object` + `@JvmStatic`、公开字段 `@JvmField`、带默认参数的方法加 `@JvmOverloads`、Parcelable 手写 `CREATOR`；需要派生判定写成 `fun isEmpty()`（别写成只读属性，Java 会变 `getIsEmpty()`）。确需新建 Java（与该模块既有 Java 强耦合、注解处理器、反射契约等）必须在 changelog 写明理由。
+**正确写法**：新建默认 `.kt` 并带文件头（见 L3 [`project/new_code_file_guidelines.md`](project/new_code_file_guidelines.md)）。确需 `.java`（注解处理器 / 反射契约等）必须在 changelog 写明理由。
 
 ---
 
@@ -80,17 +80,7 @@ doc_version: 20261106_1
 
 ---
 
-### 错误 8：新建 / 移动网络模型未补 keep（**仅当 release 开启混淆时适用**）
-
-**错误写法**：新增 Retrofit 泛型模型或 Gson 目标类型后，既未落在既有受保护包、也未改 `app/proguard-rules.pro`。
-
-**为什么错**：一旦 `minifyEnabled=true`，模型字段被改名 ⇒ 反序列化静默变空、`toJson` 写出混淆 key，界面卡加载或回退但**不报错**。本仓当前 `minifyEnabled=false`（见 [`project/proguard_when_enabled.md`](project/proguard_when_enabled.md)），故本条**休眠**；开启混淆的那一批改动必须同时补规则。
-
-**正确写法**：开启混淆后，新增 / 移动模型同批在 `app/proguard-rules.pro` 补 `-keep`（keep **单源**，模块级 `.pro` 未装配、写了不生效），并用 `assembleRelease` + `mapping.txt` 自证未被改名。
-
----
-
-### 错误 9：匿名内部类实现同名方法时未限定外部类（编译期静默、运行期栈溢出）
+### 错误 8：匿名内部类实现同名方法时未限定外部类（编译期静默、运行期栈溢出）
 
 **错误写法**：匿名内部类实现的方法与**外部类同名方法**重名时，类体内不加限定直接调用：
 
@@ -112,7 +102,7 @@ class FooViewModel {
 
 ---
 
-### 错误 10：「一次性消费标志」由**调用点**置位，而消费方可能**根本不会触发**（标志滞留、污染下一次真实事件）
+### 错误 9：「一次性消费标志」由**调用点**置位，而消费方可能**根本不会触发**（标志滞留、污染下一次真实事件）
 
 **错误写法**：程序化路径在调用点写「一次性」标志，指望某个回调把它消费掉：
 
@@ -130,7 +120,7 @@ suppressTrack = false      // 永远等不到
 
 ---
 
-### 错误 11：切页回调里「先隐藏」共享视图，等异步重判再恢复（确定性闪烁）
+### 错误 10：切页回调里「先隐藏」共享视图，等异步重判再恢复（确定性闪烁）
 
 **错误写法**：把提示条 / 角标上提为宿主级共享视图后，在分页回调里**先** `GONE`，指望随后重判再显示：
 
@@ -147,7 +137,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 12：同一排 Tab 的「选中」用绝对像素（dp）字号、未选中用 `sp`
+### 错误 11：同一排 Tab 的「选中」用绝对像素（dp）字号、未选中用 `sp`
 
 **错误写法**：Tab item 的 TextView 写 `textSize="14sp"`，TabLayout 上写 `app:sbtl_selected_text_size="14dp"` 交给 `SelectedBoldTabLayout` 处理，认为「两边都写 14，肯定一样大」。
 
@@ -157,7 +147,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 13：把「修哪个文件」按类名推断，未读声明就写进计划
+### 错误 12：把「修哪个文件」按类名推断，未读声明就写进计划
 
 **错误写法**：计划里写「`XxxFragment` 的 `mTypefaceVM.getCategoryId()` 传给 `modifyTypeface`」，理由是「它 observe 了 `getTypefaceIdLD()`，应该就是那个 VM」。
 
@@ -167,7 +157,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 14：序号 / 位置 / 归属类埋点断言只覆盖「首次选择」
+### 错误 13：序号 / 位置 / 归属类埋点断言只覆盖「首次选择」
 
 **错误写法**：验 `tag_position` 只走一遍「进页面 → 选某分类第 1 个资源 → 抓事件 → 数值等于预期」就判通过。
 
@@ -177,7 +167,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 15：面板类控件的「回显缓存」与控件值读写不同源
+### 错误 14：面板类控件的「回显缓存」与控件值读写不同源
 
 **错误写法**：面板收起再展开时回退到旧值，因为缓存**写入点只有「外部回显（选中态变化等）」**，没有「用户操作回调」。
 
@@ -187,7 +177,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 16：`pointerInput` 闭包读可变状态却未进 key
+### 错误 15：`pointerInput` 闭包读可变状态却未进 key
 
 **错误写法**：`Modifier.pointerInput(Unit) { … 使用 session / scale / 角点坐标 … }`，可变状态只在闭包外 `var`/`mutableStateOf` 更新。
 
@@ -197,7 +187,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 17：common 公开 API 用 Bitmap 设图 / 出图
+### 错误 16：common 公开 API 用 Bitmap 设图 / 出图
 
 **错误写法**：`fun setImage(bitmap: Bitmap)` 或 `suspend fun crop(): ImageBitmap` 挂在 common 公开面。
 
@@ -207,7 +197,7 @@ fun onPageSelected(position: Int) {
 
 ---
 
-### 错误 18：用 `androidx.compose.ui` 包写 Kuikly Compose
+### 错误 17：用 `androidx.compose.ui` 包写 Kuikly Compose
 
 **错误写法**：`import androidx.compose.ui.Modifier.Modifier` / `androidx.compose.foundation.layout.Box`。
 

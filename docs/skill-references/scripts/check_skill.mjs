@@ -4,7 +4,7 @@
 // 退出码: 0 无 FAIL；1 有 FAIL
 
 import { readFileSync, existsSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, isAbsolute } from 'node:path';
 
 const skillDir = process.argv[2];
 if (!skillDir) {
@@ -12,7 +12,7 @@ if (!skillDir) {
   process.exit(1);
 }
 
-const abs = skillDir.startsWith('/') ? skillDir : join(process.cwd(), skillDir);
+const abs = isAbsolute(skillDir) ? skillDir : join(process.cwd(), skillDir);
 const skillMdPath = join(abs, 'SKILL.md');
 const yamlPath = join(abs, 'project.yaml');
 

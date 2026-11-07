@@ -25,10 +25,6 @@ norms:
     title: Kotlin语言
     layer: L1
     ref: ../../../docs/skill-references/coding-norms/base/lang_kotlin.md
-  - id: lang_java
-    title: Java语言
-    layer: L1
-    ref: ../../../docs/skill-references/coding-norms/base/lang_java.md
   - id: platform_android
     title: Android平台
     layer: L2

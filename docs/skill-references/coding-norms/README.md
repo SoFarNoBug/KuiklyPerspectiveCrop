@@ -48,11 +48,11 @@
 | L3 | `../kuikly-android-coding/project/new_code_file_guidelines.md` | `new_code_file_guidelines` |
 | L3 | `../kuikly-android-coding/project/perspective_crop_api.md` | `perspective_crop_api` |
 
-> 另有 `../kuikly-android-coding/project/proguard_when_enabled.md`（混淆安全）为 **休眠条款**：本仓 `minifyEnabled=false`，未计入 `norms[]`；开启 release 混淆的批次才按该文件执行并恢复为 norm。
+> 本仓 `kuikly-android-coding` **未挂载** `lang_java`（纯 Kotlin/KMP）。`base/lang_java.md` 仍留在共享货架，供需要 Java 的仓挂载。
 
 ## 移植到其他仓
 
 1. 拷贝 `docs/skill-references/coding-norms/`（至少 `base/` 下要用的 L1/L2）。
 2. 目标仓 `project.yaml` → **`norms[]`** 挂载启用的 L1/L2；`version_counts: norms` 时不必再挂 `mounts.rules`。
-3. L3 在目标仓自建 `content_root/project/`，**勿照搬**他仓包名/keep/业务政策。
+3. L3 在目标仓自建 `content_root/project/`，**勿照搬**他仓包名/业务政策。
 4. 跑目标仓门禁至 FAIL 0。

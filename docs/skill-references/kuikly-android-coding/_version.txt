@@ -1,4 +1,4 @@
-# 代数真源。vN = norms 条数（project.yaml version_counts: norms）。
-# v4：Kotlin / Java / Android / 新建文件准则
-# v6：+ Kuikly Compose 平台（L2）+ 透视裁剪 API（L3）
-v6
+# 代数真源。代数 == norms 条数（project.yaml version_counts: norms）。
+# 本仓五条：Kotlin / Android / KuiklyCompose / 新建代码文件准则 / 透视裁剪API准则。
+# 已退役本仓 Java 挂载与休眠 ProGuard 条款（共享货架 lang_java 仍保留供他仓）。
+v5

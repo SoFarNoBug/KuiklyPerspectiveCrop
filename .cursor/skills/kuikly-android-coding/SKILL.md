@@ -1,6 +1,6 @@
 ---
 name: kuikly-android-coding
-description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划）。触发：编码、实现、修复 Bug、修改代码、按计划行事、速速改、速速开工；v6 规范：Kotlin语言、Java语言、Android平台、KuiklyCompose平台、新建代码文件准则、透视裁剪API准则（细则在角色 Rule + skill-references / coding-norms；本仓未启用混淆，keep 条款休眠）。有确认 Plan → 按计划行事；琐碎 → 速速改。约束遵守 Rule；本 skill 只跑流程。
+description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划）。触发：编码、实现、修复 Bug、修改代码、按计划行事、速速改、速速开工；v5 规范：Kotlin语言、Android平台、KuiklyCompose平台、新建代码文件准则、透视裁剪API准则（细则在角色 Rule + skill-references / coding-norms）。有确认 Plan → 按计划行事；琐碎 → 速速改。约束遵守 Rule；本 skill 只跑流程。
 ---
 
 
@@ -18,16 +18,13 @@ description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划�
 
 | 改动面 | 编码前读 |
 |---|---|
-| 任何业务改动（**基线**） | `lang_java` + `platform_android` |
-| 改 / 新建 `.kt` | 追加 `lang_kotlin` |
+| 任何业务改动（**基线**） | `lang_kotlin` + `platform_android` |
 | 触及 Compose UI / 手势 / 页面入口 | 追加 `platform_kuikly_compose` |
 | 改库公开 API / Stage / Session / Processor / Painter | 追加 `perspective_crop_api` |
 | 新建文件 | 追加 `new_code_file_guidelines` |
 
-> **混淆**：本仓 `minifyEnabled = false`，keep 条款**休眠**、不在 `norms[]`；仅当某批次把 release 混淆打开时，改按 `docs/skill-references/kuikly-android-coding/project/proguard_when_enabled.md` 执行（同批补 keep + mapping 自证）。
-
-> 路由只按**本次要动的文件**判定，不按项目语言分布判定：本单只改既有 `.java` 就只读前两行。
-> 判不出改动面（如「先看看再说」）→ 按基线两行读，编码时再按实际文件补读。
+> 路由只按**本次要动的文件**判定。判不出改动面（如「先看看再说」）→ 按基线两行读，编码时再按实际文件补读。
+> 本仓不挂 `lang_java`（无 Java 源码）；共享货架 `coding-norms/base/lang_java.md` 仍可供他仓复用。
 
 ## 角色
 
@@ -52,9 +49,9 @@ description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划�
 1. **读 Plan**：本轮用户已确认的 Plan 为执行依据；若有配置 `docs.tasks_optional`（`<name>` 换成本次 feature）可作核对，**不得**擅自发明需求。
 2. **编码**：按 Plan / tasks 实现（遵守角色 Rule + `norms` 已晋升规范）。新源文件 → 可更新配置 `docs.file_map`；稳定规则变 → 可更新配置 `docs.context_glob`。
 3. **规范自检（必做；缺行视为未执行）**：**编码前**已按 §规范全文路由 读完命中的 `norms[].ref`；收尾**按清单逐行填三态**，写入 §实现回报的**规范自检**栏。
-   - **清单不自己出题**：条款全集取自 `docs/skill-references/kuikly-android-coding/selfcheck/`（`lang_java` / `lang_kotlin` / `platform_android` 各一份）。清单有 N 行，回报就有 N 行，**禁止缺行、禁止留空**。
+   - **清单不自己出题**：条款全集取自 `docs/skill-references/kuikly-android-coding/selfcheck/`（与本轮命中的 `norms[].id` 同名清单）。清单有 N 行，回报就有 N 行，**禁止缺行、禁止留空**。
    - **三态只有三种**：`OK` = 做了且写**落点行号**；`TODO` = 该做但没做，写**理由 + 风险承担**；`N/A` = 与本轮无关，写**一句判据**。「已遵守」「无需处理」这类空话不算任何一种。
-   - **强制项不许写 `TODO`**：清单里标注「强制」的条款（当前：`lang_java` J7 `final`）只许 `OK` 或 `N/A`；写 `TODO` 视为未整改，审核侧直接开 P1 —— 强制项的定义见 `norms[].ref` 正文，清单只是索引。
+   - **强制项不许写 `TODO`**：清单里标注「强制」的条款只许 `OK` 或 `N/A`；写 `TODO` 视为未整改，审核侧直接开 P1 —— 强制项的定义见 `norms[].ref` 正文，清单只是索引。
    - **只读 Rule 摘要不算读过规范**：Rule 是薄 ACL（只摘 P0 级硬句），条文不全，必须打开**命中的** `norms[].ref` 全文。
    - 未命中的规范**不要求读**，但回报里对应清单行仍写 `N/A` + 判据（例：本单无新建文件）。
    3.1 **搬运登记（提方法 / 内联 / 整段复制时必做）**：先按 `selfcheck/` 把被搬那段重过一遍规范（**不得以「原本就这样」豁免**），扫三类既有缺陷 —— **空值**（解引用未判空）、**单位量纲**（同一字段两种语义）、**顺序**（先读后写导致写进 null / 用到旧值）；二选一：当轮修掉，或在 changelog「已知遗留」写一行 `carried-over: <缺陷一句话>｜不修理由`。**发生过搬运却没有这行 ⇒ 审核侧可直接开 P1。**
@@ -83,7 +80,7 @@ description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划�
 | `project.yaml` | **特化配置**（`sediment` / `gate_on` / `version_counts` / `mounts` / `norms[]` / `review_skill` / `docs.*`） |
 | `mounts.sediment_process` | 沉淀流程（仅 `sediment: on` 时打开） |
 | `docs/skill-references/coding-norms/` | L1/L2 可移植货架（见 README） |
-| `docs/skill-references/kuikly-android-coding/project/` | L3 本仓规范全文（含休眠条款 `proguard_when_enabled.md`） |
+| `docs/skill-references/kuikly-android-coding/project/` | L3 本仓规范全文 |
 | `docs/skill-references/kuikly-android-coding/selfcheck/` | **规范自检清单**（三态打勾；每单必填） |
 | `docs/skill-references/kuikly-android-coding/misuse.md` | 编码反例 |
 | `docs/skill-references/kuikly-android-coding/_backlog.md` | 本 skill 待沉淀池 |
@@ -92,10 +89,6 @@ description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划�
 ## Kotlin语言规范（核心）
 
 见角色 Rule「硬约束 · L1 Kotlin语言」+ `docs/skill-references/coding-norms/base/lang_kotlin.md`。
-
-## Java语言规范（核心）
-
-见角色 Rule「硬约束 · L1 Java语言」+ `docs/skill-references/coding-norms/base/lang_java.md`。
 
 ## Android平台规范（核心）
 
@@ -112,8 +105,6 @@ description: KuiklyPerspectiveCrop Android 码农技能（只编码、不规划�
 ## 透视裁剪API准则规范（核心）
 
 见角色 Rule「硬约束 · L3 透视裁剪 API」+ `docs/skill-references/kuikly-android-coding/project/perspective_crop_api.md`。
-
-> **混淆安全**：未启用（`minifyEnabled=false`），**不是** norms 项、不做每日自检；启用后按 `project/proguard_when_enabled.md` 恢复为第 5 条规范。
 
 ## §实现回报模板
 

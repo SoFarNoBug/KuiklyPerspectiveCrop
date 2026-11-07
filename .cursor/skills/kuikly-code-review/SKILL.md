@@ -57,22 +57,19 @@ description: KuiklyPerspectiveCrop Android 审核员技能（主会话执行、�
 1. **对齐依据**：有 tasks 则对齐 tasks；仅有 Plan 则对齐 Plan。**不因**缺码农 Phase0 的 spec/tasks 单独打 P0（ADR 0019）。严重偏离 → 查表是否 `P0-plan-hard-drift`，否则 `P1-plan-soft-drift`
 2. **changelog**：「按计划行事」应有 append；「速速改」可无新建 specs——有 feature changelog 则查是否 append；缺则 `P1-changelog-missing`，**不**打 P0
 3. **规范对照**（全文 SoT = ADR 0038 三层货架；勿在本 skill 复述条文；**禁止**把码农包根上迁转 stub 当正文）：
-   - 共享 L1/L2（`coding-norms`）：
+   - 本仓已挂 norms（以码农 `project.yaml` 为准）：
      - `docs/skill-references/coding-norms/base/lang_kotlin.md`
-     - `docs/skill-references/coding-norms/base/lang_java.md`
      - `docs/skill-references/coding-norms/base/platform_android.md`
      - `docs/skill-references/coding-norms/base/platform_kuikly_compose.md`
-   - 本仓 L3 + 反例（码农包）：
-     - `docs/skill-references/kuikly-android-coding/misuse.md`
      - `docs/skill-references/kuikly-android-coding/project/new_code_file_guidelines.md`
      - `docs/skill-references/kuikly-android-coding/project/perspective_crop_api.md`
-     - `docs/skill-references/kuikly-android-coding/project/proguard_when_enabled.md`（**休眠**：本仓未开混淆，不作要求）
+   - 反例：`docs/skill-references/kuikly-android-coding/misuse.md`
    - 可选一眼码农 Rule：`.cursor/rules/kuikly-dev-android.mdc`
-4. **混淆（条件条款）**：本仓当前不强制 release 混淆 ⇒ **不挂** `P0-proguard-verify`。仅当本单打开混淆时再按 `project/proguard_when_enabled.md` 要求自证。
-5. **新建 Java**：无 changelog 例外说明 → `P1-kotlin-new-java`（不升 P0）
-6. **写权限**：未改业务源码、未改 changelog、未擅自改 severity；仅允许 append **本 skill** `_backlog` 候选行；可执行档仅写本仓 `docs/reviews/device-check-list/`
-7. **规范候选**：报告含「规范候选观察」；有候选则已入**本 skill** 池（或本节为「无。」）；未写码农池
-8. **真机两档（`P1-device-verify`）**：
+   - **不对照**未挂载的 `lang_java` / 已删除的 ProGuard 休眠条款
+4. **新建 Java**：无 changelog 例外说明 → `P1-kotlin-new-java`（不升 P0）
+5. **写权限**：未改业务源码、未改 changelog、未擅自改 severity；仅允许 append **本 skill** `_backlog` 候选行；可执行档仅写本仓 `docs/reviews/device-check-list/`
+6. **规范候选**：报告含「规范候选观察」；有候选则已入**本 skill** 池（或本节为「无。」）；未写码农池
+7. **真机两档（`P1-device-verify`）**：
    - **可执行档（默认产出）**：本桶一挂、**或** Plan 含「真机验证 / 真机自测」⇒ **同轮必须**按 [`docs/reviews/device-check-list/_template.md`](../../../docs/reviews/device-check-list/_template.md) 写出 `docs/reviews/device-check-list/{task-id}.md`；仅当用户明确说「不用表 / 本轮不跑真机」才可省
    - **缺口要点**：代码审不了什么 + 建议断言点
    - **收尾自检**：`node docs/skill-references/scripts/check_device_checklist.mjs docs/reviews/review-{task-id}.md`

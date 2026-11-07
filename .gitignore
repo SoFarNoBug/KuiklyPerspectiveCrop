@@ -1,5 +1,7 @@
 # Local IDE / gate
 .cursor/hooks/.gate-off
+# 本机移植的真机验证核（不入库；源在 my_skills）
+.cursor/skills/android-device-verify-core/
 .idea/
 *.iml
 .DS_Store

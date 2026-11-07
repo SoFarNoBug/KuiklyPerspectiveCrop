@@ -9,7 +9,7 @@
 
 1. **范围**：对齐 tasks / Plan（强制检查表第 1 条）
 2. **按 diff 开卡**：用下方路由表打开 1～3 张卡（深度发现）
-3. **规范对照**：coding-norms base（L1/L2）+ `misuse` / `project/new_code_file_guidelines`（强制检查表第 3～5 条）。`project/proguard_when_enabled.md` 为**休眠条款**，仅在本单开启 release 混淆时才读
+3. **规范对照**：本仓已挂 norms（`lang_kotlin` / `platform_*` / L3）+ `misuse`（强制检查表第 3 条）
 4. **meta 最后**：changelog、写权限、规范候选、真机缺口/可执行档
 
 禁止颠倒成「先填报告格式、再扫一眼 diff」。
@@ -23,7 +23,7 @@
 | `Printer` / `CURRENT_MODEL` / `isSeal` / `View.post` 读尺寸 / insets / `fitsSystemWindows` | 卡 C 机型·生命周期 |
 | 长度 / 里程 / pad / `+=` 跨模块常量 | 卡 D 量纲 |
 | `WebView` / `addJavascriptInterface` / deeplink / Intent extra / 日志打 token | 卡 E 安全 |
-| `dto` / `bean` / Retrofit 模型包路径 | 混淆门禁（强制检查表第 4 条；**本仓 `minifyEnabled=false` 时跳过**；非本文件卡） |
+| `dto` / `bean` / Retrofit 模型包路径 | 本仓无网络模型 keep 门禁；勿据此开卡 |
 | 仅 `strings.xml` / 文案 Key | `P1-i18n` 扫一眼即可，可跳过 A～D 深潜 |
 
 无路由命中时仍做卡 B 轻扫（主路径是否接线）。
