@@ -1,5 +1,12 @@
 # kuikly-android-coding · skill changelog（本仓）
 
+## 2026-11-07（编码 Skill 硬闸）
+
+- 新增 `.cursor/hooks/coding-skill-gate.mjs` + `skill-gate-unlock.mjs`，挂入 `hooks.json`
+- 未 Read `kuikly-android-coding/SKILL.md` 时拦 `.kt`/`.java`/`.kts` 写入；与确认闸独立
+- 收紧 `plan-exec-coding-skill.mdc`；文档：`docs/context/coding-skill-gate.md`、`agents-guide`
+- 治理收尾：门禁 跳过｜三问 否/是/否｜理由：机械兜底防再跳过 skill｜待批 0
+
 ## v5 · 2026-11-07
 
 - 退役本仓 `lang_java` 挂载与 selfcheck；基线路由改为 `lang_kotlin` + `platform_android`

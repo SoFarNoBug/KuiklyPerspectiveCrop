@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import com.jlj.kuiklybase.perspectivecrop.overlay.CropOverlayPainters
+import com.jlj.kuiklybase.perspectivecrop.overlay.DefaultMagnifierOverlayPainter
 import com.jlj.kuiklybase.perspectivecrop.overlay.midpointsInView
 import com.tencent.kuikly.compose.coil3.rememberAsyncImagePainter
 import com.tencent.kuikly.compose.foundation.Canvas
@@ -92,8 +93,11 @@ fun PerspectiveCropStage(
         }
     }
 
-    // 方案 B：触点静止一段时间后把同一 patch 升到密网格（不重采样）
-    LaunchedEffect(touchView, magnifierPatch?.touchViewX, magnifierPatch?.touchViewY) {
+    // Q38：仅网格兜底路径保留停指升密；原生贴图主路径拖动全程清晰
+    val useNativeMagnifier = platformSupportsNativeMagnifier() &&
+        overlayPainters.magnifier === DefaultMagnifierOverlayPainter
+    LaunchedEffect(touchView, magnifierPatch?.touchViewX, magnifierPatch?.touchViewY, useNativeMagnifier) {
+        if (useNativeMagnifier) return@LaunchedEffect
         val patch = magnifierPatch ?: return@LaunchedEffect
         if (!touchView.isSpecified || !activeConfig.showMagnifier) return@LaunchedEffect
         if (patch.drawGrid >= MagnifierDrawGrid.SETTLED) return@LaunchedEffect
@@ -247,7 +251,11 @@ fun PerspectiveCropStage(
                         with(overlayPainters.border) { drawBorder(viewPoints, activeConfig) }
                         with(overlayPainters.corner) { drawCorners(viewPoints, activeConfig) }
                         with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, activeConfig) }
-                        if (activeConfig.showMagnifier && touchView.isSpecified) {
+                        // 网格兜底：非原生平台，或注入了自定义放大镜画家
+                        if (!useNativeMagnifier &&
+                            activeConfig.showMagnifier &&
+                            touchView.isSpecified
+                        ) {
                             with(overlayPainters.magnifier) {
                                 drawMagnifier(
                                     viewPoints,
@@ -259,6 +267,20 @@ fun PerspectiveCropStage(
                             }
                         }
                     }
+                }
+                if (useNativeMagnifier &&
+                    activeConfig.showMagnifier &&
+                    touchView.isSpecified
+                ) {
+                    PlatformMagnifierOverlay(
+                        modifier = Modifier.fillMaxSize(),
+                        patch = magnifierPatch,
+                        touchViewX = touchView.x,
+                        touchViewY = touchView.y,
+                        containerW = containerW,
+                        containerH = containerH,
+                        config = activeConfig,
+                    )
                 }
             }
         }

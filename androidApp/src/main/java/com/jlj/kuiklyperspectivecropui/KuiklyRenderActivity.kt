@@ -22,6 +22,7 @@ import com.jlj.kuiklyperspectivecropui.adapter.KRThreadAdapter
 import com.jlj.kuiklyperspectivecropui.adapter.KRUncaughtExceptionHandlerAdapter
 import com.jlj.kuiklyperspectivecropui.module.KRBridgeModule
 import com.jlj.kuiklyperspectivecropui.module.KRShareModule
+import com.jlj.kuiklybase.perspectivecrop.KRPerspectiveCropMagnifierView
 import org.json.JSONObject
 
 class KuiklyRenderActivity : AppCompatActivity(), KuiklyRenderViewBaseDelegatorDelegate {
@@ -83,7 +84,10 @@ class KuiklyRenderActivity : AppCompatActivity(), KuiklyRenderViewBaseDelegatorD
     override fun registerExternalRenderView(kuiklyRenderExport: IKuiklyRenderExport) {
         super.registerExternalRenderView(kuiklyRenderExport)
         with(kuiklyRenderExport) {
-
+            // 第二个参数必须是 View creator；勿写成 trailing lambda（会绑到 shadowExportCreator）
+            renderViewExport(KRPerspectiveCropMagnifierView.VIEW_NAME, {
+                KRPerspectiveCropMagnifierView(it)
+            })
         }
     }
 

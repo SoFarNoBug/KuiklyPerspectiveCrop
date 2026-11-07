@@ -1,5 +1,5 @@
 ---
-description: 确认 Plan 后的编码执行必须先走 kuikly-android-coding（按计划行事），禁止只对照 Plan 写码。
+description: 确认 Plan 后的编码执行必须先走 kuikly-android-coding（按计划行事），禁止只对照 Plan 写码。硬拦见 coding-skill-gate hook。
 alwaysApply: true
 ---
 
@@ -7,21 +7,30 @@ alwaysApply: true
 
 当本轮是在**执行已确认的 Plan**（用户说 implement / 执行计划 / 按 plan 开工，或 IDE 确认 Plan 后开写）：
 
-## 硬约束
+## 硬约束（Agent）
 
-1. **第一步**必须 `Read`：`.cursor/skills/kuikly-android-coding/SKILL.md` + 同目录 `project.yaml`。未读完**禁止**改业务代码（`.kt` / `.java` / Gradle 源）。
+1. **第一步**必须 `Read`：`.cursor/skills/kuikly-android-coding/SKILL.md` + 同目录 `project.yaml`。未读完**禁止**改业务代码（`.kt` / `.java` / `.kts`）。
 2. 路径固定为 **按计划行事**（`an-ji-hua-xing-shi`）。禁止把「对着 Plan 勾 todo」当成完整流程。
 3. **编码前**按 SKILL §规范全文路由读完本轮命中的 `norms[].ref`；只读 Rule 摘要**不算**。
 4. 收尾必须输出 SKILL **§实现回报**（含 selfcheck 逐行三态表）；缺栏视为本单编码 skill **未执行**。
 5. Plan 正文与 skill 冲突时：以 **角色 Rule + norms** 为准，再回写 Plan 偏差说明；不得静默跳过 skill。
 
+## 硬拦（Hook · 机械兜底）
+
+- 脚本：`.cursor/hooks/coding-skill-gate.mjs`（已挂 `hooks.json`）
+- **未**在本会话 Read 过 `kuikly-android-coding/SKILL.md` 时，对 `.kt` / `.java` / `.kts` 的 Write/StrReplace/Delete **deny**
+- 武装方式：Read 上述 SKILL（推荐）｜用户说「速速改」｜`node .cursor/hooks/skill-gate-unlock.mjs on`
+- 关闭：`CODING_SKILL_GATE=off` 或 `skill-gate-unlock.mjs disable`（本机）
+- **注意**：编码前确认闸解锁（选 1 / 执行计划）**不等于** Skill 硬闸武装；Implement Plan 仍须先 Read SKILL
+
 ## 仍允许
 
 - 纯文档（`docs/`、`.md`、changelog、真机表路径登记）可与 skill 文档步骤合并，不替代上述第 1–4 步。
-- 用户明确说「速速改 / 跳过 skill」时改走速速改路径，并在回报注明。
+- 用户明确说「速速改 / 跳过 skill」时改走速速改路径，并在回报注明（hook 会武装快路径）。
 
 ## 常见失败（禁止再犯）
 
 - 只开 Plan 附件就开始改 Core / Demo。
 - 编译通过就勾完 todo，不写规范自检。
 - 码农代写审查报告或越权扮演 review skill（真机表由审核产出；码农只登记路径）。
+- 以为确认闸放行后即可改 `.kt`（Skill 硬闸仍会拦）。

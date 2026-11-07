@@ -71,6 +71,12 @@
 | **Q36** | JS `imageSrc` 解码 | 库内自解码；`assets://`→可 fetch 路径；`http(s)`/`blob:`/`data:`/相对路径原样；CORS 失败 → `DECODE_FAILED` | `JsImageCodec` |
 | **Q37** | H5 `saveToFile` | 返回 **`blob:`** ObjectURL；`saveToFile(path)` **忽略**本地路径语义；非持久文件 | `PlatformImage.js`；ADR 0005 |
 
+## Q38（M5 · 放大镜原生像素贴图）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**（当前 **仅 Android** `BitmapShader`）；**H5 / iOS / 鸿蒙暂网格兜底**（H5 待 BlitStore 单例后再开 Canvas）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标（Android 主路径） | ADR 0006；M5 |
+
 ## 分期映射（不得挪已定能力出 v0.1）
 
 ```text
@@ -81,6 +87,7 @@ M3  真像素放大镜 + 剩余旋钮 + Demo 换皮 + Camera/Album 对接说明
      ↑
   v0.1 完成线
 M4  JS 真放大镜 + CPU 透视裁剪 + blob: 落盘（post-v0.1；iOS 仍 stub）
+M5  放大镜原生像素贴图（Android BitmapShader + H5 Canvas；网格仅兜底；iOS/鸿蒙暂网格）
 ```
 
 ## 明确非目标

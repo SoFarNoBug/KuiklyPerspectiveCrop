@@ -130,7 +130,7 @@ object DefaultMagnifierOverlayPainter : MagnifierOverlayPainter {
         clipPath(clip) {
             drawCircle(color = Color(0xFF222222), radius = radius, center = Offset(cx, cy))
             if (patch != null && patch.width > 0 && patch.height > 0) {
-                // Kuikly 无 BitmapShader：网格 drawRect；拖动粗网格、停指升密（patch.drawGrid）
+                // Q38 兜底：原生贴图不可用时 N×N drawRect；拖动粗 / 停指密（patch.drawGrid）
                 val grid = patch.drawGrid.coerceIn(8, 48)
                 val dest = radius * 2f
                 val cellW = dest / grid

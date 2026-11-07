@@ -1,6 +1,8 @@
 # 编码前确认闸（Cursor）
 
-## 两道防线
+> 另有一道 **编码 Skill 硬闸**（拦未读 skill 就改 `.kt`）：见 [coding-skill-gate.md](./coding-skill-gate.md)。两道独立。
+
+## 两道防线（本闸）
 
 1. **Rule**（soft）：`.cursor/rules/coding-confirm-gate.mdc` — AI 落盘前须问 1/2。
 2. **Hook**（hard）：`.cursor/hooks.json` → `node .cursor/hooks/coding-gate-ask.mjs`。

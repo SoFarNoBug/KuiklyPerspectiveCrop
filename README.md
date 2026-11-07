@@ -92,6 +92,8 @@ suspend fun cropToFile(path: String): String
 本仓用**精简 8083 静态服**提供业务包 `nativevue2.js`（**无** Kuikly 官方 whistle）。宿主 webpack 仍在 8080。  
 **M4**：JS 真像素放大镜 + CPU 透视裁剪；`cropToFile` 返回 `blob:`（见 [M4-checklist](docs/milestones/M4-checklist.md)）。
 
+**M5**：放大镜原生像素贴图（**Android** `BitmapShader`；H5/iOS/鸿蒙暂网格兜底；Q38 / [ADR 0006](docs/adr/0006-magnifier-native-blit.md)）；真机表：[m5-magnifier-native](docs/reviews/device-check-list/m5-magnifier-native.md)。
+
 完整拓扑、白屏排障与工程约定见 **[docs/specs/kuikly-dev-h5/runbook.md](docs/specs/kuikly-dev-h5/runbook.md)**（已验证）。
 
 前置：JDK 17；`node` 在 PATH。若 `packLocalJsBundleDebug` 因 GitHub 拉 Yarn 超时：先跑 `node static_server/fetch-yarn-ivy.js`（腾讯镜像写入 `%USERPROFILE%\.gradle\caches\manual-yarn\ivy`；根 `build.gradle.kts` 已改用该地址）。
