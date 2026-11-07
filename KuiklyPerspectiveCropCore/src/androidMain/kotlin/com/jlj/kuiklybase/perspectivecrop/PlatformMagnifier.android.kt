@@ -22,6 +22,7 @@ actual fun PlatformMagnifierOverlay(
     containerW: Float,
     containerH: Float,
     config: PerspectiveCropConfig,
+    viewPoints: List<CropPoint>,
 ) {
     DisposableEffect(Unit) {
         onDispose { MagnifierBlitStore.clear() }
@@ -44,7 +45,7 @@ actual fun PlatformMagnifierOverlay(
         modifier = modifier,
         viewInit = {
             // publish 放在节点回调，避免 Composable 组合阶段写全局 Store（P2-compose-impure-publish）
-            MagnifierBlitStore.publish(patch, config)
+            MagnifierBlitStore.publish(patch, config, viewPoints, touchViewX, touchViewY)
             getViewAttr().run {
                 applyMagnifierGeometry(
                     this,
@@ -57,7 +58,7 @@ actual fun PlatformMagnifierOverlay(
             }
         },
         viewUpdate = { view ->
-            MagnifierBlitStore.publish(patch, config)
+            MagnifierBlitStore.publish(patch, config, viewPoints, touchViewX, touchViewY)
             view.getViewAttr().run {
                 applyMagnifierGeometry(
                     this,

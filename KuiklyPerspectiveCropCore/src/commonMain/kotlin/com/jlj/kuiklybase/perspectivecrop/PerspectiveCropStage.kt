@@ -292,6 +292,7 @@ fun PerspectiveCropStage(
                         containerW = containerW,
                         containerH = containerH,
                         config = activeConfig,
+                        viewPoints = viewPoints,
                     )
                 }
             }

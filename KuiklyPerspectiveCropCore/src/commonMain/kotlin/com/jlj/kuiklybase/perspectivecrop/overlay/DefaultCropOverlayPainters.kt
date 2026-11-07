@@ -176,6 +176,25 @@ object DefaultMagnifierOverlayPainter : MagnifierOverlayPainter {
             }
         }
 
+        if (config.showMagnifierCropLineMirror && viewPoints.size == 4) {
+            val lineColor = Color(config.borderColor)
+            val stroke = config.borderWidthPx.coerceAtLeast(1f)
+            clipPath(clip) {
+                val ox = cx - touchViewX
+                val oy = cy - touchViewY
+                for (i in 0 until 4) {
+                    val a = viewPoints[i]
+                    val b = viewPoints[(i + 1) % 4]
+                    drawLine(
+                        color = lineColor,
+                        start = Offset(a.x + ox, a.y + oy),
+                        end = Offset(b.x + ox, b.y + oy),
+                        strokeWidth = stroke,
+                    )
+                }
+            }
+        }
+
         drawCircle(
             color = Color(config.magnifierBorderColor),
             radius = radius,

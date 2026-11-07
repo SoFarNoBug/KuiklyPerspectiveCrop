@@ -11,7 +11,10 @@ data class PerspectiveCropConfig(
     val rectMode: Boolean = false,
     /** 边拖吸附手指（默认开，Q9；M1 接线）。 */
     val edgeSnapToTouchEnabled: Boolean = true,
-    /** 边拖越界钳制（默认开，Q9；M1 接线）。 */
+    /**
+     * 边拖越界钳制（默认开，Q9；自由 / 矩形均生效）。
+     * 开：两端位移取交集饱和（齐步贴边、不斜边）；关（自由）：越界整帧丢弃。
+     */
     val edgeClampToBoundsEnabled: Boolean = true,
     /** 框内拖动整框。 */
     val insideDragEnabled: Boolean = true,
@@ -23,6 +26,11 @@ data class PerspectiveCropConfig(
     val touchCornerCatchDistance: Float = 48f,
     /** 边命中带宽（视图像素）；≤0 关闭。 */
     val touchEdgeCatchDistance: Float = 28f,
+    /**
+     * 边命中投影外延（视图逻辑像素，默认 100；对齐 freequadcrop）。
+     * 命中时除以 Fit scale 进图像坐标；≤0 为严格线段（无外延）。
+     */
+    val touchEdgeProjectionError: Float = 100f,
     /** 边中点命中半径（视图像素）；≤0 关闭。 */
     val touchMidCatchDistance: Float = 36f,
     /** 最小边长（图像素）。 */
@@ -52,6 +60,11 @@ data class PerspectiveCropConfig(
     val magnifierBorderColor: Long = 0xFFFFFFFF,
     /** 是否绘制放大镜中心十字。 */
     val showMagnifierCenterCross: Boolean = false,
+    /**
+     * 放大镜圆内绘制裁剪框线镜像（默认开；对齐 freequadcrop need2DrawInsideAreaLineMirror）。
+     * 样式复用 [borderColor] / [borderWidthPx]。
+     */
+    val showMagnifierCropLineMirror: Boolean = true,
     val magnifierCrossColor: Long = 0xFFFFFFFF,
     val magnifierCrossLineWidth: Float = 3f,
     val magnifierCrossLineLength: Float = 15f,

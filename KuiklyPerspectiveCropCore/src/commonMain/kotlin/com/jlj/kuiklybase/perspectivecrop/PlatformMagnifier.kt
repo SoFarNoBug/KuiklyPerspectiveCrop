@@ -23,4 +23,6 @@ expect fun PlatformMagnifierOverlay(
     containerW: Float,
     containerH: Float,
     config: PerspectiveCropConfig,
+    /** 选区四点（视图坐标），供镜内框线镜像。 */
+    viewPoints: List<CropPoint> = emptyList(),
 )

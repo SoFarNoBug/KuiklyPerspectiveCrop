@@ -184,6 +184,16 @@ private fun PerspectiveCropLabScreen() {
                             applyCfg { copy(edgeClampToBoundsEnabled = !edgeClampToBoundsEnabled) }
                         },
                     )
+                    val projOn = cfg.touchEdgeProjectionError > 0f
+                    DemoToggleChip(
+                        label = if (projOn) "投影·默认" else "投影·关",
+                        active = projOn,
+                        onClick = {
+                            applyCfg {
+                                copy(touchEdgeProjectionError = if (touchEdgeProjectionError > 0f) 0f else 100f)
+                            }
+                        },
+                    )
                     DemoToggleChip(
                         label = if (cfg.unhitPassthrough) "透传·开" else "透传·关",
                         active = cfg.unhitPassthrough,
@@ -245,6 +255,15 @@ private fun PerspectiveCropLabScreen() {
                         active = cfg.showMagnifierCenterCross,
                         onClick = {
                             applyCfg { copy(showMagnifierCenterCross = !showMagnifierCenterCross) }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.showMagnifierCropLineMirror) "镜线·开" else "镜线·关",
+                        active = cfg.showMagnifierCropLineMirror,
+                        onClick = {
+                            applyCfg {
+                                copy(showMagnifierCropLineMirror = !showMagnifierCropLineMirror)
+                            }
                         },
                     )
                 }

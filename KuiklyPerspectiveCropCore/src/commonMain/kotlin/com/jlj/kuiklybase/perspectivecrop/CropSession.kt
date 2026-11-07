@@ -143,13 +143,15 @@ class CropSession(
                 Triple(HitTarget.EdgeBottom, 2, 3),
                 Triple(HitTarget.EdgeLeft, 3, 0),
             )
+            val projectionPad = config.touchEdgeProjectionError / s
             var best: HitTarget = HitTarget.None
             var bestD = edgeCatch
             for ((target, a, b) in edges) {
-                val d = CropGeometry.pointToSegmentDistance(
+                val d = CropGeometry.edgeHitDistance(
                     imageX, imageY,
                     points[a].x, points[a].y,
                     points[b].x, points[b].y,
+                    projectionPad = projectionPad,
                 )
                 if (d <= bestD) {
                     bestD = d
@@ -301,10 +303,10 @@ class CropSession(
             }
         }
 
-        val candidate = points.toMutableList()
-        candidate[i0] = (candidate[i0] + CropPoint(dx, dy)).coerceIn(0f, 0f, imageWidth, imageHeight)
-        candidate[i1] = (candidate[i1] + CropPoint(dx, dy)).coerceIn(0f, 0f, imageWidth, imageHeight)
         if (config.rectMode) {
+            val candidate = points.toMutableList()
+            candidate[i0] = (candidate[i0] + CropPoint(dx, dy)).coerceIn(0f, 0f, imageWidth, imageHeight)
+            candidate[i1] = (candidate[i1] + CropPoint(dx, dy)).coerceIn(0f, 0f, imageWidth, imageHeight)
             points = CropGeometry.axisAlignedRect(candidate)
             if (config.edgeClampToBoundsEnabled) {
                 points = points.map { it.coerceIn(0f, 0f, imageWidth, imageHeight) }
@@ -312,6 +314,22 @@ class CropSession(
             }
             return
         }
+
+        // 自由模式：两端齐步；开钳制=位移取交集饱和；关=越界整帧丢弃（不各自 coerceIn 斜边）
+        val p0 = points[i0]
+        val p1 = points[i1]
+        val move = if (config.edgeClampToBoundsEnabled) {
+            CropGeometry.clampEdgeTranslate(p0, p1, dx, dy, imageWidth, imageHeight)
+        } else {
+            if (!CropGeometry.bothEndsInside(p0, p1, dx, dy, imageWidth, imageHeight)) {
+                return
+            }
+            CropPoint(dx, dy)
+        }
+        if (move.x == 0f && move.y == 0f) return
+        val candidate = points.toMutableList()
+        candidate[i0] = p0 + move
+        candidate[i1] = p1 + move
         if (isValidCandidate(candidate)) {
             points = candidate
         }

@@ -19,6 +19,7 @@ actual fun PlatformMagnifierOverlay(
     containerW: Float,
     containerH: Float,
     config: PerspectiveCropConfig,
+    viewPoints: List<CropPoint>,
 ) {
     // H5：空实现，Stage 使用 DefaultMagnifierOverlayPainter 网格兜底
 }

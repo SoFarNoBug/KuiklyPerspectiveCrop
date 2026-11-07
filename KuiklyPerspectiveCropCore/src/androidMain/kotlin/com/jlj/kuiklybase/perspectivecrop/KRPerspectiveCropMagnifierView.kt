@@ -5,6 +5,7 @@ import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Shader
 import com.tencent.kuikly.core.render.android.expand.component.KRView
 
@@ -29,6 +30,10 @@ class KRPerspectiveCropMagnifierView(context: Context) : KRView(context) {
     private val crossPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
     }
+    private val cropLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+    }
+    private val clipPath = Path()
     private val shaderMatrix = Matrix()
 
     init {
@@ -90,6 +95,25 @@ class KRPerspectiveCropMagnifierView(context: Context) : KRView(context) {
             fillPaint.shader = null
             fillPaint.color = 0xFF222222.toInt()
             canvas.drawCircle(cx, cy, radius, fillPaint)
+        }
+
+        if (MagnifierBlitStore.showCropLineMirror) {
+            val xy = MagnifierBlitStore.viewPointsXy
+            if (xy.size >= 8) {
+                canvas.save()
+                clipPath.reset()
+                clipPath.addCircle(cx, cy, radius, Path.Direction.CW)
+                canvas.clipPath(clipPath)
+                canvas.translate(cx - MagnifierBlitStore.touchViewX, cy - MagnifierBlitStore.touchViewY)
+                cropLinePaint.color = MagnifierBlitStore.cropLineColor
+                cropLinePaint.strokeWidth = MagnifierBlitStore.cropLineWidth
+                for (i in 0 until 4) {
+                    val i0 = i * 2
+                    val i1 = ((i + 1) % 4) * 2
+                    canvas.drawLine(xy[i0], xy[i0 + 1], xy[i1], xy[i1 + 1], cropLinePaint)
+                }
+                canvas.restore()
+            }
         }
 
         borderPaint.color = MagnifierBlitStore.borderColor

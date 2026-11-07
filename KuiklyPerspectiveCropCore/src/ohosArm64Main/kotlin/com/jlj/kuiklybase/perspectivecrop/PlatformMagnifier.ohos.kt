@@ -19,6 +19,7 @@ actual fun PlatformMagnifierOverlay(
     containerW: Float,
     containerH: Float,
     config: PerspectiveCropConfig,
+    viewPoints: List<CropPoint>,
 ) {
     // Ohos：空实现，Stage 使用网格兜底
 }

@@ -107,6 +107,77 @@ object CropGeometry {
         return hypot(px - qx, py - qy)
     }
 
+    /**
+     * 边命中距离：投影须落在线段（或 [projectionPad] 外延）上，返回到投影点距离；未命中返回 +∞。
+     * [projectionPad] ≤ 0 → 严格线段；> 0 → 沿边两端各外延 pad（图像素）。
+     */
+    fun edgeHitDistance(
+        px: Float,
+        py: Float,
+        ax: Float,
+        ay: Float,
+        bx: Float,
+        by: Float,
+        projectionPad: Float,
+    ): Float {
+        val dx = bx - ax
+        val dy = by - ay
+        val len2 = dx * dx + dy * dy
+        if (len2 < 1e-6f) return hypot(px - ax, py - ay)
+        val len = hypot(dx, dy)
+        val t = ((px - ax) * dx + (py - ay) * dy) / len2
+        val tMin: Float
+        val tMax: Float
+        if (projectionPad <= 0f) {
+            tMin = 0f
+            tMax = 1f
+        } else {
+            val padT = projectionPad / len
+            tMin = -padT
+            tMax = 1f + padT
+        }
+        if (t < tMin || t > tMax) return Float.POSITIVE_INFINITY
+        val qx = ax + t * dx
+        val qy = ay + t * dy
+        return hypot(px - qx, py - qy)
+    }
+
+    /**
+     * 边拖两端同增：将 (dx,dy) 钳进「两端同时不出图界」的可行区间（交集饱和）。
+     * 对齐 freequadcrop [QuadrilateralCropUtils.clampEdgeTranslate]。
+     */
+    fun clampEdgeTranslate(
+        p0: CropPoint,
+        p1: CropPoint,
+        dx: Float,
+        dy: Float,
+        imgW: Float,
+        imgH: Float,
+    ): CropPoint {
+        val minDx = max(-p0.x, -p1.x)
+        val maxDx = min(imgW - p0.x, imgW - p1.x)
+        val outDx = if (minDx <= maxDx) dx.coerceIn(minDx, maxDx) else dx
+        val minDy = max(-p0.y, -p1.y)
+        val maxDy = min(imgH - p0.y, imgH - p1.y)
+        val outDy = if (minDy <= maxDy) dy.coerceIn(minDy, maxDy) else dy
+        return CropPoint(outDx, outDy)
+    }
+
+    /** 两端点加同一位移后是否都在图内（含半像素容差与 [isValidQuad] 边界一致）。 */
+    fun bothEndsInside(
+        p0: CropPoint,
+        p1: CropPoint,
+        dx: Float,
+        dy: Float,
+        imgW: Float,
+        imgH: Float,
+    ): Boolean {
+        val a = p0 + CropPoint(dx, dy)
+        val b = p1 + CropPoint(dx, dy)
+        return a.x >= -0.5f && a.y >= -0.5f && a.x <= imgW + 0.5f && a.y <= imgH + 0.5f &&
+            b.x >= -0.5f && b.y >= -0.5f && b.x <= imgW + 0.5f && b.y <= imgH + 0.5f
+    }
+
     fun edgeMidpoints(points: List<CropPoint>): List<CropPoint> {
         require(points.size == 4)
         return listOf(

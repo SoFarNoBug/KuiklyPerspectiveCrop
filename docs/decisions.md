@@ -26,7 +26,7 @@
 | **Q6** | 调用形态 | `crop` / `cropToFile` 均为 **`suspend`**；库内后台解码+透视，回 Kuikly 线程再交 UI | M2；L2 线程条款 |
 | **Q7** | 默认选区 | 默认 **自由凸四边形**（`rectMode = false`） | Config；M1 |
 | **Q8** | 底图适配 | 默认 **`ContentScale.Fit`** | Stage；M1 |
-| **Q9** | 边拖手感 | `edgeSnapToTouchEnabled = true`、`edgeClampToBoundsEnabled = true`（**新库默认开**，保留开关；**不是**「仅 rect / 拖到 M3 再暴露」） | Config；**M1 必须接线** |
+| **Q9** | 边拖手感 | `edgeSnapToTouchEnabled = true`、`edgeClampToBoundsEnabled = true`（**新库默认开**，保留开关；**不是**「仅 rect / 拖到 M3 再暴露」）。**自由模式**钳制=两端位移取交集齐步贴边；关=越界整帧丢弃（不各自 coerceIn 斜边）。snap 仍仅 rectMode 有意义 | Config；**M1 必须接线** |
 | **Q10** | 脚手架 | KMP + Kuikly Compose 多端壳；Kuikly **2.30.0**（坐标 `2.30.0-2.1.21`）；Demo **不叫** `shared` | ADR 0002 |
 | **Q11** | Demo 模块名 | **`perspectiveCropDemo`** | ADR 0002 |
 | **Q12** | Demo 图源 | 内置 assets 走通；Camera/Album **只写对接说明**，Demo 不强制依赖 | M0/M1 Demo；M3 README |

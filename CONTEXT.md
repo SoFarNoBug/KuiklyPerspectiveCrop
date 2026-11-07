@@ -44,8 +44,16 @@ _Avoid_: 非本仓 Drawer 前缀；把换皮收成「只能整包换一个 Paint
 矩形模式：角点拖动保持轴对齐矩形；默认关闭，自由凸四边形为主路径。
 
 **edgeSnapToTouch / edgeClampToBounds**:
-边拖吸附手指、边拖越界钳制；**默认开启**，保留开关。
-_Avoid_: 写成「仅 rectMode 才有」或拖到后期才暴露字段
+边拖吸附手指、边拖越界钳制；**默认开启**，保留开关。自由模式下 clamp 开=两端位移取交集齐步；关=越界整帧丢弃。
+_Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；clamp 关时两端各自 coerceIn 导致斜边
+
+**touchEdgeProjectionError**:
+边命中沿边投影外延（视图逻辑像素，默认 100）；≤0 为严格线段。
+_Avoid_: 配成 Android dp；与 contentInset 混为一谈
+
+**showMagnifierCropLineMirror**:
+放大镜圆内再画选区框线镜像；**默认开**；样式复用框线色宽。
+_Avoid_: 旧名 need2DrawInsideAreaLineMirror；只改 Compose 兜底而 Android 原生圆镜不画
 
 **透视校正**:
 将斜拍四边形选区变换为正面矩形图的出图过程（非 OCR、非边缘检测）。
