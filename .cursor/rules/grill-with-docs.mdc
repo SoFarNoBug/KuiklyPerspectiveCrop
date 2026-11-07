@@ -1,0 +1,28 @@
+---
+description: 仅「烤一下 / grill一下 / 审讯一下」三句触发 grill-with-docs（审讯 + CONTEXT/ADR）
+alwaysApply: true
+---
+
+# grill-with-docs 触发
+
+用户说「烤一下」「grill一下」「审讯一下」时（**逐字或同句内完整包含**），**动手写代码或落完整计划前**，先 Read 并遵循：
+
+1. `.cursor/skills/grilling/SKILL.md`
+2. `.cursor/skills/domain-modeling/SKILL.md`
+
+（入口说明见 `.cursor/skills/grill-with-docs/SKILL.md`；显式命令 `/grill-with-docs` 同样触发）
+
+## 应触发
+
+- **仅此三句**：`烤一下`、`grill一下`、`审讯一下`
+- 近形说法**不**触发：`烤一烤`、`审讯`、`grill`、`压力测试`、`方案评审`、`设计评审`
+
+## 不触发
+
+- 语义词单独出现：计划 / 设计 / 方案 / 架构 / 重构 / 要不要 / 拆 / 怎么做 / 评审
+- 用户明确「跳过审讯 / 直接写 / 不要 grill」
+- 已有可执行计划文档且用户只要按计划实现
+- `/review` 或纯审查
+- 无设计空间的琐碎改动（拼写、注释笔误、单行日志）
+
+约定亦见 `.cursor/agents-guide.md`「Plan 与 grill-with-docs」。

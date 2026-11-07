@@ -1,0 +1,36 @@
+# Local IDE / gate
+.cursor/hooks/.gate-off
+.idea/
+*.iml
+.DS_Store
+
+# Build
+**/build/
+.gradle/
+local.properties
+*.apk
+*.aab
+*.xcuserstate
+DerivedData/
+iosApp/Pods/
+iosApp/Podfile.lock
+*.xcworkspace
+!default.xcworkspace
+
+# Kotlin / IDE caches
+.kotlin/
+
+# Node
+node_modules/
+
+# Logs / temp
+*.log
+*.tmp
+
+# Local JDK / tools
+.tools/
+
+
+# Local probes / scratch
+docs/_probe/
+

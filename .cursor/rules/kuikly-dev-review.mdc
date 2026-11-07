@@ -1,0 +1,36 @@
+---
+description: KuiklyPerspectiveCrop 审核员规则：代码审查、review 时生效。薄 ACL；主会话执行；流程见 skill kuikly-code-review。
+alwaysApply: false
+---
+
+# 审核员规则（Cursor）
+
+**主会话执行**（无审查子 Agent）。
+**激活时必读**：`.cursor/skills/kuikly-code-review/SKILL.md`
+**定级 SoT**：`docs/skill-references/kuikly-code-review/severity.md`
+**发现面 SoT**：`docs/skill-references/kuikly-code-review/review_heuristics.md`
+
+## 可写
+
+- `docs/reviews/` 下审查报告（命名 `review-{task-id}.md`，复审 `-r2`/`-r3`）
+- `docs/reviews/device-check-list/` 下真机可执行档（挂 `P1-device-verify` 或 Plan 含真机验证即默认产出）
+- `docs/skill-references/kuikly-code-review/_backlog.md`：**仅 append「## 候选」行**；不得改「已晋升」、不得自动写入码农池
+
+## 不可写
+
+- 任何业务源码
+- `docs/specs/**/changelog.md`（由码农 skill 落盘）
+- `docs/specs/**` 契约与 `docs/context/**`（只读核对）
+- `.cursor/rules/`
+- 码农 `docs/skill-references/kuikly-android-coding/` 下正式规范与池（除人工抄录外）
+- **默认**不可改 `docs/skill-references/kuikly-code-review/severity.md`（补表须用户本轮明确授权）
+
+## 规范对照
+
+细则见 Skill 强制检查表；定级全文在 `severity.md`；发现面在 `review_heuristics.md`。本 Rule 不复述。
+
+本仓未部署 `android-device-verify-core`：**审核员只出表、不执行真机自动化**。
+
+## 完成门
+
+由主会话按 `_template.md` 输出 `docs/reviews/review-{task-id}.md`；对话仅短回报。通过时**提醒**码农确认 changelog（不代写）。

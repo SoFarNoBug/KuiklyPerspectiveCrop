@@ -1,0 +1,19 @@
+# 项目配置（挂载见 docs/skill-references/SCHEMA.md）
+project_id: kuikly-perspective-crop
+version_counts: severity_buckets
+gate_on: meta_only
+sediment: on
+content_root: ../../../docs/skill-references/kuikly-code-review
+mounts:
+  rules:
+    - ../../../docs/skill-references/kuikly-code-review/severity.md
+    - ../../../docs/skill-references/kuikly-code-review/review_heuristics.md
+  backlog: ../../../docs/skill-references/kuikly-code-review/_backlog.md
+  sediment_process: ../../../docs/skill-references/templates/sediment_process.md
+  version_file: ../../../docs/skill-references/kuikly-code-review/_version.txt
+reviews_dir: docs/reviews/
+device_check_list_dir: docs/reviews/device-check-list/
+peer_pools:
+  - ../../../docs/skill-references/kuikly-android-coding/_backlog.md
+extra_gates:
+  - ../../../docs/skill-references/scripts/check_device_checklist.mjs

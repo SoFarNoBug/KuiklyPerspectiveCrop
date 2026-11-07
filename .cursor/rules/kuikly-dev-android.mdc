@@ -1,0 +1,90 @@
+---
+description: KuiklyPerspectiveCrop 码农规则（编码约束）。触发：编码、实现、修复 Bug、修改代码、按计划行事、速速改、速速开工。流程见 skill kuikly-android-coding。
+alwaysApply: false
+---
+
+# 码农规则（Cursor · 角色 Rule · ACL + 红线）
+
+**编码约束在本 Rule；流程在 Skill；本仓路径 / 规范清单在项目配置；规范全文在 skill-references。**
+**须配合 Skill**：`.cursor/skills/kuikly-android-coding/SKILL.md`
+**项目配置**：`.cursor/skills/kuikly-android-coding/project.yaml`
+**Kuikly DSL**：按需读 `.cursor/rules/kuiklyComposeDSL.mdc`
+
+> 规范冲突：**L3 > L2 > L1（项目优先）**。
+
+## 可写
+
+- 库与 Demo 源码：`KuiklyPerspectiveCropCore/src/`、`perspectiveCropDemo/src/` 及各端 App（`androidApp/`、`iosApp/`、`h5App/`、`ohosApp/` 等）相关 Gradle / 资源
+- `docs/specs/*/changelog.md` **仅 append**
+- 触发时：`docs/context/*`、`docs/milestones/*`、`CONTEXT.md`、`AGENTS.md`、`README.md`
+- 小结级：本 skill 的 `SKILL.md` / `project.yaml` / `docs/skill-references` 内本 skill 内容（规范级改 `norms[]` 等只入 `_backlog.md`）
+- 规范级落地时：`project.yaml` 的 `norms[]`（须用户已批）
+
+## 不可写
+
+- `docs/reviews/`
+- `docs/specs/**/spec.md`、`tasks.md`、`checklist.md`（规划会话专属）
+- `.cursor/rules/`、其他 skill 目录、`.cursor/hooks.json` / `.cursor/hooks/`（闸门自身须经确认闸）
+
+## 编码原则（最小改动）
+
+- 只改必要的代码，不动相邻代码
+- 不重构未损坏的逻辑
+- 匹配现有风格
+
+## 编码惯例（本仓）
+
+- 语言：新代码**优先 Kotlin**（KMP `commonMain` 优先）；平台逻辑放对应 `androidMain` / `iosMain` / `jsMain`
+- 架构：库 `:KuiklyPerspectiveCropCore` + Demo `:perspectiveCropDemo`；UI 走 Kuikly Compose
+- 预览设图：公开 API 用 `imageSrc: String`；`PlatformImage` 不在 common 暴露 Bitmap
+- 出图：`crop()` / `cropToFile()` 双 API；Android 先落地处理器
+- 换皮：六层可注入 Painter SPI；业务皮肤只进 Demo
+- 边拖：`edgeSnapToTouch` / `edgeClampToBounds` 默认开（见 decisions Q9）
+- Compose：包名与差异见 L2 / `kuiklyComposeDSL.mdc`；库契约见 L3 `perspective_crop_api`；决策 SoT：`docs/decisions.md`
+- 依赖版本：跟仓库现有 Gradle / version catalog 习惯，不随意升 Kuikly 大版本
+- 硬编码字符串：用户可见文案走资源或集中常量，禁止散落魔法串
+
+## 硬约束 · L1 Kotlin语言
+
+- 优先 `val` / 不可变集合接口；慎用 `!!`；公开 API 禁止裸平台类型
+- 全文：`docs/skill-references/coding-norms/base/lang_kotlin.md`
+
+## 硬约束 · L1 Java语言
+
+- **防 NPE（P0）**：解引用前判空/早退；禁 null 列表与裸长链
+- 全文：`docs/skill-references/coding-norms/base/lang_java.md`
+
+## 硬约束 · L2 Android平台
+
+- 耗时操作切后台线程或协程；仅主线程改 UI
+- 组件销毁后勿再改 UI；长生命周期对象勿持有 Activity
+- 全文：`docs/skill-references/coding-norms/base/platform_android.md`
+- 反例 → `docs/skill-references/kuikly-android-coding/misuse.md`
+
+## 硬约束 · L2 Kuikly Compose
+
+- Runtime 以外**禁止** `androidx.compose.*`；用 `com.tencent.kuikly.compose.*`
+- **禁止**不可用 API（verticalScroll / 原生 nestedScroll 签名 / OutlinedTextField 等，见全文）
+- **`pointerInput` 闭包读可变状态必须进 key**（P0）
+- 异步完成后**回 Kuikly 线程**再改 UI / Module；`willInit` 内不调 Module
+- 全文：`docs/skill-references/coding-norms/base/platform_kuikly_compose.md`；速查：`.cursor/rules/kuiklyComposeDSL.mdc`
+
+## 硬约束 · L3 新建代码文件准则
+
+- **新建文件优先 Kotlin**；新建 Java 须在 changelog 写明原因
+- 全文：`docs/skill-references/kuikly-android-coding/project/new_code_file_guidelines.md`
+
+## 硬约束 · L3 透视裁剪 API
+
+- 公开设图用 `imageSrc: String`；common **不暴露** Bitmap / ImageBitmap
+- 必须有 `crop()` + `cropToFile()`；几何进 `CropSession`；换皮走**六层** Painter SPI（业务皮肤只进 Demo）
+- 全文：`docs/skill-references/kuikly-android-coding/project/perspective_crop_api.md`；台账：`docs/decisions.md`
+
+## 混淆安全 · **休眠条款（当前不作要求）**
+
+- 本仓 Demo/库当前不做 release 混淆强制；启用时再按 `project/proguard_when_enabled.md` 恢复
+
+## 完成门
+
+- **按计划行事**：append changelog，并询问是否 Review
+- **速速改**：changelog 条件性；默认不问 Review（流程见 Skill）

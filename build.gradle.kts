@@ -1,0 +1,30 @@
+plugins {
+    //trick: for the same plugin versions in all sub-modules
+    id("com.android.application").version("7.4.2").apply(false)
+    id("com.android.library").version("7.4.2").apply(false)
+    kotlin("android").version("2.1.21").apply(false)
+    kotlin("multiplatform").version("2.1.21").apply(false)
+    id("com.google.devtools.ksp").version("2.1.21-2.0.1").apply(false)
+    id("org.jetbrains.compose").version("1.7.3").apply(false)
+    kotlin("plugin.compose").version("2.1.21").apply(false)
+}
+
+buildscript {
+    repositories {
+        maven {
+            url = uri("https://mirrors.tencent.com/nexus/repository/maven-tencent/")
+        }
+        google()
+        mavenCentral()
+        mavenLocal()
+        // AGP 7.4.2 自带 R8 4.0.52 无法 dex Kotlin 2.1 元数据（mergeExtDex → com.android.tools.r8.kotlin.H）
+        maven {
+            url = uri("https://storage.googleapis.com/r8-releases/raw")
+        }
+    }
+    dependencies {
+        classpath(BuildPlugin.kuikly)
+        // Kotlin 2.1 最低要求 R8 8.6.17（见 Android Kotlin support 表）
+        classpath("com.android.tools:r8:8.6.17")
+    }
+}

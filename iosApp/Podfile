@@ -1,0 +1,10 @@
+source 'https://cdn.cocoapods.org/'
+
+target 'iosApp' do
+  use_frameworks!
+  platform :ios, '14.1'
+  pod 'OpenKuiklyIOSRender' , '~> 2.30.0'
+  pod 'perspectiveCropDemo', :path => '../perspectiveCropDemo'
+
+  pod 'SDWebImage'
+end

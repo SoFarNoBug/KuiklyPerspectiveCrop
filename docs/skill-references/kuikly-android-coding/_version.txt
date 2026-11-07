@@ -1,0 +1,4 @@
+# 代数真源。vN = norms 条数（project.yaml version_counts: norms）。
+# v4：Kotlin / Java / Android / 新建文件准则
+# v6：+ Kuikly Compose 平台（L2）+ 透视裁剪 API（L3）
+v6
