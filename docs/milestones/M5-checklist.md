@@ -10,4 +10,4 @@
 - [x] androidApp 注册 `KRPerspectiveCropMagnifier`
 - [x] H5 暂退网格兜底（关双 Store P0；已撤 h5App 注册；Canvas 贴图另单）
 - [x] 编译通过（Android + JS/h5App）
-- [ ] 真机拖动全程清晰（表：[m5-magnifier-native](../reviews/device-check-list/m5-magnifier-native.md)）
+- [x] 真机拖动全程清晰（表：[m5-magnifier-native](../reviews/device-check-list/m5-magnifier-native.md)；结案 [r4](../reviews/review-m5-magnifier-native-r4.md)）
