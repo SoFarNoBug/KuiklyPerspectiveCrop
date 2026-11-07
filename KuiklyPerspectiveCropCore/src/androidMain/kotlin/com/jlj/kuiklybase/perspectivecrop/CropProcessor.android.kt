@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
  */
 actual class CropProcessor actual constructor() {
 
-    actual fun process(
+    actual suspend fun process(
         imageSrc: String,
         points: List<CropPoint>,
         rotationSteps: Int,

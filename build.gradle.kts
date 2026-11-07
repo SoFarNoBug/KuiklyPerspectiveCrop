@@ -1,3 +1,8 @@
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 plugins {
     //trick: for the same plugin versions in all sub-modules
     id("com.android.application").version("7.4.2").apply(false)
@@ -7,6 +12,21 @@ plugins {
     id("com.google.devtools.ksp").version("2.1.21-2.0.1").apply(false)
     id("org.jetbrains.compose").version("1.7.3").apply(false)
     kotlin("plugin.compose").version("2.1.21").apply(false)
+}
+
+// H5：绕过 GitHub 拉 yarn/node（本机常超时）。Yarn 用本地 ivy 镜像；Node 用 PATH。
+rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
+    extensions.configure(NodeJsRootExtension::class.java) {
+        @Suppress("DEPRECATION")
+        download = false
+    }
+}
+rootProject.plugins.withType(YarnPlugin::class.java) {
+    extensions.configure(YarnRootExtension::class.java) {
+        val ivyBase = file("${System.getProperty("user.home")}/.gradle/caches/manual-yarn/ivy")
+        @Suppress("DEPRECATION")
+        downloadBaseUrl = ivyBase.toURI().toString().trimEnd('/')
+    }
 }
 
 buildscript {

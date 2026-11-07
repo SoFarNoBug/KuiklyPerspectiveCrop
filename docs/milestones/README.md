@@ -14,11 +14,13 @@
 | **M1** | 几何触控 + 默认叠层 | [M1-checklist.md](./M1-checklist.md) | **已完成**（真机验收通过） |
 | **M2** | Android 透视出图 | [M2-checklist.md](./M2-checklist.md) | **已完成**（真机验收通过；非法四点拖拽 N/A） |
 | **M3** | 放大镜 + 剩余旋钮 + 对接说明 | [M3-checklist.md](./M3-checklist.md) | **工程完成**（编译通过；真机表待勾 → v0.1） |
+| **M4** | H5/JS 真放大镜 + 透视裁剪 | [M4-checklist.md](./M4-checklist.md) | **工程完成**（浏览器冒烟：blob 出图 + 放大镜采样；post-v0.1） |
 
 ## 依赖
 
 ```text
 M0 → M1 → M2 → M3  ⟸  v0.1 完成线
+                    └→ M4（JS 实装，post-v0.1）
 ```
 
 不允许跳步合入「下一步能力」到未验收的里程碑（文档 / norms 除外）。
@@ -26,12 +28,12 @@ M0 → M1 → M2 → M3  ⟸  v0.1 完成线
 ## 完成定义（v0.1 能力面）
 
 **通用能力**到位：Controller / Config / 六层默认叠层 / 手势约束 / Android 出图 / 真像素放大镜。  
-**非目标**（任意里程碑都不做）——与 [decisions.md](../decisions.md) 一致：
+**非目标**——与 [decisions.md](../decisions.md) 一致：
 
 - OCR / 边缘检测 / 内置 `autoScan` 算法（仅留钩子）
 - 业务皮肤进库默认（Demo 换皮示例可做）
 - common 公开 API 暴露 `Bitmap` / `ImageBitmap`
-- 非 Android 端真实透视出图（M2 起 stub，明确失败即可）
+- **v0.1**：非 Android 真实出图 / 真像素放大镜 stub 即可；**M4** 起 JS 实装（iOS 仍 stub）
 
 ## 分期对照（易混项）
 
@@ -47,6 +49,7 @@ M0 → M1 → M2 → M3  ⟸  v0.1 完成线
 | UI 旋转 90° 状态 | **M1** | |
 | 像素旋转跟出图 | **M2** | |
 | Camera/Album → `imageSrc` | **M3** | README + Demo 注释；Demo 不强制依赖（Q12） |
+| JS 真放大镜 + CPU 透视裁剪 + `blob:` | **M4** | post-v0.1；iOS 仍 stub（Q33–Q37） |
 
 ## v0.1 能力速查
 

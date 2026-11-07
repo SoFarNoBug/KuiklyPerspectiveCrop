@@ -3,15 +3,15 @@ package com.jlj.kuiklybase.perspectivecrop
 /**
  * @CreateDate: 2026/11/07
  * @Author: jlj
- * @Description: 放大镜降采样采样器（Q14/Q23）。Android 实装；其它端 stub。
+ * @Description: 放大镜降采样采样器（Q14/Q23/Q34）。Android+JS 实装；iOS stub。
  * 缓存键含 imageSrc + uiRotationSteps + magnifierCacheMaxEdgePx（Q24/Q31）。
- * 全图解码只允许在 [warmCache]（须后台调用）；[sample] 仅读缓存裁 patch。
+ * 全图解码只允许在 [warmCache]（suspend，须协程/后台调用）；[sample] 仅读缓存裁 patch。
  */
 expect class MagnifierSampler() {
     /**
-     * 后台预热降采样缓存。须在 IO/后台线程调用（禁止手势/主路径同步解码）。
+     * 预热降采样缓存（suspend：JS 可 await 解码；Android 内仍同步）。禁止手势路径同步解码。
      */
-    fun warmCache(
+    suspend fun warmCache(
         imageSrc: String,
         uiRotationSteps: Int,
         imageWidth: Float,

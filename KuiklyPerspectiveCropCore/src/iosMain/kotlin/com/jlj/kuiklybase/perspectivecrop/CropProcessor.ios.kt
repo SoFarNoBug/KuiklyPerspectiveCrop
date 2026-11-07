@@ -6,7 +6,7 @@ package com.jlj.kuiklybase.perspectivecrop
  * @Description: iOS stub：明确失败（Q1/Q16）。
  */
 actual class CropProcessor actual constructor() {
-    actual fun process(
+    actual suspend fun process(
         imageSrc: String,
         points: List<CropPoint>,
         rotationSteps: Int,

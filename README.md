@@ -80,10 +80,36 @@ suspend fun cropToFile(path: String): String
 
 ## Demo
 
+### Android
+
 ```bash
 # 建议 JDK 17（见 M0 备注；可用 .tools/jdk-17.0.2）
 ./gradlew :androidApp:installDebug
 ```
+
+### H5（浏览器冒烟）
+
+本仓用**精简 8083 静态服**提供业务包 `nativevue2.js`（**无** Kuikly 官方 whistle）。宿主 webpack 仍在 8080。  
+**M4**：JS 真像素放大镜 + CPU 透视裁剪；`cropToFile` 返回 `blob:`（见 [M4-checklist](docs/milestones/M4-checklist.md)）。
+
+完整拓扑、白屏排障与工程约定见 **[docs/specs/kuikly-dev-h5/runbook.md](docs/specs/kuikly-dev-h5/runbook.md)**（已验证）。
+
+前置：JDK 17；`node` 在 PATH。若 `packLocalJsBundleDebug` 因 GitHub 拉 Yarn 超时：先跑 `node static_server/fetch-yarn-ivy.js`（腾讯镜像写入 `%USERPROFILE%\.gradle\caches\manual-yarn\ivy`；根 `build.gradle.kts` 已改用该地址）。
+
+必留：`h5App/webpack.config.d/output.js`（IIFE，防 `h5App.js` UMD 覆盖 `window.com`）；`index.html` **不要**默认同步挂会超时的 libpag CDN。
+
+```bash
+# 终端 1：业务 JS 包 + 8083 静态服
+./gradlew :perspectiveCropDemo:packLocalJsBundleDebug
+node static_server/serve/index.js
+
+# 终端 2：样例图 + 宿主 webpack（持续跑）
+./gradlew :h5App:copyAssetsToWebpackDevServer
+./gradlew :h5App:jsBrowserDevelopmentRun
+```
+
+打开：`http://localhost:8080/?page_name=home` →「透视裁剪」入口。  
+改 Demo 后重跑 `packLocalJsBundleDebug` 并重启 8083；改 `webpack.config.d` 后必须重启 webpack；改 `assets` 后重跑 `copyAssetsToWebpackDevServer`。
 
 | pageName | 角色 |
 |---|---|

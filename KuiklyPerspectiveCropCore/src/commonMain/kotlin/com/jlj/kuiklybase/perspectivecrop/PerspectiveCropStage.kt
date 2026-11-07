@@ -87,7 +87,7 @@ fun PerspectiveCropStage(
         val warmRot = rotationSteps
         val warmW = imageW
         val warmCfg = activeConfig
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             sampler.warmCache(warmSrc, warmRot, warmW, warmCfg)
         }
     }

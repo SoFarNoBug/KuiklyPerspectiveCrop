@@ -6,7 +6,7 @@ package com.jlj.kuiklybase.perspectivecrop
  * @Description: iOS stub：无真像素采样（Q23）。
  */
 actual class MagnifierSampler actual constructor() {
-    actual fun warmCache(
+    actual suspend fun warmCache(
         imageSrc: String,
         uiRotationSteps: Int,
         imageWidth: Float,

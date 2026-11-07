@@ -1,6 +1,6 @@
 # 开发决策台账（已锁定）
 
-> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；Q16–Q22 @ 2026-11-07 M2；**Q23–Q32 @ 2026-11-07 M3**）。  
+> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；Q16–Q22 @ 2026-11-07 M2；Q23–Q32 @ 2026-11-07 M3；**Q33–Q37 @ 2026-11-07 M4**）。  
 > ADR 只收「难逆转 + 需后果说明」的子集；里程碑是**分期施工单**，不得改写本表已定项。  
 > 冲突时：**本表 > ADR 摘要 > milestones 措辞 > 代码注释**。
 
@@ -61,6 +61,16 @@
 | **Q31** | 降采样上限 | **`magnifierCacheMaxEdgePx` Config 可配，默认 2048** | Config；ADR 0004 |
 | **Q32** | 放大镜摆放 | **`magnifierPlacement`**：`TopAutoFlip`（默认，对齐旧库）/ `TopLeft` / `TopRight` / `AboveTouch` | Config；Painter |
 
+## Q33–Q37（M4 · H5 / JS 实装，post-v0.1）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q33** | M4 范围 | **post-v0.1**：JS 真放大镜 + 真裁剪；**不**回写 v0.1 / Q1 / Q23；**iOS 继续 stub** | M4；ADR 0005 |
+| **Q34** | 异步解码签名 | `MagnifierSampler.warmCache`、`CropProcessor.process` → **`suspend`**；`sample` / `saveToFile` 仍同步 | expect；ADR 0005 |
+| **Q35** | H5 透视算法 | **CPU 单应 + 双线性反变换**；输出最长边硬顶 **4096**；无 WebGL/OpenCV | `CropProcessor.js`；ADR 0005 |
+| **Q36** | JS `imageSrc` 解码 | 库内自解码；`assets://`→可 fetch 路径；`http(s)`/`blob:`/`data:`/相对路径原样；CORS 失败 → `DECODE_FAILED` | `JsImageCodec` |
+| **Q37** | H5 `saveToFile` | 返回 **`blob:`** ObjectURL；`saveToFile(path)` **忽略**本地路径语义；非持久文件 | `PlatformImage.js`；ADR 0005 |
+
 ## 分期映射（不得挪已定能力出 v0.1）
 
 ```text
@@ -70,14 +80,20 @@ M2  Android crop / cropToFile / canCrop；其它端 stub
 M3  真像素放大镜 + 剩余旋钮 + Demo 换皮 + Camera/Album 对接说明
      ↑
   v0.1 完成线
+M4  JS 真放大镜 + CPU 透视裁剪 + blob: 落盘（post-v0.1；iOS 仍 stub）
 ```
 
-## 明确非目标（任意里程碑）
+## 明确非目标
+
+**任意里程碑：**
 
 - OCR / 边缘检测 / 内置 `autoScan` 算法（可留注入钩子）
 - 业务皮肤进库默认
 - common 公开 API 暴露 `Bitmap` / `ImageBitmap`
-- 非 Android 真实透视出图（stub 即可）
+
+**v0.1（M0–M3）额外非目标：**
+
+- 非 Android 真实透视出图 / 真像素放大镜（stub 即可）— **M4 起 JS 实装，见 Q33**
 
 ## 维护
 

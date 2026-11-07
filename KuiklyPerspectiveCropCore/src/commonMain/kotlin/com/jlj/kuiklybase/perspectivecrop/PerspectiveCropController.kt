@@ -123,7 +123,8 @@ class PerspectiveCropController(
         val pts = points.toList()
         val steps = uiRotationSteps
         val cfg = config
-        return withContext(Dispatchers.IO) {
+        // JS 目标无 Dispatchers.IO；Default 在各端均可编译，后台切离 UI 即可
+        return withContext(Dispatchers.Default) {
             _processor.process(src, pts, steps, cfg)
         }
     }
@@ -131,7 +132,7 @@ class PerspectiveCropController(
     /** 出图并写入默认缓存路径，返回可再作 [imageSrc] 的路径（Q18）。 */
     suspend fun cropToFile(): String {
         val image = crop()
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             image.saveToFile()
         }
     }
@@ -142,7 +143,7 @@ class PerspectiveCropController(
             throw CropException(CropException.WRITE_FAILED, "output path is empty")
         }
         val image = crop()
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             image.saveToFile(path)
         }
     }

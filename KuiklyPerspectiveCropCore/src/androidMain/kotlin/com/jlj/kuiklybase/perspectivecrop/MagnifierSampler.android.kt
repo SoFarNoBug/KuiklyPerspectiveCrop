@@ -23,7 +23,7 @@ actual class MagnifierSampler actual constructor() {
     /** 单边采样上限（缓存像素），避免过大 getPixels。 */
     private val _maxPatchEdge = 96
 
-    actual fun warmCache(
+    actual suspend fun warmCache(
         imageSrc: String,
         uiRotationSteps: Int,
         imageWidth: Float,
