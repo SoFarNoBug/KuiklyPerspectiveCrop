@@ -26,6 +26,7 @@ rootProject.name = "KuiklyPerspectiveCropUI"
 val buildFileName = "build.ohos.gradle.kts"
 rootProject.buildFileName = buildFileName
 
-include(":androidApp")
+include(":KuiklyPerspectiveCropCore")
+project(":KuiklyPerspectiveCropCore").buildFileName = buildFileName
 include(":perspectiveCropDemo")
 project(":perspectiveCropDemo").buildFileName = buildFileName

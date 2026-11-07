@@ -25,8 +25,8 @@ kotlin {
     iosSimulatorArm64()
 
     cocoapods {
-        summary = "Some description for the Shared Module"
-        homepage = "Link to the Shared Module homepage"
+        summary = "Perspective crop demo shared pages"
+        homepage = "Link to the KuiklyPerspectiveCrop demo"
         version = "1.0"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
@@ -36,20 +36,23 @@ kotlin {
             isStatic = true
             license = "MIT"
         }
+        extraSpecAttributes["resources"] = "['src/commonMain/assets/**']"
     }
 
     ohosArm64 {
-        binaries.sharedLib {
+        binaries.sharedLib("shared") {
+            freeCompilerArgs += "-Xadd-light-debug=enable"
+            linkerOpts += "--build-id=sha1"
         }
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(project(":KuiklyPerspectiveCropCore"))
                 implementation("com.tencent.kuikly-open:core:${Version.getKuiklyOhosVersion()}")
                 implementation("com.tencent.kuikly-open:core-annotations:${Version.getKuiklyOhosVersion()}")
                 implementation("com.tencent.kuikly-open:compose:${Version.getKuiklyOhosVersion()}")
-
             }
         }
         val commonTest by getting {
@@ -135,8 +138,4 @@ fun getCommonCompilerArgs(): List<String> {
     return listOf(
         "-Xallocator=std"
     )
-}
-
-fun getLinkerArgs(): List<String> {
-    return listOf()
 }
