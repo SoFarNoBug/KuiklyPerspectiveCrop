@@ -34,3 +34,7 @@ node_modules/
 # Local probes / scratch
 docs/_probe/
 
+
+xcuserdata/
+*.xcuserdatad/
+
