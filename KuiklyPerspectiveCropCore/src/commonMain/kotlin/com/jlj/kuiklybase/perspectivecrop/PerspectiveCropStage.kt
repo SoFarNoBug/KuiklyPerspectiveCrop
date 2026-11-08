@@ -144,16 +144,22 @@ fun PerspectiveCropStage(
             val containerW = constraints.maxWidth.toFloat().coerceAtLeast(1f)
             val containerH = constraints.maxHeight.toFloat().coerceAtLeast(1f)
             val density = LocalDensity.current
+            val densityValue = density.density
+            // Config 为 dp；绘制 / Fit inset 用视图 px 副本（ADR 0008）
+            val viewConfig = remember(activeConfig, densityValue) {
+                activeConfig.toViewPx(densityValue)
+            }
+            val viewConfigState = rememberUpdatedState(viewConfig)
             val mapping = if (imageW > 0f && imageH > 0f) {
                 ImageFitMapping(
                     containerW = containerW,
                     containerH = containerH,
                     imageW = imageW,
                     imageH = imageH,
-                    insetLeft = activeConfig.contentInsetLeft,
-                    insetTop = activeConfig.contentInsetTop,
-                    insetRight = activeConfig.contentInsetRight,
-                    insetBottom = activeConfig.contentInsetBottom,
+                    insetLeft = viewConfig.contentInsetLeft,
+                    insetTop = viewConfig.contentInsetTop,
+                    insetRight = viewConfig.contentInsetRight,
+                    insetBottom = viewConfig.contentInsetBottom,
                 )
             } else {
                 null
@@ -165,9 +171,11 @@ fun PerspectiveCropStage(
             val availW = mapping?.availW ?: containerW
             val availH = mapping?.availH ?: containerH
             SideEffect {
+                val session = controller.sessionOrNull()
+                session.updateDensity(densityValue)
                 val map = mapping
                 if (map != null) {
-                    controller.sessionOrNull().updateFitScale(map.scale)
+                    session.updateFitScale(map.scale)
                 }
             }
 
@@ -239,7 +247,7 @@ fun PerspectiveCropStage(
                                 imageSize = imageSizeState.value,
                                 map = map,
                                 touch = down.position,
-                                config = cfg,
+                                config = viewConfigState.value,
                             )?.also { magnifierPatch = it }
                             var magTick = 0
 
@@ -261,7 +269,7 @@ fun PerspectiveCropStage(
                                         imageSize = imageSizeState.value,
                                         map = m,
                                         touch = offset,
-                                        config = configState.value,
+                                        config = viewConfigState.value,
                                     )?.also { magnifierPatch = it }
                                 }
                             }
@@ -276,13 +284,13 @@ fun PerspectiveCropStage(
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     if (viewPoints.size == 4) {
-                        with(overlayPainters.mask) { drawMask(viewPoints, activeConfig) }
+                        with(overlayPainters.mask) { drawMask(viewPoints, viewConfig) }
                         val map = mapping
                         if (map != null) {
                             with(overlayPainters.guide) {
                                 drawGuides(
                                     viewPoints,
-                                    activeConfig,
+                                    viewConfig,
                                     map.contentLeft,
                                     map.contentTop,
                                     map.contentW,
@@ -290,12 +298,12 @@ fun PerspectiveCropStage(
                                 )
                             }
                         }
-                        with(overlayPainters.border) { drawBorder(viewPoints, activeConfig) }
-                        with(overlayPainters.corner) { drawCorners(viewPoints, activeConfig) }
-                        with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, activeConfig) }
+                        with(overlayPainters.border) { drawBorder(viewPoints, viewConfig) }
+                        with(overlayPainters.corner) { drawCorners(viewPoints, viewConfig) }
+                        with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, viewConfig) }
                         // 网格兜底：非原生平台，或注入了自定义放大镜画家
                         if (!useNativeMagnifier &&
-                            activeConfig.showMagnifier &&
+                            viewConfig.showMagnifier &&
                             touchView.isSpecified
                         ) {
                             with(overlayPainters.magnifier) {
@@ -303,7 +311,7 @@ fun PerspectiveCropStage(
                                     viewPoints,
                                     touchView.x,
                                     touchView.y,
-                                    activeConfig,
+                                    viewConfig,
                                     magnifierPatch,
                                 )
                             }
@@ -311,7 +319,7 @@ fun PerspectiveCropStage(
                     }
                 }
                 if (useNativeMagnifier &&
-                    activeConfig.showMagnifier &&
+                    viewConfig.showMagnifier &&
                     touchView.isSpecified
                 ) {
                     PlatformMagnifierOverlay(
@@ -321,7 +329,7 @@ fun PerspectiveCropStage(
                         touchViewY = touchView.y,
                         containerW = containerW,
                         containerH = containerH,
-                        config = activeConfig,
+                        config = viewConfig,
                         viewPoints = viewPoints,
                     )
                 }

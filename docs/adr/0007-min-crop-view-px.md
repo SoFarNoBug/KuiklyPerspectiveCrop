@@ -18,3 +18,4 @@ Accepted（2026-11-08）
 
 - 默认最小框随 Fit 缩放与旧库量级对齐；未传自定义值的宿主手感变严。
 - 与命中半径同一换算套路，文档 / CONTEXT 需标明单位，避免再当图像素。
+- **修订（ADR 0008）**：`minCropWidth` 进一步明确为 **Compose dp**；运行时 `(dp × LocalDensity.density) / Fit.scale`，不再把「视图逻辑像素」当成裸 px。

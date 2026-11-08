@@ -26,11 +26,11 @@
 | **Q6** | 调用形态 | `crop` / `cropToFile` 均为 **`suspend`**；库内后台解码+透视，回 Kuikly 线程再交 UI | M2；L2 线程条款 |
 | **Q7** | 默认选区 | 默认 **自由凸四边形**（`rectMode = false`） | Config；M1 |
 | **Q8** | 底图适配 | 默认 **`ContentScale.Fit`** | Stage；M1 |
-| **Q9** | 边拖手感 | `edgeSnapToTouchEnabled = true`、`edgeClampToBoundsEnabled = true`（**新库默认开**，保留开关；**不是**「仅 rect / 拖到 M3 再暴露」）。**自由模式**钳制=两端位移取交集齐步贴边；关=越界整帧丢弃（不各自 coerceIn 斜边）。snap 仍仅 rectMode 有意义 | Config；**M1 必须接线** |
+| **Q9** | 边拖手感 | `edgeSnapToTouchEnabled = true`（矩形模式触点吸附）、`edgeClampToBoundsEnabled = true`（**新库默认开**，保留开关；**不是**「仅 rect / 拖到 M3 再暴露」）。**自由四边形模式**钳制=两端位移取交集齐步贴边；关=越界整帧丢弃（不各自 coerceIn 斜边）。snap 仍仅 rectMode 有意义 | Config；**M1 必须接线** |
 | **Q10** | 脚手架 | KMP + Kuikly Compose 多端壳；Kuikly **2.30.0**（坐标 `2.30.0-2.1.21`）；Demo **不叫** `shared` | ADR 0002 |
 | **Q11** | Demo 模块名 | **`perspectiveCropDemo`** | ADR 0002 |
 | **Q12** | Demo 图源 | 内置 assets 走通；Camera/Album **只写对接说明**，Demo 不强制依赖 | M0/M1 Demo；M3 README |
-| **Q13** | 换皮 SPI | **六层可分别注入**的 Painter SPI：蒙版 / 框线 / 角点 / 边中点 / 辅助线 / 放大镜 + 库默认实现；业务皮肤只 Demo。**不是**单一整包 `CropOverlayPainter` 替换（可有门面聚合，但分层必须可注入） | CONTEXT；M1 接口 / M3 补齐 |
+| **Q13** | 换皮 SPI | **六层可分别注入**的 Painter SPI：蒙版 / 框线 / 角点 / 边线中点 / 九宫格辅助线 / 放大镜 + 库默认实现；业务皮肤只 Demo（Lab「改变样式」）。**不是**单一整包 `CropOverlayPainter` 替换（可有门面聚合，但分层必须可注入） | CONTEXT；M1 接口 / M3 补齐 |
 | **Q14** | 放大镜 | **真像素** + **降采样采样缓存**；禁止每帧全分辨率解码。实现落在 **M3**，但是 **v0.1 必达**（见上「v0.1 定义」） | ADR 0001；M3 |
 | **Q15** | 交付节奏 | 分里程碑，**先验一步再下一步**；清单一开始写好 | `docs/milestones/` |
 
@@ -81,7 +81,7 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q39** | minCrop / 自由角抓取 | `minCropWidth` **视图逻辑 px**（默认 100，`/ Fit.scale`）；自由角 **帧增量** + `cornerGrabOffsetEnabled`（默认关）+ `cornerMaxStepPx`（图像素，默认 0）；catch 默认 20/20/30 | ADR 0007；Config / CropSession |
+| **Q39** | minCrop / 自由角抓取 / 单位 | UI 长度（catch / minCrop / inset / 描边等）为 **Compose dp**（× `LocalDensity.density` 再 `/ Fit.scale` 或绘制）；`minCropWidth` 默认 100；catch 默认 20/20/30；自由角 **帧增量** + `cornerGrabOffsetEnabled`（默认关）+ `cornerMaxStepPx`（图像素，默认 0） | ADR 0007、**0008**；Config / Session / Stage |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

@@ -26,26 +26,40 @@ class CropSession(
     private var lastTouchImage: CropPoint? = null
 
     /**
-     * [ImageFitMapping.scale]；视图逻辑 px → 图像素换算。
+     * [ImageFitMapping.scale]；视图 px → 图像素换算。
      * `≤0` = 尚未由 Stage / [onDragStart] 推入，不可当 1 用（ADR 0007 / P2-fitscale-default-one）。
      */
     private var _fitScale: Float = 0f
+
+    /**
+     * 屏幕密度（Compose Density.density）；Config UI 长度为 dp，命中/minCrop 先 × density 再 / Fit.scale（ADR 0008）。
+     */
+    private var _density: Float = 1f
 
     /** 自由角帧增量跟踪：上一帧参考点（grab 时为 desired，否则为触摸）。 */
     private var _lastCornerRef: CropPoint? = null
     private var _cornerGrabOffset: CropPoint = CropPoint(0f, 0f)
     private var _cornerTouchTracking: Boolean = false
 
-    /** 最小边长（图像素）= 配置视图逻辑 px / Fit.scale；scale 未就绪时返回极大值使校验失败而非偏松。 */
+    /** Config UI 长度 → 视图 px；若 [PerspectiveCropConfig.lengthsAreViewPx] 已为 px 则不再 × density。 */
+    private fun viewPx(length: Float): Float =
+        if (config.lengthsAreViewPx) length else length * _density.coerceAtLeast(1e-3f)
+
+    /** 最小边长（图像素）= (minCropWidth_dp × density) / Fit.scale；scale 未就绪时返回极大值。 */
     private fun minCropImage(): Float {
         val s = _fitScale
         if (s <= 0f) return Float.MAX_VALUE
-        return config.minCropWidth / s.coerceAtLeast(1e-3f)
+        return viewPx(config.minCropWidth) / s.coerceAtLeast(1e-3f)
     }
 
     /** Stage 在 mapping 就绪时推入；拖动手势也会经 [onDragStart] 同步。 */
     fun updateFitScale(scale: Float) {
         if (scale > 0f) _fitScale = scale
+    }
+
+    /** Stage 用 [LocalDensity.density] 推入。 */
+    fun updateDensity(density: Float) {
+        if (density > 0f) _density = density
     }
 
     fun updateConfig(config: PerspectiveCropConfig) {
@@ -122,14 +136,15 @@ class CropSession(
     }
 
     /**
-     * @param viewToImageScale [ImageFitMapping.scale]（view = image * scale）；命中半径配置按**视图像素**，内部除以 scale。
+     * @param viewToImageScale [ImageFitMapping.scale]（view = image * scale）；
+     * 命中半径为 Config **dp** × [_density] 后再除以 scale。
      */
     fun hitTest(imageX: Float, imageY: Float, viewToImageScale: Float = 1f): HitTarget {
         if (points.size != 4) return HitTarget.None
         val s = viewToImageScale.coerceAtLeast(1e-3f)
-        val cornerCatch = config.touchCornerCatchDistance / s
-        val edgeCatch = config.touchEdgeCatchDistance / s
-        val midCatch = config.touchMidCatchDistance / s
+        val cornerCatch = viewPx(config.touchCornerCatchDistance) / s
+        val edgeCatch = viewPx(config.touchEdgeCatchDistance) / s
+        val midCatch = viewPx(config.touchMidCatchDistance) / s
 
         if (cornerCatch > 0f) {
             val corners = listOf(
@@ -171,7 +186,7 @@ class CropSession(
                 Triple(HitTarget.EdgeBottom, 2, 3),
                 Triple(HitTarget.EdgeLeft, 3, 0),
             )
-            val projectionPad = config.touchEdgeProjectionError / s
+            val projectionPad = viewPx(config.touchEdgeProjectionError) / s
             var best: HitTarget = HitTarget.None
             var bestD = edgeCatch
             for ((target, a, b) in edges) {

@@ -42,28 +42,31 @@ PerspectiveCropStage(controller = controller, imageSrc = controller.imageSrc)
 
 ## Config 旋钮表（M3）
 
-产品页一般用库默认即可。下表「何时用」给库引用者 / Lab 对照；手势类旋钮在 Lab「手势」Tab 用场景文案切换。
+产品页一般用库默认即可。下表「何时用」= **接产品时的痛点决策**（Lab chip 同口径：痛点 → 要不要开）。
 
 | 字段 | 默认 | 说明 | 何时用 |
 |---|---|---|---|
-| `rectMode` | `false` | 自由四边形 ↔ 轴对齐矩形 | 只要矩形裁剪框时开 |
-| `edgeSnapToTouchEnabled` | **`true`** | 矩形模式下拖边贴手指（Q9） | **仅 rectMode**；自由四边形无感 |
-| `edgeClampToBoundsEnabled` | **`true`** | 拖边顶到图边时两端齐步、不斜边（Q9） | 几乎总开；关则越界整帧丢掉（更顿） |
+| `rectMode` | `false` | 自由四边形模式 ↔ 矩形模式 | 要轴对齐矩形裁剪时开 |
+| `edgeSnapToTouchEnabled` | **`true`** | 矩形模式触点吸附（Q9） | **仅 rectMode**；拖边要跟触点走时保持开 |
+| `edgeClampToBoundsEnabled` | **`true`** | 拖边顶到图边时两端齐步、不斜边（Q9） | 不要到边斜掉/顿挫 → 保持开 |
 | `insideDragEnabled` | `true` | 框内拖整框 | 不要框内平移时关 |
-| `unhitPassthrough` | **`false`** | 未点中手柄时触摸交给外层（Q26） | 嵌 ViewPager / 左右滑容器、要外层翻页时开 |
-| `touch*CatchDistance` | 角 20 / 边 20 / 中 30 | 手柄好不好点到（视图逻辑 px；≤0 关闭） | 嫌难点→加大；只要看不能拖→置 0 |
-| `touchEdgeProjectionError` | **100** | 抓边时沿边延长线也算命中 | 角外不好抓边→保持默认；只要贴线段才中→置 0 |
-| `minCropWidth` | **100** | 最小边长（视图逻辑 px，`/ Fit.scale`，ADR 0007） | 要允许更小框→调小；要更难缩没→调大 |
-| `cornerGrabOffsetEnabled` | `false` | 自由角保留「手指−角点」按压偏移 | **少用**；默认帧增量已不吸指心，一般保持关 |
+| `unhitPassthrough` | **`false`** | 未点中手柄时触摸交给外层（Q26） | 嵌横滑页、要外层翻页时开 |
+| `touch*CatchDistance` | 角 20 / 边 20 / 中 30 | 手柄好不好点到（**Compose dp**；× density；≤0 关闭） | 手柄难点 → 加大；只要看不能拖 → 置 0 |
+| `touchEdgeProjectionError` | **100** | 抓边延长线外延（**Compose dp**） | 角外不好抓边 → 保持默认；必须点在边上 → 置 0 |
+| `minCropWidth` | **100** | 最小边长（**Compose dp**；× density `/ Fit.scale`，ADR 0007/0008） | 要允许更小框 → 调小；要更难缩没 → 调大 |
+| `cornerGrabOffsetEnabled` | `false` | 自由角保留「手指−角点」按压偏移 | 多数不用；默认帧增量即可 |
 | `cornerMaxStepPx` | `0` | 自由角单帧最大位移（图像素；≤0 不限） | 甩动过大跳时再限；默认不用 |
-| `contentInset*` | 0 | 内容区内缩；蒙版仍满屏 | 宿主绘制外扩、图要缩回原位时与外扩成对设置 |
-| `showMagnifier` / `showGuideLines` / `showEdgeMidPoints` | T / F / F | 绘制开关 | 按产品要不要镜/九宫格/边中点 |
-| `showMagnifierCropLineMirror` | **true** | 镜内再画裁剪框线 | 镜内不要框线时关 |
-| `magnifierRadiusRatio` 等 | 见 Config | 放大镜外观（Q29） | 调镜大小/边框/十字 |
-| `magnifierPlacement` | **`TopAutoFlip`** | 圆镜摆放（Q32） | 固定顶左/顶右/触点上方时改枚举 |
-| `magnifierCacheMaxEdgePx` | **2048** | 降采样缓存最长边（Q31） | 内存紧→降；要更清晰→升（费内存） |
+| `contentInset*` | 0 | 内缩显示（**Compose dp**；蒙版仍满屏） | 裁剪区外还要摆控件、图需往里缩时开；普通裁图页保持 0 |
+| `showMagnifier` | **true** | 绘制放大镜 | 要拖角精细对边 → 开；不要镜 → 关 |
+| `showGuideLines` | `false` | 绘制九宫格（整图 Fit） | 要构图辅助线 → 开 |
+| `showEdgeMidPoints` | `false` | 绘制边线中点 | 要边上多圆点可拖 → 开；关后仍可拖边本身，只是不画中点 |
+| `showMagnifierCropLineMirror` | **true** | 圆镜内再画当前裁剪框线段 | 拖角要对齐框边 → 开；镜里只要图 → 关 |
+| `magnifierRadiusRatio` 等 | 见 Config | 放大镜外观（Q29） | 调镜大小/边框；十字见 `showMagnifierCenterCross` |
+| `showMagnifierCenterCross` | `false` | 镜心十字准星 | 要对准某像素 → 开 |
+| `magnifierPlacement` | **`TopAutoFlip`** | 圆镜出现位置（Q32） | 镜挡内容再改固定角 / 指尖上；默认自动躲开手指 |
+| `magnifierCacheMaxEdgePx` | **2048** | 镜像素缓存最长边（Q31） | 低端卡 / 内存紧 → 1024（略糊）；默认 2048 清晰 |
 | `guideLineWidth` / `guideLineColor` | 1 / 半透明白 | 辅助线样式 | 开了九宫格再调样式 |
-| `maskAlpha` / `border*` / `corner*` | … | 蒙版与描边 | 换皮 / 品牌色 |
+| `maskAlpha` / `border*` / `corner*` | … | 蒙版与描边 | 换品牌皮时自注入 Painter / 调色 |
 | `outputFormat` / `jpegQuality` | JPEG / 92 | 出图导出（Q19） | 要 PNG 无损或调 JPEG 质量时 |
 
 ## 里程碑

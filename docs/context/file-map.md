@@ -17,5 +17,6 @@
 | `docs/specs/kuikly-dev-h5/` | H5 冒烟 runbook / changelog |
 | `docs/milestones/M4-checklist.md` | H5/JS 放大镜+裁剪（post-v0.1） |
 | `docs/adr/0005-js-suspend-decode-cpu-warp-blob.md` | JS suspend / CPU 单应 / blob: |
+| `docs/adr/0008-config-compose-dp.md` | Config UI 长度 Compose dp + LocalDensity |
 | `docs/skill-references/` | AI 规范素材 |
 | `.cursor/` | Cursor rules / skills / hooks |

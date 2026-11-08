@@ -37,23 +37,23 @@ Android 宿主初始化入口（`init(application)`），供解码与缓存目�
 _Avoid_: 在库内直接依赖 Demo 的 `KRApplication`
 
 **CropOverlayPainters（六层 SPI）**:
-可分别注入的叠层绘制扩展点：**蒙版 / 框线 / 角点 / 边中点 / 辅助线 / 放大镜**；库提供默认实现，业务皮肤只进 Demo。可有门面聚合，但分层必须可单独替换。
+可分别注入的叠层绘制扩展点：**蒙版 / 框线 / 角点 / 边线中点 / 九宫格辅助线 / 放大镜**；库提供默认实现，业务皮肤只进 Demo（改变样式）。可有门面聚合，但分层必须可单独替换。
 _Avoid_: 非本仓 Drawer 前缀；把换皮收成「只能整包换一个 Painter」当唯一扩展方式
 
 **rectMode**:
 矩形模式：角点拖动保持轴对齐矩形；默认关闭，自由凸四边形为主路径。
 
 **edgeSnapToTouch / edgeClampToBounds**:
-边拖吸附手指、边拖越界钳制；**默认开启**，保留开关。自由模式下 clamp 开=两端位移取交集齐步；关=越界整帧丢弃。
-_Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；clamp 关时两端各自 coerceIn 导致斜边
+矩形模式触点吸附、边拖越界钳制；**默认开启**，保留开关。自由四边形模式下 clamp 开=两端位移取交集齐步；关=越界整帧丢弃。
+_Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；clamp 关时两端各自 coerceIn 导致斜边；把 snap 说成「自由模式也贴手指」
 
 **touchEdgeProjectionError**:
-边命中沿边投影外延（视图逻辑像素，默认 100）；≤0 为严格线段。
-_Avoid_: 配成 Android dp；与 contentInset 混为一谈
+边命中沿边投影外延（**Compose dp**，默认 100）；≤0 为严格线段。Stage × density 后参与命中。
+_Avoid_: 当成裸 px；与 contentInset 混为一谈
 
 **minCropWidth**:
-最小边长（视图逻辑像素，默认 100）；运行时 `/ Fit.scale` 进图像素再校验。
-_Avoid_: 当成图像素直填；配成 Android dp
+最小边长（**Compose dp**，默认 100）；运行时 `(dp × density) / Fit.scale` 进图像素（ADR 0008）。
+_Avoid_: 当成图像素或裸视图 px 直填
 
 **cornerGrabOffset**:
 自由角点抓取偏移开关（默认关）；开则保留按下时 touch−corner，角点不吸向指心。仅自由模式。
@@ -61,11 +61,11 @@ _Avoid_: 与 edgeSnapToTouch 混名；rectMode 下指望生效
 
 **cornerMaxStep**:
 自由角点单帧最大位移（图像素，默认 0=不限制）。仅自由模式。
-_Avoid_: 配成视图 px；与 minCropWidth 单位混用
+_Avoid_: 配成 dp / 视图 px；与 minCropWidth 单位混用
 
 **contentInset**:
-内容区内缩四边（视图逻辑像素，默认 0）；经 ImageFitMapping 扣可用区再 Fit；蒙版仍铺满 Stage。与宿主绘制外扩成对。
-_Avoid_: 库内实现「绘制外扩」；默认非 0 破坏兼容
+内容区内缩四边（**Compose dp**，默认 0）；× density 后经 ImageFitMapping 扣可用区再 Fit；蒙版仍铺满 Stage。与宿主绘制外扩成对。
+_Avoid_: 库内实现「绘制外扩」；默认非 0 破坏兼容；当成裸 px
 
 **showMagnifierCropLineMirror**:
 放大镜圆内再画选区框线镜像；**默认开**；样式复用框线色宽。

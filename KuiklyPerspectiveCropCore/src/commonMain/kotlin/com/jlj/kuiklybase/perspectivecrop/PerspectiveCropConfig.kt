@@ -3,15 +3,18 @@ package com.jlj.kuiklybase.perspectivecrop
 /**
  * 样式与行为旋钮。默认值对齐 [docs/decisions.md]（Q7/Q9/Q14/Q19/Q26/Q29/Q31）。
  *
+ * UI 长度字段为 **Compose dp 数字**（ADR 0008）；Stage 经 `LocalDensity` 换成视图 px
+ * 再进命中 / Fit / 绘制。字段名里的 `Px` 为历史命名，语义仍是 dp。
+ *
  * Q9：`edgeSnapToTouchEnabled` / `edgeClampToBoundsEnabled` 默认开，**M1 必须接线**，
  * 不是「仅 rectMode」或拖到 M3 才暴露。
  */
 data class PerspectiveCropConfig(
-    /** 自由凸四边形为默认；true 时为矩形模式（Q7）。 */
+    /** 自由四边形模式为默认；true 时为矩形模式（Q7）。 */
     val rectMode: Boolean = false,
     /**
-     * 矩形模式下拖边是否贴到手指（默认开，Q9）。
-     * 场景：只要轴对齐矩形、希望边跟着指尖走；自由四边形无感。
+     * 矩形模式触点吸附：拖边是否吸到触点（默认开，Q9）。
+     * 场景：矩形模式下希望边跟着指尖走；自由四边形模式无感。
      */
     val edgeSnapToTouchEnabled: Boolean = true,
     /**
@@ -27,27 +30,27 @@ data class PerspectiveCropConfig(
      */
     val unhitPassthrough: Boolean = false,
     /**
-     * 角点命中半径（视图逻辑像素，内部 `/ Fit.scale`）；≤0 关闭。默认 20。
+     * 角点命中半径（**Compose dp**；× density 后 `/ Fit.scale`）；≤0 关闭。默认 20。
      * 场景：嫌角难点→加大；要禁用角拖→置 0。
      */
     val touchCornerCatchDistance: Float = 20f,
     /**
-     * 边命中带宽（视图逻辑像素）；≤0 关闭。默认 20。
+     * 边命中带宽（**Compose dp**）；≤0 关闭。默认 20。
      * 场景：嫌边难抓→加大；只要角/中点→置 0。
      */
     val touchEdgeCatchDistance: Float = 20f,
     /**
-     * 抓边时沿边延长线的命中外延（视图逻辑像素，默认 100）。
+     * 抓边时沿边延长线的命中外延（**Compose dp**，默认 100）。
      * ≤0 为严格线段。场景：角外不好抓边→保持默认；只要贴线才中→置 0。
      */
     val touchEdgeProjectionError: Float = 100f,
     /**
-     * 边中点命中半径（视图逻辑像素）；≤0 关闭。默认 30。
-     * 场景：开了边中点绘制后调好点程度。
+     * 边线中点命中半径（**Compose dp**）；≤0 关闭。默认 30。
+     * 场景：开了绘制边线中点后调好点程度。
      */
     val touchMidCatchDistance: Float = 30f,
     /**
-     * 最小边长（视图逻辑像素，默认 100；`/ Fit.scale` 进图像素，ADR 0007）。
+     * 最小边长（**Compose dp**，默认 100；× density `/ Fit.scale` 进图像素，ADR 0007/0008）。
      * 场景：要允许更小框→调小；要防缩没→调大。
      */
     val minCropWidth: Float = 100f,
@@ -65,22 +68,24 @@ data class PerspectiveCropConfig(
     val minAngleLimit: Float = 20f,
     /** 是否绘制放大镜（真像素实现在 M3，属 v0.1 / Q14）。 */
     val showMagnifier: Boolean = true,
-    /** 是否绘制边中点（默认关）。 */
+    /** 是否绘制边线中点（默认关）。 */
     val showEdgeMidPoints: Boolean = false,
-    /** 是否绘制九宫格辅助线（整图 Fit 矩形；对齐 freequadcrop）。 */
+    /** 是否绘制九宫格（整图 Fit 矩形；对齐 freequadcrop）。 */
     val showGuideLines: Boolean = false,
     val maskAlpha: Float = 0.55f,
+    /** 框线宽度（**Compose dp**；字段名历史遗留）。 */
     val borderWidthPx: Float = 2f,
     val borderColor: Long = 0xFFFF3B30,
+    /** 角点圆半径（**Compose dp**；字段名历史遗留）。 */
     val cornerRadiusPx: Float = 8f,
     val cornerColor: Long = 0xFFFF3B30,
-    /** 辅助线宽度（视图 px）。 */
+    /** 辅助线宽度（**Compose dp**）。 */
     val guideLineWidth: Float = 1f,
     /** 辅助线颜色 ARGB。 */
     val guideLineColor: Long = 0x59FFFFFF,
     /** 放大镜半径占视图宽度比例（Q29）。 */
     val magnifierRadiusRatio: Float = 0.07f,
-    /** 放大镜边框宽度（视图 px）。 */
+    /** 放大镜边框宽度（**Compose dp**）。 */
     val magnifierBorderWidth: Float = 2f,
     /** 放大镜边框颜色 ARGB。 */
     val magnifierBorderColor: Long = 0xFFFFFFFF,
@@ -92,14 +97,16 @@ data class PerspectiveCropConfig(
      */
     val showMagnifierCropLineMirror: Boolean = true,
     val magnifierCrossColor: Long = 0xFFFFFFFF,
+    /** 镜心十字线宽（**Compose dp**）。 */
     val magnifierCrossLineWidth: Float = 3f,
+    /** 镜心十字线长（**Compose dp**）。 */
     val magnifierCrossLineLength: Float = 15f,
     /**
      * 圆镜摆放（Q32）；默认 [MagnifierPlacement.TopAutoFlip] 对齐旧库顶角自动翻转。
      */
     val magnifierPlacement: MagnifierPlacement = MagnifierPlacement.TopAutoFlip,
     /**
-     * 降采样采样缓存最长边（px）；默认 2048（Q31）。
+     * 降采样采样缓存最长边（**真实 px**）；默认 2048（Q31）。非 dp。
      * ≤0 时按 2048 处理。
      */
     val magnifierCacheMaxEdgePx: Int = 2048,
@@ -108,7 +115,7 @@ data class PerspectiveCropConfig(
     /** JPEG 质量 0–100（仅 [CropOutputFormat.Jpeg] 生效）；默认 92。 */
     val jpegQuality: Int = 92,
     /**
-     * 内容内缩（视图逻辑像素，默认 0；对齐 freequadcrop contentInset*）。
+     * 内容内缩（**Compose dp**，默认 0；对齐 freequadcrop contentInset*）。
      * Fit / 命中 / 框线 / 辅助线共用 [ImageFitMapping]；蒙版仍铺满 Stage。
      * 与宿主「绘制外扩」成对使用；外扩本身不进库。
      */
@@ -116,4 +123,40 @@ data class PerspectiveCropConfig(
     val contentInsetTop: Float = 0f,
     val contentInsetRight: Float = 0f,
     val contentInsetBottom: Float = 0f,
+    /**
+     * UI 长度是否已是**视图 px**（仅 [toViewPx] 置 true）。
+     * 进 [PerspectiveCropController.updateConfig] / Session 的须为 **dp**（保持 false）；
+     * 若误把 [toViewPx] 结果写回 Session，Session 将跳过再 × density（防双重放大）。
+     */
+    val lengthsAreViewPx: Boolean = false,
 )
+
+/**
+ * 将 UI 长度 dp 字段乘以 [density] 得到视图 px 副本，供 Fit / 绘制 / 原生镜使用。
+ * 已是视图 px（[PerspectiveCropConfig.lengthsAreViewPx]）时原样返回，避免连乘。
+ * 不缩放 [PerspectiveCropConfig.cornerMaxStepPx]、[PerspectiveCropConfig.magnifierCacheMaxEdgePx]。
+ *
+ * **禁止**把返回值再交给 `updateConfig`（约定 Contoller/Session 只收 dp）；即使误传，Session 也不会再乘 density。
+ */
+fun PerspectiveCropConfig.toViewPx(density: Float): PerspectiveCropConfig {
+    if (lengthsAreViewPx) return this
+    val d = density.coerceAtLeast(1e-3f)
+    return copy(
+        touchCornerCatchDistance = touchCornerCatchDistance * d,
+        touchEdgeCatchDistance = touchEdgeCatchDistance * d,
+        touchEdgeProjectionError = touchEdgeProjectionError * d,
+        touchMidCatchDistance = touchMidCatchDistance * d,
+        minCropWidth = minCropWidth * d,
+        borderWidthPx = borderWidthPx * d,
+        cornerRadiusPx = cornerRadiusPx * d,
+        guideLineWidth = guideLineWidth * d,
+        magnifierBorderWidth = magnifierBorderWidth * d,
+        magnifierCrossLineWidth = magnifierCrossLineWidth * d,
+        magnifierCrossLineLength = magnifierCrossLineLength * d,
+        contentInsetLeft = contentInsetLeft * d,
+        contentInsetTop = contentInsetTop * d,
+        contentInsetRight = contentInsetRight * d,
+        contentInsetBottom = contentInsetBottom * d,
+        lengthsAreViewPx = true,
+    )
+}

@@ -23,10 +23,12 @@ import com.tencent.kuikly.compose.foundation.layout.Row
 import com.tencent.kuikly.compose.foundation.layout.fillMaxSize
 import com.tencent.kuikly.compose.foundation.layout.fillMaxWidth
 import com.tencent.kuikly.compose.foundation.layout.padding
+import com.tencent.kuikly.compose.material3.Text
 import com.tencent.kuikly.compose.setContent
 import com.tencent.kuikly.compose.ui.Modifier
 import com.tencent.kuikly.compose.ui.platform.LocalActivity
 import com.tencent.kuikly.compose.ui.unit.dp
+import com.tencent.kuikly.compose.ui.unit.sp
 import com.tencent.kuikly.core.annotations.Page
 import kotlinx.coroutines.launch
 
@@ -131,6 +133,22 @@ private fun PerspectiveCropLabScreen() {
                 onClick = { tab = LabTab.Magnifier },
             )
         }
+        Text(
+            text = when (tab) {
+                LabTab.Appearance ->
+                    "产品页大多用默认。只有改样式、切矩形模式、或要内缩显示时，再动下面开关。"
+                LabTab.Gesture ->
+                    "手感类默认已按文档/快递单裁常用打开。只有嵌在可横滑容器、或觉得难点/拖边怪，再改。"
+                LabTab.Magnifier ->
+                    "默认圆镜 + 镜内框线即可。低端卡顿再降清晰；镜挡内容再改摆放。"
+            },
+            color = DemoTheme.TextSecondary,
+            fontSize = 11.sp,
+            lineHeight = 14.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 2.dp),
+        )
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -138,23 +156,28 @@ private fun PerspectiveCropLabScreen() {
         ) {
             when (tab) {
                 LabTab.Appearance -> {
+                    // chip = 接产品时的痛点/要不要开；非字段名。
                     DemoToggleChip(
-                        label = if (cfg.showMagnifier) "放大镜·开" else "放大镜·关",
+                        label = if (cfg.showMagnifier) "绘制放大镜·开" else "绘制放大镜·关",
                         active = cfg.showMagnifier,
                         onClick = { applyCfg { copy(showMagnifier = !showMagnifier) } },
                     )
                     DemoToggleChip(
-                        label = if (cfg.showGuideLines) "辅助线·开" else "辅助线·关",
+                        label = if (cfg.showGuideLines) "绘制九宫格·开" else "绘制九宫格·关",
                         active = cfg.showGuideLines,
                         onClick = { applyCfg { copy(showGuideLines = !showGuideLines) } },
                     )
                     DemoToggleChip(
-                        label = if (cfg.showEdgeMidPoints) "中点·开" else "中点·关",
+                        label = if (cfg.showEdgeMidPoints) {
+                            "绘制边线中点·开"
+                        } else {
+                            "绘制边线中点·关"
+                        },
                         active = cfg.showEdgeMidPoints,
                         onClick = { applyCfg { copy(showEdgeMidPoints = !showEdgeMidPoints) } },
                     )
                     DemoToggleChip(
-                        label = if (altSkin) "换皮·开" else "换皮·关",
+                        label = if (altSkin) "改变样式·开" else "改变样式·关",
                         active = altSkin,
                         onClick = {
                             altSkin = !altSkin
@@ -171,7 +194,7 @@ private fun PerspectiveCropLabScreen() {
                     val insetOn = cfg.contentInsetLeft > 0f || cfg.contentInsetTop > 0f ||
                         cfg.contentInsetRight > 0f || cfg.contentInsetBottom > 0f
                     DemoToggleChip(
-                        label = if (insetOn) "内缩·示例" else "内缩·关",
+                        label = if (insetOn) "内缩显示开关·开" else "内缩显示开关·关",
                         active = insetOn,
                         onClick = {
                             applyCfg {
@@ -195,23 +218,24 @@ private fun PerspectiveCropLabScreen() {
                     )
                 }
                 LabTab.Gesture -> {
-                    // 文案用场景话，避免「吸附/钳制/抓取」黑话；默认态即库默认建议。
                     DemoToggleChip(
-                        label = if (cfg.edgeSnapToTouchEnabled) "矩形边贴手指·开" else "矩形边贴手指·关",
+                        label = if (cfg.edgeSnapToTouchEnabled) {
+                            "矩形模式触点吸附·开"
+                        } else {
+                            "矩形模式触点吸附·关"
+                        },
                         active = cfg.edgeSnapToTouchEnabled,
                         onClick = {
                             applyCfg { copy(edgeSnapToTouchEnabled = !edgeSnapToTouchEnabled) }
                         },
                     )
+                    // edgeClampToBoundsEnabled：库默认开（修「拉不到底」）；Lab 不暴露——单拨几乎无感，易误解
                     DemoToggleChip(
-                        label = if (cfg.edgeClampToBoundsEnabled) "拖边顶界齐步·开" else "拖边顶界齐步·关",
-                        active = cfg.edgeClampToBoundsEnabled,
-                        onClick = {
-                            applyCfg { copy(edgeClampToBoundsEnabled = !edgeClampToBoundsEnabled) }
+                        label = if (cfg.cornerGrabOffsetEnabled) {
+                            "自由角跟指尖偏移·开"
+                        } else {
+                            "自由角按位移(常用)"
                         },
-                    )
-                    DemoToggleChip(
-                        label = if (cfg.cornerGrabOffsetEnabled) "角按压偏移·少用开" else "角按压偏移·关(常用)",
                         active = cfg.cornerGrabOffsetEnabled,
                         onClick = {
                             applyCfg { copy(cornerGrabOffsetEnabled = !cornerGrabOffsetEnabled) }
@@ -219,7 +243,7 @@ private fun PerspectiveCropLabScreen() {
                     )
                     val projOn = cfg.touchEdgeProjectionError > 0f
                     DemoToggleChip(
-                        label = if (projOn) "抓边延长线·开" else "抓边延长线·关",
+                        label = if (projOn) "角外沿延长线抓边·开" else "必须点在边上才抓边",
                         active = projOn,
                         onClick = {
                             applyCfg {
@@ -228,13 +252,17 @@ private fun PerspectiveCropLabScreen() {
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.unhitPassthrough) "未点中交给外层·开" else "未点中交给外层·关",
+                        label = if (cfg.unhitPassthrough) {
+                            "嵌横滑·未点中让外层翻页·开"
+                        } else {
+                            "未点中本页吃触摸"
+                        },
                         active = cfg.unhitPassthrough,
                         onClick = { applyCfg { copy(unhitPassthrough = !unhitPassthrough) } },
                     )
                     val catchOff = cfg.touchCornerCatchDistance <= 0f
                     DemoToggleChip(
-                        label = if (catchOff) "手柄好点·关" else "手柄好点·开",
+                        label = if (catchOff) "必须点准手柄" else "手柄难点·加大范围·开",
                         active = !catchOff,
                         onClick = {
                             if (catchOff) {
@@ -259,7 +287,7 @@ private fun PerspectiveCropLabScreen() {
                 }
                 LabTab.Magnifier -> {
                     DemoToggleChip(
-                        label = "位置·${placementLabel(cfg.magnifierPlacement)}",
+                        label = "圆镜挡内容·摆放·${placementLabel(cfg.magnifierPlacement)}",
                         active = true,
                         onClick = {
                             applyCfg {
@@ -272,7 +300,7 @@ private fun PerspectiveCropLabScreen() {
                     )
                     val cache2k = cfg.magnifierCacheMaxEdgePx >= 2048
                     DemoToggleChip(
-                        label = if (cache2k) "缓存·2k" else "缓存·1k",
+                        label = if (cache2k) "镜清晰(默认)" else "低端卡·降清晰省内存",
                         active = cache2k,
                         onClick = {
                             applyCfg {
@@ -284,14 +312,22 @@ private fun PerspectiveCropLabScreen() {
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.showMagnifierCenterCross) "十字·开" else "十字·关",
+                        label = if (cfg.showMagnifierCenterCross) {
+                            "对准像素·镜心十字·开"
+                        } else {
+                            "镜心无十字"
+                        },
                         active = cfg.showMagnifierCenterCross,
                         onClick = {
                             applyCfg { copy(showMagnifierCenterCross = !showMagnifierCenterCross) }
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.showMagnifierCropLineMirror) "镜线·开" else "镜线·关",
+                        label = if (cfg.showMagnifierCropLineMirror) {
+                            "拖角对齐框边·镜内画线·开"
+                        } else {
+                            "镜内只放大图"
+                        },
                         active = cfg.showMagnifierCropLineMirror,
                         onClick = {
                             applyCfg {
@@ -342,8 +378,8 @@ private fun PerspectiveCropLabScreen() {
 }
 
 private fun placementLabel(p: MagnifierPlacement): String = when (p) {
-    MagnifierPlacement.TopAutoFlip -> "自动"
-    MagnifierPlacement.TopLeft -> "左上"
-    MagnifierPlacement.TopRight -> "右上"
-    MagnifierPlacement.AboveTouch -> "触点上"
+    MagnifierPlacement.TopAutoFlip -> "自动躲开手指"
+    MagnifierPlacement.TopLeft -> "固定左上"
+    MagnifierPlacement.TopRight -> "固定右上"
+    MagnifierPlacement.AboveTouch -> "跟着指尖上方"
 }

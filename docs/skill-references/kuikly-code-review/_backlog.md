@@ -8,6 +8,8 @@
 
 ## 候选
 
+- [ ] Config 若同时存在「密度无关真源」与「toViewPx 视图副本」，须约定只允许真源写入 Session/Controller；视图副本仅限当帧绘制/Fit，禁止 `updateConfig(toViewPx(...))` 以免双重乘 density｜2026-11-08｜自评：未达标（缺正式 L3 条款；证据 review-compose-dp-units P2-double-density-guard）｜peer：可抄码农 perspective_crop_api
+
 - [ ] Compose/手势回调路径禁止同步全图解码：放大镜/缩略图须后台预热或异步首帧，命中缓存后再在手势线程读像素｜2026-11-07｜自评：未达标（缺整改闭环；可抄码农 `platform_android` A1）｜证据：review-m3-android-magnifier P1-main-thread-io
 
 - [ ] **「非缺陷型条款」须由固定清单驱动、且清单能被审查侧逐行抽查**：只要求「写自检表」不够，必须固定条款全集 + 三态（`OK`/`TODO`/`N/A`），强制项不许写 `TODO` ｜2026-10-27 ｜自评：已达标的落地形态（`selfcheck/` + SKILL §规范自检），可考虑晋升为审查侧抽查项
