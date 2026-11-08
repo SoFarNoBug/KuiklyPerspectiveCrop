@@ -53,7 +53,7 @@
 | **Q23** | 放大镜采样 | `MagnifierSampler` **expect/actual**；Android 真采样；iOS/JS stub | ADR 0004；M3 |
 | **Q24** | 采样缓存键 | 键含 `imageSrc` + **`uiRotationSteps`**（及 maxEdge）；旋转/换图失效重建 | ADR 0004；M3 |
 | **Q25** | 放大镜绘制输入 | Stage 组 **`MagnifierPatch`**（像素块 + 几何）→ 默认放大镜 Painter | ADR 0004；SPI |
-| **Q26** | 未命中透传 | **`unhitPassthrough` 默认 false**；未命中时不吞父容器手势 | Config；Stage |
+| **Q26** | 触摸事件穿透 | **`unhitPassthrough` 默认 false**；未命中手柄时不吞父容器手势 | Config；Stage |
 | **Q27** | autoScan 钩子 | 复用 / 别名现有 **`writePoints`**（可注入四点）；库内无算法 | Controller |
 | **Q28** | 拖动手势回调 | Stage 暴露 **`onDragActiveChanged`**（开始/结束） | Stage |
 | **Q29** | 放大镜外观 | Config 对齐旧库量级：半径比、边框、十字开关/色/线宽线长等 | Config |

@@ -25,7 +25,7 @@ data class PerspectiveCropConfig(
     /** 框内拖动整框。 */
     val insideDragEnabled: Boolean = true,
     /**
-     * DOWN 未命中手柄时透传父容器（Q26）。默认 false。
+     * 触摸事件穿透（Q26）：DOWN 未命中手柄时交给父容器。默认 false。
      * 场景：嵌在 ViewPager / 横滑容器里、要点空白处翻页时开。
      */
     val unhitPassthrough: Boolean = false,
@@ -40,8 +40,9 @@ data class PerspectiveCropConfig(
      */
     val touchEdgeCatchDistance: Float = 20f,
     /**
-     * 抓边时沿边延长线的命中外延（**Compose dp**，默认 100）。
-     * ≤0 为严格线段。场景：角外不好抓边→保持默认；只要贴线才中→置 0。
+     * 边线判定外延（**Compose dp**，默认 100）：抓边时沿边向两端延长的命中带。
+     * \>0 = 宽松（角外延长也可抓边）；≤0 = 严谨（须贴边线段，不是「仅中点」）。
+     * 场景：角外不好抓边→保持默认；要更严→置 0。
      */
     val touchEdgeProjectionError: Float = 100f,
     /**

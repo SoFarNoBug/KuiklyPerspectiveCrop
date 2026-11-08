@@ -53,6 +53,14 @@ private enum class LabTab {
     Magnifier,
 }
 
+/** 手势 Tab：同时只展开一根 catch 滑杆。 */
+private enum class CatchSliderKind {
+    None,
+    Corner,
+    Edge,
+    Mid,
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PerspectiveCropLabScreen() {
@@ -62,6 +70,7 @@ private fun PerspectiveCropLabScreen() {
     var cfg by remember { mutableStateOf(PerspectiveCropConfig()) }
     var altSkin by remember { mutableStateOf(false) }
     var tab by remember { mutableStateOf(LabTab.Appearance) }
+    var catchSlider by remember { mutableStateOf(CatchSliderKind.None) }
     var resultSrc by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
     var cropping by remember { mutableStateOf(false) }
@@ -120,7 +129,10 @@ private fun PerspectiveCropLabScreen() {
             DemoTabChip(
                 label = DemoCopy.TAB_APPEARANCE,
                 selected = tab == LabTab.Appearance,
-                onClick = { tab = LabTab.Appearance },
+                onClick = {
+                    tab = LabTab.Appearance
+                    catchSlider = CatchSliderKind.None
+                },
             )
             DemoTabChip(
                 label = DemoCopy.TAB_GESTURE,
@@ -130,7 +142,10 @@ private fun PerspectiveCropLabScreen() {
             DemoTabChip(
                 label = DemoCopy.TAB_MAGNIFIER,
                 selected = tab == LabTab.Magnifier,
-                onClick = { tab = LabTab.Magnifier },
+                onClick = {
+                    tab = LabTab.Magnifier
+                    catchSlider = CatchSliderKind.None
+                },
             )
         }
         Text(
@@ -138,7 +153,7 @@ private fun PerspectiveCropLabScreen() {
                 LabTab.Appearance ->
                     "产品页大多用默认。只有改样式、切矩形模式、或要内缩显示时，再动下面开关。"
                 LabTab.Gesture ->
-                    "手感类默认已按文档/快递单裁常用打开。只有嵌在可横滑容器、或觉得难点/拖边怪，再改。"
+                    "手感类默认已按文档/快递单裁常用打开。觉得难点/拖边怪时再改下面开关。"
                 LabTab.Magnifier ->
                     "默认圆镜 + 镜内框线即可。低端卡顿再降清晰；镜挡内容再改摆放。"
             },
@@ -229,22 +244,13 @@ private fun PerspectiveCropLabScreen() {
                             applyCfg { copy(edgeSnapToTouchEnabled = !edgeSnapToTouchEnabled) }
                         },
                     )
-                    // edgeClampToBoundsEnabled：库默认开（修「拉不到底」）；Lab 不暴露——单拨几乎无感，易误解
-                    DemoToggleChip(
-                        label = if (cfg.cornerGrabOffsetEnabled) {
-                            "自由角跟指尖偏移·开"
-                        } else {
-                            "自由角按位移(常用)"
-                        },
-                        active = cfg.cornerGrabOffsetEnabled,
-                        onClick = {
-                            applyCfg { copy(cornerGrabOffsetEnabled = !cornerGrabOffsetEnabled) }
-                        },
-                    )
+                    // Lab 不暴露：edgeClamp（拉不到底，单拨无感）、cornerGrabOffset（少用）、
+                    // unhitPassthrough（触摸事件穿透，嵌横滑时由产品 Config 开）
                     val projOn = cfg.touchEdgeProjectionError > 0f
                     DemoToggleChip(
-                        label = if (projOn) "角外沿延长线抓边·开" else "必须点在边上才抓边",
-                        active = projOn,
+                        // 严谨·开 = 须贴边线段；严谨·关 = 宽松（角外延长也可抓边）。非「仅中点」。
+                        label = if (projOn) "边线判定严谨·关" else "边线判定严谨·开",
+                        active = !projOn,
                         onClick = {
                             applyCfg {
                                 copy(touchEdgeProjectionError = if (touchEdgeProjectionError > 0f) 0f else 100f)
@@ -252,36 +258,39 @@ private fun PerspectiveCropLabScreen() {
                         },
                     )
                     DemoToggleChip(
-                        label = if (cfg.unhitPassthrough) {
-                            "嵌横滑·未点中让外层翻页·开"
-                        } else {
-                            "未点中本页吃触摸"
-                        },
-                        active = cfg.unhitPassthrough,
-                        onClick = { applyCfg { copy(unhitPassthrough = !unhitPassthrough) } },
-                    )
-                    val catchOff = cfg.touchCornerCatchDistance <= 0f
-                    DemoToggleChip(
-                        label = if (catchOff) "必须点准手柄" else "手柄难点·加大范围·开",
-                        active = !catchOff,
+                        label = "角点命中·${cfg.touchCornerCatchDistance.toInt()}dp",
+                        active = catchSlider == CatchSliderKind.Corner,
                         onClick = {
-                            if (catchOff) {
-                                applyCfg {
-                                    copy(
-                                        touchCornerCatchDistance = 20f,
-                                        touchEdgeCatchDistance = 20f,
-                                        touchMidCatchDistance = 30f,
-                                    )
+                            catchSlider =
+                                if (catchSlider == CatchSliderKind.Corner) {
+                                    CatchSliderKind.None
+                                } else {
+                                    CatchSliderKind.Corner
                                 }
-                            } else {
-                                applyCfg {
-                                    copy(
-                                        touchCornerCatchDistance = 0f,
-                                        touchEdgeCatchDistance = 0f,
-                                        touchMidCatchDistance = 0f,
-                                    )
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "边线命中·${cfg.touchEdgeCatchDistance.toInt()}dp",
+                        active = catchSlider == CatchSliderKind.Edge,
+                        onClick = {
+                            catchSlider =
+                                if (catchSlider == CatchSliderKind.Edge) {
+                                    CatchSliderKind.None
+                                } else {
+                                    CatchSliderKind.Edge
                                 }
-                            }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "中点命中·${cfg.touchMidCatchDistance.toInt()}dp",
+                        active = catchSlider == CatchSliderKind.Mid,
+                        onClick = {
+                            catchSlider =
+                                if (catchSlider == CatchSliderKind.Mid) {
+                                    CatchSliderKind.None
+                                } else {
+                                    CatchSliderKind.Mid
+                                }
                         },
                     )
                 }
@@ -336,6 +345,26 @@ private fun PerspectiveCropLabScreen() {
                         },
                     )
                 }
+            }
+        }
+        if (tab == LabTab.Gesture) {
+            when (catchSlider) {
+                CatchSliderKind.None -> Unit
+                CatchSliderKind.Corner -> DemoDpSlider(
+                    label = "角点命中范围",
+                    value = cfg.touchCornerCatchDistance,
+                    onValueChange = { v -> applyCfg { copy(touchCornerCatchDistance = v) } },
+                )
+                CatchSliderKind.Edge -> DemoDpSlider(
+                    label = "边线命中范围",
+                    value = cfg.touchEdgeCatchDistance,
+                    onValueChange = { v -> applyCfg { copy(touchEdgeCatchDistance = v) } },
+                )
+                CatchSliderKind.Mid -> DemoDpSlider(
+                    label = "边线中点命中范围",
+                    value = cfg.touchMidCatchDistance,
+                    onValueChange = { v -> applyCfg { copy(touchMidCatchDistance = v) } },
+                )
             }
         }
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {

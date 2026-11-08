@@ -50,11 +50,11 @@ PerspectiveCropStage(controller = controller, imageSrc = controller.imageSrc)
 | `edgeSnapToTouchEnabled` | **`true`** | 矩形模式触点吸附（Q9） | **仅 rectMode**；拖边要跟触点走时保持开 |
 | `edgeClampToBoundsEnabled` | **`true`** | 拖边顶到图边时两端齐步、不斜边（Q9） | 不要到边斜掉/顿挫 → 保持开 |
 | `insideDragEnabled` | `true` | 框内拖整框 | 不要框内平移时关 |
-| `unhitPassthrough` | **`false`** | 未点中手柄时触摸交给外层（Q26） | 嵌横滑页、要外层翻页时开 |
+| `unhitPassthrough` | **`false`** | 触摸事件穿透（Q26）：未命中手柄时交给外层 | 嵌横滑页、要外层翻页时开（Lab 不暴露） |
 | `touch*CatchDistance` | 角 20 / 边 20 / 中 30 | 手柄好不好点到（**Compose dp**；× density；≤0 关闭） | 手柄难点 → 加大；只要看不能拖 → 置 0 |
-| `touchEdgeProjectionError` | **100** | 抓边延长线外延（**Compose dp**） | 角外不好抓边 → 保持默认；必须点在边上 → 置 0 |
+| `touchEdgeProjectionError` | **100** | 边线判定外延（**Compose dp**） | 宽松可抓角外延长 → 保持默认；严谨须贴边线段 → 置 0（非仅中点） |
 | `minCropWidth` | **100** | 最小边长（**Compose dp**；× density `/ Fit.scale`，ADR 0007/0008） | 要允许更小框 → 调小；要更难缩没 → 调大 |
-| `cornerGrabOffsetEnabled` | `false` | 自由角保留「手指−角点」按压偏移 | 多数不用；默认帧增量即可 |
+| `cornerGrabOffsetEnabled` | `false` | 自由角保留「手指−角点」按压偏移 | 多数不用；默认帧增量即可（Lab 不暴露） |
 | `cornerMaxStepPx` | `0` | 自由角单帧最大位移（图像素；≤0 不限） | 甩动过大跳时再限；默认不用 |
 | `contentInset*` | 0 | 内缩显示（**Compose dp**；蒙版仍满屏） | 裁剪区外还要摆控件、图需往里缩时开；普通裁图页保持 0 |
 | `showMagnifier` | **true** | 绘制放大镜 | 要拖角精细对边 → 开；不要镜 → 关 |

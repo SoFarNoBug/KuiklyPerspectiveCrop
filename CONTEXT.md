@@ -47,9 +47,9 @@ _Avoid_: 非本仓 Drawer 前缀；把换皮收成「只能整包换一个 Paint
 矩形模式触点吸附、边拖越界钳制；**默认开启**，保留开关。自由四边形模式下 clamp 开=两端位移取交集齐步；关=越界整帧丢弃。
 _Avoid_: 写成「仅 rectMode 才有钳制」或拖到后期才暴露字段；clamp 关时两端各自 coerceIn 导致斜边；把 snap 说成「自由模式也贴手指」
 
-**touchEdgeProjectionError**:
-边命中沿边投影外延（**Compose dp**，默认 100）；≤0 为严格线段。Stage × density 后参与命中。
-_Avoid_: 当成裸 px；与 contentInset 混为一谈
+**touchEdgeProjectionError（边线判定外延）**:
+抓边沿边向两端延长的命中带（**Compose dp**，默认 100=宽松）；≤0 = 严谨须贴边线段（仍可抓边本身，非仅中点）。Stage × density 后参与命中。
+_Avoid_: 当成裸 px；写成「关=只能拖中点」；与 contentInset 混为一谈
 
 **minCropWidth**:
 最小边长（**Compose dp**，默认 100）；运行时 `(dp × density) / Fit.scale` 进图像素（ADR 0008）。
@@ -83,9 +83,9 @@ _Avoid_: 每帧全分辨率解码；依赖残缺 ImageBitmap.readPixels
 Stage 交给放大镜 Painter 的像素块 + 触点几何（非平台 Bitmap 公开类型）。
 _Avoid_: 把 Android Bitmap 挂到 common 公开 API
 
-**unhitPassthrough**:
-DOWN 未命中选区手柄时透传父容器手势；**默认 false**。
-_Avoid_: 默认改成 true 或当作「仅 Demo」行为
+**unhitPassthrough（触摸事件穿透）**:
+DOWN 未命中选区手柄时交给父容器；**默认 false**。
+_Avoid_: 默认改成 true；Lab 当演示开关（产品 Config 按需开）
 
 **writePoints / applyAutoScanPoints**:
 写入四点选区；亦作为外部 autoScan **注入钩子**（库内无边缘检测算法）。

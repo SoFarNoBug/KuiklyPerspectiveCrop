@@ -1,5 +1,38 @@
 # demo-ui-polish changelog
 
+## 2026-11-08 · Lab catch 滑杆按 chip 展开
+
+- [MODIFY] Lab 手势：角/边/中点各一 chip（显示当前 dp）；点开才展开对应滑杆，再点收起；同时只开一根
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：Demo 布局减噪｜待批 0（已达标 0）
+- 真机验证：本单无真机验证
+
+## 2026-11-08 · DemoDpSlider 对齐 MaterialDemo 样式
+
+- [MODIFY] `DemoDpSlider`：`height(12.dp)` + `SliderDefaults.colors`（Primary / 深灰未激活），对齐框架 Compose MaterialDemo / CanvasDemo
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：Demo 观感，无库行为｜待批 0（已达标 0）
+- 真机验证：本单无真机验证
+
+## 2026-11-08 · Lab catch 三角滑杆
+
+- [MODIFY] Lab：去掉「手柄难点」总开关；角/边/中点 catch 各一 `DemoDpSlider`（0–100 dp，0=关命中）
+- [MODIFY] `DemoChrome`：新增 `DemoDpSlider`（Kuikly material3 Slider）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：Demo 控件，无库行为变更｜待批 0（已达标 0）
+- 真机验证：本单无真机验证
+
+## 2026-11-08 · Lab 边线判定严谨 chip
+
+- [MODIFY] Lab：`touchEdgeProjectionError` chip 改为「边线判定严谨·开/关」（关=宽松含角外；开=须贴线段；非仅中点）
+- [MODIFY] Config KDoc / README / CONTEXT 用语对齐
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：文案口径，无行为变更｜待批 0（已达标 0）
+- 真机验证：本单无真机验证
+
+## 2026-11-08 · Lab 再藏 cornerGrab / 触摸穿透
+
+- [MODIFY] Lab 手势 Tab：隐藏 `cornerGrabOffsetEnabled`、`unhitPassthrough` chip（API 默认仍 false）
+- [MODIFY] 文档概念：`unhitPassthrough` 统一称「触摸事件穿透」（Config KDoc / README / CONTEXT / Q26）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：Demo 减噪 + 用语，无行为变更｜待批 0（已达标 0）
+- 真机验证：本单无真机验证
+
 ## 2026-11-08 · Lab 隐藏 edgeClamp 开关
 
 - [MODIFY] Lab 手势 Tab：不再展示 `edgeClampToBoundsEnabled` chip（Config 仍默认 `true`，API 保留）
