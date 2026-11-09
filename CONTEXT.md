@@ -29,8 +29,8 @@ _Avoid_: 把几何判定写进 Composable 闭包
 _Avoid_: 把平台策略类名泄漏到 common 公开面
 
 **CropEngine**:
-出图引擎：`Auto`（有原生用原生）/ `Native` / `Common`（CPU 单应，与 H5 同算法）。默认 Auto。Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；H5 始终 Common。
-_Avoid_: 在 common 假装各端都有原生；鸿蒙再走 ImagePacker Native 编码
+出图引擎：`Auto`（有原生用原生）/ `Native` / `Common`（CPU 单应，与 H5 同算法）。默认 Auto。Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；iOS Native=Core Image 四点透视（hypot dest，Auto→Native）；H5 始终 Common。
+_Avoid_: 在 common 假装各端都有原生；鸿蒙再走 ImagePacker Native 编码；iOS 只靠 CIPerspectiveCorrection 默认 extent 不对齐 hypot
 
 **CropException**:
 出图失败的公开异常；用 `code` + `message`（可带 `cause`）细分原因，禁止静默回原图或可空假成功。
@@ -43,6 +43,10 @@ _Avoid_: 在库内直接依赖 Demo 的 `KRApplication`
 **PerspectiveCropOhos**:
 鸿蒙宿主初始化入口（`init(resfileDir, cacheDir)`），注入 hap `resourceDir`（`assets://`）与缓存目录（`saveToFile`）；不绑定业务 Ability 类名。
 _Avoid_: 在库内硬编码 resfile 绝对路径；把 init 绑死到 Demo 包名；cache 为空时静默失败
+
+**PerspectiveCropIos**:
+iOS 宿主初始化入口（`init(cacheDir)`），注入可写缓存目录供 `saveToFile`；`assets://` 默认在 `main` 与已加载 Bundle 中按资源名查找。
+_Avoid_: 未 init 时静默落盘；把 init 绑死到 Demo 包名；只查 main 导致 framework 样例图解码失败
 
 **CropOverlayPainters（六层 SPI）**:
 可分别注入的叠层绘制扩展点：**蒙版 / 框线 / 角点 / 边线中点 / 九宫格辅助线 / 放大镜**；库提供默认实现，业务皮肤只进 Demo（改变样式）。可有门面聚合，但分层必须可单独替换。
@@ -84,15 +88,15 @@ _Avoid_: 旧名 need2DrawInsideAreaLineMirror；只改 Compose 兜底而 Android
 _Avoid_: 扫描识别, deskew（仅旋转校正）
 
 **MagnifierSampler**:
-放大镜降采样采样器（expect/actual）；Android / JS / 鸿蒙建最长边受限的采样缓存并裁 patch；iOS 仍 stub。
-_Avoid_: 每帧全分辨率解码；依赖残缺 ImageBitmap.readPixels
+放大镜降采样采样器（expect/actual）；Android / JS / 鸿蒙 / iOS 建最长边受限的采样缓存并裁 patch。
+_Avoid_: 每帧全分辨率解码；依赖残缺 ImageBitmap.readPixels；iOS 再写 stub 空圆
 
 **MagnifierPatch**:
 Stage 交给放大镜 Painter 的像素块 + 触点几何（非平台 Bitmap 公开类型）。
 _Avoid_: 把 Android Bitmap 挂到 common 公开 API
 
 **MagnifierBlitStore**:
-原生放大镜进程内像素仓（Android Bitmap / 鸿蒙 ARGB `IntArray`）；props 只传几何与 `magGeneration`。鸿蒙壳经 NAPI 拉快照，避免 props 传大数组，也避免 H5 式双 Store。
+原生放大镜进程内像素仓（Android Bitmap / 鸿蒙 ARGB `IntArray` / iOS `UIImage`）；props 只传几何与 `magGeneration`。鸿蒙壳经 NAPI 拉快照；iOS 壳经 `PerspectiveCropIosMagnifierBridge` 读仓。避免 props 传大数组与 H5 式双 Store。
 _Avoid_: 壳与业务包各持一份 Store；把整块像素打进 Kuikly props
 
 **unhitPassthrough（触摸事件穿透）**:

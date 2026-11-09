@@ -1,6 +1,7 @@
 ﻿# perspective-crop · feature changelog
 
 - 2026-11-09：鸿蒙 Native 出图（Drawing `SetPolyToPoly`）与双引擎口径落地；详见 [`../ohos-native-crop/changelog.md`](../ohos-native-crop/changelog.md)。
+- 2026-11-09：iOS Native 出图（Core Image 四点透视）与双引擎口径落地；详见 [`../ios-native-crop/changelog.md`](../ios-native-crop/changelog.md)。
   - 治理收尾：门禁 跳过｜三问 否/否/否｜理由：交叉索引，正文在 ohos-native-crop｜待批 0
   - 真机表：`docs/reviews/device-check-list/ohos-native-crop.md`
 

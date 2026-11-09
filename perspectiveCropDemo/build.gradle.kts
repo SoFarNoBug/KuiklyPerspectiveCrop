@@ -45,7 +45,7 @@ kotlin {
         summary = "Perspective crop demo shared pages"
         homepage = "Link to the KuiklyPerspectiveCrop demo"
         version = "1.0"
-        ios.deploymentTarget = "14.1"
+        ios.deploymentTarget = "15.0"
         podfile = project.file("../iosApp/Podfile")
         framework {
             baseName = "perspectiveCropDemo"

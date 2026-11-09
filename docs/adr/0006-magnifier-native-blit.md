@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（2026-11-07 M5；2026-11-09 鸿蒙策略 A）
+Accepted（2026-11-07 M5；2026-11-09 鸿蒙策略 A；2026-11-09 iOS 原生贴图）
 
 ## Context
 
@@ -13,14 +13,15 @@ M3 在 Kuikly Compose `DrawScope` 上用 N×N `drawRect` 铺圆镜（方案 B：
 1. **主路径**：各端原生「`MagnifierPatch` → 圆镜」像素贴图；**拖动全程清晰**，不以停指升密为体验开关。
 2. **Android**：`KRPerspectiveCropMagnifier` 原生 View + `BitmapShader`；像素经进程内 `MagnifierBlitStore`，避免 props 序列化 `IntArray`。
 3. **鸿蒙**：KN 侧 `MagnifierBlitStore`（`IntArray` 像素仓）+ `PlatformMagnifierOverlay` 只传几何/`magGeneration`；壳注册 ArkTS `KRPerspectiveCropMagnifier`，在 generation 变化时 **NAPI `getMagnifierBlit`** 同步拉 RGBA + 装饰元数据，Canvas 圆裁绘制（边框/十字/裁线镜像）。`@CName` 快照导出挂在 **Demo shared**（Core klib 的 `@CName` 不进最终 so）。失败画深灰圆，**不**中途切回网格。
-4. **H5（暂退）**：`platformSupportsNativeMagnifier()=false`，走 N×N 网格兜底。原 Canvas 贴图因 **h5App 壳与 Demo 业务包各有一份 `MagnifierBlitStore`** 会静默读空；打通单例后再开原生贴图。鸿蒙用「单进程 KN Store + NAPI 拉块」规避同类双 Store。
-5. **兜底**：`platformSupportsNativeMagnifier=false`，或业务注入了非 `DefaultMagnifierOverlayPainter` 的放大镜画家时，仍用 N×N 网格（可保留停指升密）。
-6. **采样契约不变**（ADR 0004）。鸿蒙采样边长与 Android/JS 对齐（约 96）。**绘制**：iOS / H5 本阶段继续网格；鸿蒙 / Android 走原生贴图。
+4. **iOS**：KN `MagnifierBlitStore`（`UIImage`）+ `PlatformMagnifierOverlay`；壳 `KRPerspectiveCropMagnifier`（`KRView` 子类，运行时按类名解析，无需 register）。`PerspectiveCropIosMagnifierBridge` 供 Swift 读仓。
+5. **H5（暂退）**：`platformSupportsNativeMagnifier()=false`，走 N×N 网格兜底。原 Canvas 贴图因 **h5App 壳与 Demo 业务包各有一份 `MagnifierBlitStore`** 会静默读空；打通单例后再开原生贴图。鸿蒙用「单进程 KN Store + NAPI 拉块」规避同类双 Store。
+6. **兜底**：`platformSupportsNativeMagnifier=false`，或业务注入了非 `DefaultMagnifierOverlayPainter` 的放大镜画家时，仍用 N×N 网格（可保留停指升密）。
+7. **采样契约不变**（ADR 0004）。各端采样边长对齐（约 96）。**绘制**：Android / 鸿蒙 / iOS 原生贴图；H5 暂网格。
 
 ## Consequences
 
-- Android / 鸿蒙主路径关闭「拖动马赛克」体验债。
-- 需在 androidApp / ohosApp 注册外部 RenderView；H5 暂不注册放大镜自定义 View。
+- Android / 鸿蒙 / iOS 主路径关闭「拖动马赛克」体验债。
+- 需在 androidApp / ohosApp 注册外部 RenderView；iOS 按类名 `KRPerspectiveCropMagnifier` 链入壳即可；H5 暂不注册。
 - 自定义放大镜 SPI 仍可用，但走网格而非原生贴图。
 - 鸿蒙宿主须暴露 `getMagnifierBlit` NAPI，并在 `KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifier`。
 

@@ -8,6 +8,8 @@
 
 ## 候选
 
+- [ ] 审查强制检查表第 3 条须按改动面路由码农包：iOS `.swift`/`.m`/`iosMain` 对照 `kuikly-ios-coding` norms；鸿蒙对照 `kuikly-ohos-coding`；Android/通用 Kotlin 对照 `kuikly-android-coding`；共用 L3 API 可跨包挂｜2026-11-09｜自评：未达标（skill 正文仍写死 android 清单；证据 review-ios-native-crop）｜peer：可改 kuikly-code-review SKILL 强制检查表
+
 - [ ] 审查强制检查表第 3 条须按改动面路由码农包：鸿蒙 `.ets`/`.cpp`/`ohosArm64` 对照 `kuikly-ohos-coding` norms；仅 Android/通用 Kotlin 对照 `kuikly-android-coding`；共用 L3 API 可两边挂｜2026-11-09｜自评：未达标（skill 正文仍写死 android 清单；证据 review-ohos-native-crop）｜peer：可改 kuikly-code-review SKILL 强制检查表
 
 - [ ] 跨端出图/贴图审查须开「像素布局」卡：同一管线若混用 GetArgbPixels(A,R,G,B) 与 Drawing BGRA(B,G,R,A) 等，必须有显式解包注释与自检；错序典型为紫蓝｜2026-11-09｜自评：已有 ohos misuse 错误 1；缺审查 heuristics 路由｜证据：review-ohos-native-crop

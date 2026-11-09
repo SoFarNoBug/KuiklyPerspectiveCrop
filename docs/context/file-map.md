@@ -3,7 +3,7 @@
 | 路径 | 说明 |
 |---|---|
 | `KuiklyPerspectiveCropCore/` | 库模块（common + android/ios/js） |
-| `…/CropProcessor*.kt` / `PlatformImage*.kt` / `PerspectiveCropAndroid.kt` | M2 出图 expect/actual + Android init |
+| `…/CropProcessor*.kt` / `PlatformImage*.kt` / `PerspectiveCropAndroid.kt` / `PerspectiveCropOhos.kt` / `PerspectiveCropIos.kt` | 出图 expect/actual + 各端 init |
 | `…/MagnifierSampler*.kt` / `MagnifierPatch.kt` | M3 放大镜采样 expect/actual + Patch |
 | `…/CropException.kt` / `CropOutputFormat.kt` | 出图失败与导出格式 |
 | `perspectiveCropDemo/` | Demo：`perspective_crop_demo` 产品演示 + `perspective_crop_lab` 全能配置 |

@@ -1,5 +1,12 @@
 # M5 changelog
 
+## 2026-11-09（iOS 切原生贴图）
+
+- `platformSupportsNativeMagnifier()=true`；`MagnifierBlitStore.ios`（UIImage）+ `PlatformMagnifierOverlay`
+- 壳 `KRPerspectiveCropMagnifier`（Swift/`KRView`）+ `PerspectiveCropIosMagnifierBridge`
+- ADR 0006 / Q38 / CONTEXT 同步；H5 仍网格
+- 治理收尾：门禁 跳过｜三问 是/是/否｜理由：iOS 放大镜策略对齐 Android/鸿蒙原生贴图｜待批 0（已达标 0）
+
 ## 2026-11-09（关 ohos P1-concurrency：BlitStore 原子快照）
 
 - `MagnifierBlitStore.ohos`：发布整包不可变快照，snapshot 先读稳定引用再拷贝数组

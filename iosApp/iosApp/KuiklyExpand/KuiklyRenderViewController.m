@@ -85,8 +85,8 @@
 
 - (void)fetchContextCodeWithPageName:(NSString *)pageName resultCallback:(KuiklyContextCodeCallback)callback {
     if (callback) {
-        // 返回对应framework名字
-        callback(@"shared", nil);
+        // 返回对应 framework 名字（与 cocoapods baseName / Podfile 一致）
+        callback(@"perspectiveCropDemo", nil);
     }
 }
 

@@ -50,7 +50,7 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q23** | 放大镜采样 | `MagnifierSampler` **expect/actual**；Android 真采样；iOS/JS stub | ADR 0004；M3 |
+| **Q23** | 放大镜采样 | `MagnifierSampler` **expect/actual**；Android / JS / 鸿蒙 / iOS 真采样（历史：iOS/JS 曾 stub） | ADR 0004；M3 / M4 / ios-native |
 | **Q24** | 采样缓存键 | 键含 `imageSrc` + **`uiRotationSteps`**（及 maxEdge）；旋转/换图失效重建 | ADR 0004；M3 |
 | **Q25** | 放大镜绘制输入 | Stage 组 **`MagnifierPatch`**（像素块 + 几何）→ 默认放大镜 Painter | ADR 0004；SPI |
 | **Q26** | 触摸事件穿透 | **`unhitPassthrough` 默认 false**；未命中手柄时不吞父容器手势 | Config；Stage |
@@ -75,7 +75,7 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**：**Android** `BitmapShader`；**鸿蒙** KN `MagnifierBlitStore` + NAPI 拉块 + ArkTS Canvas 圆镜；**H5 / iOS** 暂网格（H5 待 BlitStore 单例后再开）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标 | ADR 0006；M5 |
+| **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**：**Android** `BitmapShader`；**鸿蒙** KN `MagnifierBlitStore` + NAPI 拉块 + ArkTS Canvas；**iOS** KN `MagnifierBlitStore`（UIImage）+ 壳 `KRPerspectiveCropMagnifier`；**H5** 暂网格（待 BlitStore 单例后再开）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标 | ADR 0006；M5 |
 
 ## Q39（交互对齐 · minCrop / 角点 grab）
 
@@ -87,7 +87,7 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；H5 始终 Common；iOS stub | ADR 0009；`PerspectiveHomography` / Processor actual |
+| **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；iOS Native=Core Image 四点透视 hypot dest（Auto→Native）；H5 始终 Common | ADR 0009；`PerspectiveHomography` / Processor actual |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

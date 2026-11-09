@@ -1,5 +1,5 @@
 import SwiftUI
-import shared
+import perspectiveCropDemo
 
 struct ContentView: View {
 

@@ -1,23 +1,23 @@
 Pod::Spec.new do |spec|
-    spec.name                     = 'shared'
+    spec.name                     = 'perspectiveCropDemo'
     spec.version                  = '1.0'
-    spec.homepage                 = 'Link to the Shared Module homepage'
+    spec.homepage                 = 'Link to the KuiklyPerspectiveCrop demo'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = 'MIT'
-    spec.summary                  = 'Some description for the Shared Module'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/shared.framework'
+    spec.summary                  = 'Perspective crop demo shared pages'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/perspectiveCropDemo.framework'
     spec.libraries                = 'c++'
-    spec.ios.deployment_target    = '14.1'
+    spec.ios.deployment_target    = '15.0'
                 
                 
-    if !Dir.exist?('build/cocoapods/framework/shared.framework') || Dir.empty?('build/cocoapods/framework/shared.framework')
+    if !Dir.exist?('build/cocoapods/framework/perspectiveCropDemo.framework') || Dir.empty?('build/cocoapods/framework/perspectiveCropDemo.framework')
         raise "
 
-        Kotlin framework 'shared' doesn't exist yet, so a proper Xcode project can't be generated.
+        Kotlin framework 'perspectiveCropDemo' doesn't exist yet, so a proper Xcode project can't be generated.
         'pod install' should be executed after running ':generateDummyFramework' Gradle task:
 
-            ./gradlew :shared:generateDummyFramework
+            ./gradlew :perspectiveCropDemo:generateDummyFramework
 
         Alternatively, proper pod installation is performed during Gradle sync in the IDE (if Podfile location is set)"
     end
@@ -27,13 +27,13 @@ Pod::Spec.new do |spec|
     }
                 
     spec.pod_target_xcconfig = {
-        'KOTLIN_PROJECT_PATH' => ':shared',
-        'PRODUCT_MODULE_NAME' => 'shared',
+        'KOTLIN_PROJECT_PATH' => ':perspectiveCropDemo',
+        'PRODUCT_MODULE_NAME' => 'perspectiveCropDemo',
     }
                 
     spec.script_phases = [
         {
-            :name => 'Build shared',
+            :name => 'Build perspectiveCropDemo',
             :execution_position => :before_compile,
             :shell_path => '/bin/sh',
             :script => <<-SCRIPT
