@@ -6,6 +6,7 @@ import cnames.structs.OH_ImageSource_Info
 import cnames.structs.OH_PixelmapNative
 import cnames.structs.OH_Pixelmap_ImageInfo
 import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.UByteVar
@@ -214,15 +215,30 @@ internal fun decodeOhosPixelBuffer(
 }
 
 /**
- * 出图解码：旋源图后按 [maxEdge] 缩放。
- * [OhosPixelBuffer.scale] = bufWidth / rotatedNaturalWidth（对齐 JS decodeForCrop）。
+ * 出图用 PixelMap 句柄；调用方必须 [close]（或交给 Native/Common 路径释放）。
+ * [scale] = bufWidth / rotatedNaturalWidth（对齐 JS decodeForCrop）。
  */
 @OptIn(ExperimentalForeignApi::class)
-internal fun decodeOhosPixelBufferForCrop(
+internal class OhosCropPixelmap(
+    val ptr: CPointer<OH_PixelmapNative>,
+    val width: Int,
+    val height: Int,
+    val scale: Float,
+) {
+    fun close() {
+        OH_PixelmapNative_Release(ptr)
+    }
+}
+
+/**
+ * 出图解码：旋源图后按 [maxEdge] 缩放，返回未读像素的 PixelMap（供 Native Drawing / Common 抽 ARGB）。
+ */
+@OptIn(ExperimentalForeignApi::class)
+internal fun decodeOhosPixelmapForCrop(
     imageSrc: String,
     uiRotationSteps: Int,
     maxEdge: Int,
-): OhosPixelBuffer {
+): OhosCropPixelmap {
     if (imageSrc.isEmpty()) {
         throw CropException(CropException.EMPTY_IMAGE_SRC, "imageSrc is empty")
     }
@@ -267,11 +283,9 @@ internal fun decodeOhosPixelBufferForCrop(
                 val natH = hVar.value.toInt().coerceAtLeast(1)
                 val swap = steps % 2 != 0
                 val rotNatW = if (swap) natH else natW
-                val rotNatH = if (swap) natW else natH
 
-                val longest = max(rotNatW, rotNatH)
+                val longest = max(if (swap) natH else natW, if (swap) natW else natH)
                 val scaleDown = if (longest > edge) edge.toFloat() / longest else 1f
-                // DesiredSize 在旋转前相对源图；旋转后尺寸由 NDK 处理
                 val preW = max(1, (natW * scaleDown).roundToInt())
                 val preH = max(1, (natH * scaleDown).roundToInt())
                 val desired = alloc<Image_Size>()
@@ -296,54 +310,30 @@ internal fun decodeOhosPixelBufferForCrop(
                         throw CropException(CropException.DECODE_FAILED, "CreatePixelmap failed")
                     }
                     val pixelmap = pmPtr.value!!
-                    try {
-                        val pmInfoPtr = alloc<CPointerVar<OH_Pixelmap_ImageInfo>>()
-                        if (OH_PixelmapImageInfo_Create(pmInfoPtr.ptr) != IMAGE_SUCCESS_MIN ||
-                            pmInfoPtr.value == null
-                        ) {
-                            throw CropException(CropException.DECODE_FAILED, "PixelmapImageInfo_Create failed")
-                        }
-                        val pmInfo = pmInfoPtr.value!!
-                        try {
-                            if (OH_PixelmapNative_GetImageInfo(pixelmap, pmInfo) != IMAGE_SUCCESS_MIN) {
-                                throw CropException(CropException.DECODE_FAILED, "GetImageInfo(pixelmap) failed")
-                            }
-                            val outWVar = alloc<UIntVar>()
-                            val outHVar = alloc<UIntVar>()
-                            OH_PixelmapImageInfo_GetWidth(pmInfo, outWVar.ptr)
-                            OH_PixelmapImageInfo_GetHeight(pmInfo, outHVar.ptr)
-                            val outW = outWVar.value.toInt().coerceAtLeast(1)
-                            val outH = outHVar.value.toInt().coerceAtLeast(1)
-                            val sizeVar = alloc<ULongVar>()
-                            sizeVar.value = (outW.toLong() * outH * 4L).toULong()
-                            val bytes = UByteArray(outW * outH * 4)
-                            val readRc = bytes.usePinned { pinned ->
-                                OH_PixelmapNative_GetArgbPixels(
-                                    pixelmap,
-                                    pinned.addressOf(0).reinterpret(),
-                                    sizeVar.ptr,
-                                )
-                            }
-                            if (readRc != IMAGE_SUCCESS_MIN) {
-                                throw CropException(CropException.DECODE_FAILED, "GetArgbPixels failed rc=$readRc")
-                            }
-                            val argb = IntArray(outW * outH)
-                            var p = 0
-                            for (i in argb.indices) {
-                                val a = bytes[p].toInt() and 0xFF
-                                val r = bytes[p + 1].toInt() and 0xFF
-                                val g = bytes[p + 2].toInt() and 0xFF
-                                val b = bytes[p + 3].toInt() and 0xFF
-                                argb[i] = (a shl 24) or (r shl 16) or (g shl 8) or b
-                                p += 4
-                            }
-                            val scale = outW.toFloat() / rotNatW.coerceAtLeast(1).toFloat()
-                            OhosPixelBuffer(argb, outW, outH, scale)
-                        } finally {
-                            OH_PixelmapImageInfo_Release(pmInfo)
-                        }
-                    } finally {
+                    val pmInfoPtr = alloc<CPointerVar<OH_Pixelmap_ImageInfo>>()
+                    if (OH_PixelmapImageInfo_Create(pmInfoPtr.ptr) != IMAGE_SUCCESS_MIN ||
+                        pmInfoPtr.value == null
+                    ) {
                         OH_PixelmapNative_Release(pixelmap)
+                        throw CropException(CropException.DECODE_FAILED, "PixelmapImageInfo_Create failed")
+                    }
+                    val pmInfo = pmInfoPtr.value!!
+                    try {
+                        if (OH_PixelmapNative_GetImageInfo(pixelmap, pmInfo) != IMAGE_SUCCESS_MIN) {
+                            OH_PixelmapNative_Release(pixelmap)
+                            throw CropException(CropException.DECODE_FAILED, "GetImageInfo(pixelmap) failed")
+                        }
+                        val outWVar = alloc<UIntVar>()
+                        val outHVar = alloc<UIntVar>()
+                        OH_PixelmapImageInfo_GetWidth(pmInfo, outWVar.ptr)
+                        OH_PixelmapImageInfo_GetHeight(pmInfo, outHVar.ptr)
+                        val outW = outWVar.value.toInt().coerceAtLeast(1)
+                        val outH = outHVar.value.toInt().coerceAtLeast(1)
+                        val scale = outW.toFloat() / rotNatW.coerceAtLeast(1).toFloat()
+                        // pixelmap 所有权移交调用方；不在此 Release
+                        OhosCropPixelmap(pixelmap, outW, outH, scale)
+                    } finally {
+                        OH_PixelmapImageInfo_Release(pmInfo)
                     }
                 } finally {
                     OH_DecodingOptions_Release(options)
@@ -354,5 +344,56 @@ internal fun decodeOhosPixelBufferForCrop(
         } finally {
             OH_ImageSourceNative_Release(source)
         }
+    }
+}
+
+/** PixelMap → ARGB IntArray（GetArgbPixels：每像素 A,R,G,B）。 */
+@OptIn(ExperimentalForeignApi::class)
+internal fun readOhosPixelmapArgb(cropPm: OhosCropPixelmap): IntArray {
+    val outW = cropPm.width
+    val outH = cropPm.height
+    return memScoped {
+        val sizeVar = alloc<ULongVar>()
+        sizeVar.value = (outW.toLong() * outH * 4L).toULong()
+        val bytes = UByteArray(outW * outH * 4)
+        val readRc = bytes.usePinned { pinned ->
+            OH_PixelmapNative_GetArgbPixels(
+                cropPm.ptr,
+                pinned.addressOf(0).reinterpret(),
+                sizeVar.ptr,
+            )
+        }
+        if (readRc != IMAGE_SUCCESS_MIN) {
+            throw CropException(CropException.DECODE_FAILED, "GetArgbPixels failed rc=$readRc")
+        }
+        val argb = IntArray(outW * outH)
+        var p = 0
+        for (i in argb.indices) {
+            val a = bytes[p].toInt() and 0xFF
+            val r = bytes[p + 1].toInt() and 0xFF
+            val g = bytes[p + 2].toInt() and 0xFF
+            val b = bytes[p + 3].toInt() and 0xFF
+            argb[i] = (a shl 24) or (r shl 16) or (g shl 8) or b
+            p += 4
+        }
+        argb
+    }
+}
+
+/**
+ * 出图解码 + 抽 ARGB（Common / 兼容旧调用）。
+ */
+@OptIn(ExperimentalForeignApi::class)
+internal fun decodeOhosPixelBufferForCrop(
+    imageSrc: String,
+    uiRotationSteps: Int,
+    maxEdge: Int,
+): OhosPixelBuffer {
+    val pm = decodeOhosPixelmapForCrop(imageSrc, uiRotationSteps, maxEdge)
+    try {
+        val argb = readOhosPixelmapArgb(pm)
+        return OhosPixelBuffer(argb, pm.width, pm.height, pm.scale)
+    } finally {
+        pm.close()
     }
 }

@@ -47,6 +47,7 @@ kotlin {
             linkerOpts += "-limage_source_ndk.z"
             linkerOpts += "-lpixelmap_ndk.z"
             linkerOpts += "-lz"
+            linkerOpts += "-lnative_drawing"
             // keep @CName exports for NAPI (ELF, no underscore)
             linkerOpts += "-u"
             linkerOpts += "perspective_crop_set_resfile_dir"

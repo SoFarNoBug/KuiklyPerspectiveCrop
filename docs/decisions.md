@@ -87,7 +87,7 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙本期仅 Common，显式 Native 明确失败；H5 始终 Common；iOS stub | ADR 0009；`PerspectiveHomography` / Processor actual |
+| **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；H5 始终 Common；iOS stub | ADR 0009；`PerspectiveHomography` / Processor actual |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

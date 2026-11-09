@@ -1,0 +1,5 @@
+headers = ohos_drawing_min.h
+headerFilter = ohos_drawing_min.h
+package = ohos.drawing
+linkerOpts = -lnative_drawing
+---

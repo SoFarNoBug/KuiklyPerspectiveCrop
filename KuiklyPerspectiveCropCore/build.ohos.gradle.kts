@@ -31,6 +31,10 @@ kotlin {
             defFile(project.file("src/ohosArm64Main/ohosInterop/cinterop/ohosImage.def"))
             includeDirs(project.file("src/ohosArm64Main/ohosInterop/include"))
         }
+        val ohosDrawing by main.cinterops.creating {
+            defFile(project.file("src/ohosArm64Main/ohosInterop/cinterop/ohosDrawing.def"))
+            includeDirs(project.file("src/ohosArm64Main/ohosInterop/include"))
+        }
     }
 
     sourceSets {

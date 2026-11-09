@@ -29,8 +29,8 @@ _Avoid_: 把几何判定写进 Composable 闭包
 _Avoid_: 把平台策略类名泄漏到 common 公开面
 
 **CropEngine**:
-出图引擎：`Auto`（有原生用原生）/ `Native` / `Common`（CPU 单应，与 H5 同算法）。默认 Auto。
-_Avoid_: 把鸿蒙默认改成必须 Native；在 common 假装各端都有原生
+出图引擎：`Auto`（有原生用原生）/ `Native` / `Common`（CPU 单应，与 H5 同算法）。默认 Auto。Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；H5 始终 Common。
+_Avoid_: 在 common 假装各端都有原生；鸿蒙再走 ImagePacker Native 编码
 
 **CropException**:
 出图失败的公开异常；用 `code` + `message`（可带 `cause`）细分原因，禁止静默回原图或可空假成功。

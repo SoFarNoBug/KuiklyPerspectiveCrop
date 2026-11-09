@@ -4,7 +4,7 @@
 
 - **已打通（macOS）**：`./ohos_build.sh` → `libshared.so` → 签名 HAP → 真机 arm64 安装启动。
 - **放大镜（策略 A）**：KN `MagnifierBlitStore` + NAPI `getMagnifierBlit` + ArkTS `KRPerspectiveCropMagnifier` Canvas 圆镜；采样经 OH Image NDK。
-- **裁切**：Common CPU 单应（`cropEngine` Auto/Common）；`cropToFile` → `file://` 缓存；须 `PerspectiveCropOhos.init(resfileDir, cacheDir)`。
+- **裁切**：`Auto`/`Native` → Drawing `SetPolyToPoly`；`Common` → CPU 单应；落盘均为软件 PNG → `file://`；须 `PerspectiveCropOhos.init(resfileDir, cacheDir)`。
 
 ## 构建（macOS）
 
@@ -45,10 +45,10 @@ HAP：
 | `PerspectiveCropOhos.init` | NAPI `setPerspectiveCropOhosDirs(resourceDir, cacheDir)` |
 | 放大镜 View | `KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifier` |
 | 放大镜 NAPI | `getMagnifierBlit`；`@CName` blit snapshot 在 Demo shared |
-| 裁切 | Common 单应 + **软件 PNG** 落盘（不走 ImagePacker Native，避免 SIGSEGV）；`cropEngine=Native` → 明确失败 |
-| 链接库 | `image_source_ndk` / `pixelmap_ndk`（解码/放大镜） |
+| 裁切 | `Auto`/`Native` → Drawing `SetPolyToPoly`；`Common` → CPU 单应；落盘 **软件 PNG**（不走 ImagePacker Native，避免 SIGSEGV） |
+| 链接库 | `image_source_ndk` / `pixelmap_ndk` / `native_drawing`（解码/放大镜/Native 出图） |
 
 ## 能力边界
 
-- **可验**：home / Demo / Lab UI、框选手势、原生圆镜、`cropToFile` 再显示、Lab 出图引擎切换。
-- **不可当完成**：鸿蒙原生透视引擎（`setPolyToPoly` 等价）。
+- **可验**：home / Demo / Lab UI、框选手势、原生圆镜、`cropToFile` 再显示、Lab 出图引擎切换（Native/Auto vs Common）。
+- **不可当完成**：ImagePacker Native 编码；ArkUI Matrix4 出图。
