@@ -8,6 +8,10 @@
 
 ## 候选
 
+- [ ] 审查强制检查表第 3 条须按改动面路由码农包：鸿蒙 `.ets`/`.cpp`/`ohosArm64` 对照 `kuikly-ohos-coding` norms；仅 Android/通用 Kotlin 对照 `kuikly-android-coding`；共用 L3 API 可两边挂｜2026-11-09｜自评：未达标（skill 正文仍写死 android 清单；证据 review-ohos-native-crop）｜peer：可改 kuikly-code-review SKILL 强制检查表
+
+- [ ] 跨端出图/贴图审查须开「像素布局」卡：同一管线若混用 GetArgbPixels(A,R,G,B) 与 Drawing BGRA(B,G,R,A) 等，必须有显式解包注释与自检；错序典型为紫蓝｜2026-11-09｜自评：已有 ohos misuse 错误 1；缺审查 heuristics 路由｜证据：review-ohos-native-crop
+
 - [ ] Config 若同时存在「密度无关真源」与「toViewPx 视图副本」，须约定只允许真源写入 Session/Controller；视图副本仅限当帧绘制/Fit，禁止 `updateConfig(toViewPx(...))` 以免双重乘 density｜2026-11-08｜自评：未达标（缺正式 L3 条款；证据 review-compose-dp-units P2-double-density-guard）｜peer：可抄码农 perspective_crop_api
 
 - [ ] Compose/手势回调路径禁止同步全图解码：放大镜/缩略图须后台预热或异步首帧，命中缓存后再在手势线程读像素｜2026-11-07｜自评：未达标（缺整改闭环；可抄码农 `platform_android` A1）｜证据：review-m3-android-magnifier P1-main-thread-io
