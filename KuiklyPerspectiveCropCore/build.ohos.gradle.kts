@@ -25,7 +25,13 @@ kotlin {
         publishLibraryVariants("release")
     }
 
-    ohosArm64()
+    ohosArm64 {
+        val main by compilations.getting
+        val ohosImage by main.cinterops.creating {
+            defFile(project.file("src/ohosArm64Main/ohosInterop/cinterop/ohosImage.def"))
+            includeDirs(project.file("src/ohosArm64Main/ohosInterop/include"))
+        }
+    }
 
     sourceSets {
         val commonMain by getting {

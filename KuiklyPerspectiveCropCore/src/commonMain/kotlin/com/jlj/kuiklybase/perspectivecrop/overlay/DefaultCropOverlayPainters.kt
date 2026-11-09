@@ -2,6 +2,7 @@ package com.jlj.kuiklybase.perspectivecrop.overlay
 
 import com.jlj.kuiklybase.perspectivecrop.CropGeometry
 import com.jlj.kuiklybase.perspectivecrop.CropPoint
+import com.jlj.kuiklybase.perspectivecrop.MagnifierDrawGrid
 import com.jlj.kuiklybase.perspectivecrop.MagnifierPatch
 import com.jlj.kuiklybase.perspectivecrop.MagnifierPlacement
 import com.jlj.kuiklybase.perspectivecrop.PerspectiveCropConfig
@@ -152,7 +153,8 @@ object DefaultMagnifierOverlayPainter : MagnifierOverlayPainter {
             drawCircle(color = Color(0xFF222222), radius = radius, center = Offset(cx, cy))
             if (patch != null && patch.width > 0 && patch.height > 0) {
                 // Q38 兜底：原生贴图不可用时 N×N drawRect；拖动粗 / 停指密（patch.drawGrid）
-                val grid = patch.drawGrid.coerceIn(8, 48)
+                // 下限 4：鸿蒙 DRAG=6 不能被抬回 8
+                val grid = patch.drawGrid.coerceIn(4, 48)
                 val dest = radius * 2f
                 val cellW = dest / grid
                 val cellH = dest / grid
@@ -176,7 +178,11 @@ object DefaultMagnifierOverlayPainter : MagnifierOverlayPainter {
             }
         }
 
-        if (config.showMagnifierCropLineMirror && viewPoints.size == 4) {
+        // 拖动中跳过框线镜像，少一次 clipPath（网格兜底保帧；停指升密后再画）
+        val drawMirror = config.showMagnifierCropLineMirror &&
+            viewPoints.size == 4 &&
+            (patch == null || patch.drawGrid >= MagnifierDrawGrid.SETTLED)
+        if (drawMirror) {
             val lineColor = Color(config.borderColor)
             val stroke = config.borderWidthPx.coerceAtLeast(1f)
             clipPath(clip) {

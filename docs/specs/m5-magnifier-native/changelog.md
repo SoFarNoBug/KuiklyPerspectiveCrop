@@ -1,5 +1,12 @@
 # M5 changelog
 
+## 2026-11-09（鸿蒙策略 A：原生圆镜）
+
+- `PlatformMagnifier.ohos`：`platformSupportsNativeMagnifier=true`；`MagnifierBlitStore` + `MakeKuiklyComposeNode`
+- Demo `@CName` `perspective_crop_magnifier_blit_snapshot`；NAPI `getMagnifierBlit`；ArkTS `KRPerspectiveCropMagnifier` Canvas
+- `MagnifierSampler.ohos`：`maxEdge` 回 96；Q38 / ADR 0006 / CONTEXT / ohos runbook 同步
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：鸿蒙网格卡顿根因修复｜待批 0
+
 ## 2026-11-07（关审查 P2：publish 边界 + 删 dead generation）
 
 - `PlatformMagnifier.android`：`MagnifierBlitStore.publish` 移入 `viewInit`/`viewUpdate`（关 `P2-compose-impure-publish`）

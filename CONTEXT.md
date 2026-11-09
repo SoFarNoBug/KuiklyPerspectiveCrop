@@ -25,8 +25,12 @@ _Avoid_: 在 common API 中直接返回 Bitmap / UIImage
 _Avoid_: 把几何判定写进 Composable 闭包
 
 **CropProcessor**:
-按四点做透视裁切 / 旋转的可替换策略；Android 先实装，其它端可 stub。
+按四点做透视裁切 / 旋转的可替换策略；受 Config `cropEngine` 驱动（双引擎）。
 _Avoid_: 把平台策略类名泄漏到 common 公开面
+
+**CropEngine**:
+出图引擎：`Auto`（有原生用原生）/ `Native` / `Common`（CPU 单应，与 H5 同算法）。默认 Auto。
+_Avoid_: 把鸿蒙默认改成必须 Native；在 common 假装各端都有原生
 
 **CropException**:
 出图失败的公开异常；用 `code` + `message`（可带 `cause`）细分原因，禁止静默回原图或可空假成功。
@@ -35,6 +39,10 @@ _Avoid_: 用 null / Result 改写已定双 API 非空返回面
 **PerspectiveCropAndroid**:
 Android 宿主初始化入口（`init(application)`），供解码与缓存目录使用；不绑定业务 Application 类名。
 _Avoid_: 在库内直接依赖 Demo 的 `KRApplication`
+
+**PerspectiveCropOhos**:
+鸿蒙宿主初始化入口（`init(resfileDir, cacheDir)`），注入 hap `resourceDir`（`assets://`）与缓存目录（`saveToFile`）；不绑定业务 Ability 类名。
+_Avoid_: 在库内硬编码 resfile 绝对路径；把 init 绑死到 Demo 包名；cache 为空时静默失败
 
 **CropOverlayPainters（六层 SPI）**:
 可分别注入的叠层绘制扩展点：**蒙版 / 框线 / 角点 / 边线中点 / 九宫格辅助线 / 放大镜**；库提供默认实现，业务皮肤只进 Demo（改变样式）。可有门面聚合，但分层必须可单独替换。
@@ -69,19 +77,23 @@ _Avoid_: 库内实现「绘制外扩」；默认非 0 破坏兼容；当成裸 p
 
 **showMagnifierCropLineMirror**:
 放大镜圆内再画选区框线镜像；**默认开**；样式复用框线色宽。
-_Avoid_: 旧名 need2DrawInsideAreaLineMirror；只改 Compose 兜底而 Android 原生圆镜不画
+_Avoid_: 旧名 need2DrawInsideAreaLineMirror；只改 Compose 兜底而 Android / 鸿蒙原生圆镜不画
 
 **透视校正**:
 将斜拍四边形选区变换为正面矩形图的出图过程（非 OCR、非边缘检测）。
 _Avoid_: 扫描识别, deskew（仅旋转校正）
 
 **MagnifierSampler**:
-放大镜降采样采样器（expect/actual）；Android 建最长边受限的采样缓存并裁 patch，其它端 stub。
+放大镜降采样采样器（expect/actual）；Android / JS / 鸿蒙建最长边受限的采样缓存并裁 patch；iOS 仍 stub。
 _Avoid_: 每帧全分辨率解码；依赖残缺 ImageBitmap.readPixels
 
 **MagnifierPatch**:
 Stage 交给放大镜 Painter 的像素块 + 触点几何（非平台 Bitmap 公开类型）。
 _Avoid_: 把 Android Bitmap 挂到 common 公开 API
+
+**MagnifierBlitStore**:
+原生放大镜进程内像素仓（Android Bitmap / 鸿蒙 ARGB `IntArray`）；props 只传几何与 `magGeneration`。鸿蒙壳经 NAPI 拉快照，避免 props 传大数组，也避免 H5 式双 Store。
+_Avoid_: 壳与业务包各持一份 Store；把整块像素打进 Kuikly props
 
 **unhitPassthrough（触摸事件穿透）**:
 DOWN 未命中选区手柄时交给父容器；**默认 false**。

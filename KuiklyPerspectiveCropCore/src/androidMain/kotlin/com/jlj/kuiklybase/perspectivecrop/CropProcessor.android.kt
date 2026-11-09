@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
 /**
  * @CreateDate: 2026/11/07
  * @Author: jlj
- * @Description: Android 透视出图：解码 → 旋源图 → setPolyToPoly（Q17/Q21）。
+ * @Description: Android 透视出图：Native setPolyToPoly / Common CPU 单应（Config.cropEngine）。
  */
 actual class CropProcessor actual constructor() {
 
@@ -42,8 +42,17 @@ actual class CropProcessor actual constructor() {
             }
         }
 
+        val useNative = when (config.cropEngine) {
+            CropEngine.Auto, CropEngine.Native -> true
+            CropEngine.Common -> false
+        }
+
         return try {
-            val cropped = perspectiveCrop(source, points)
+            val cropped = if (useNative) {
+                perspectiveCropNative(source, points)
+            } else {
+                perspectiveCropCommon(source, points)
+            }
             PlatformImage(cropped, config.outputFormat, config.jpegQuality)
         } catch (e: CropException) {
             throw e
@@ -51,7 +60,6 @@ actual class CropProcessor actual constructor() {
             throw CropException(CropException.TRANSFORM_FAILED, "perspective transform failed", e)
         } finally {
             if (!source.isRecycled) {
-                // 结果图可能复用或独立；perspectiveCrop 总是新建 bitmap，可回收 source
                 source.recycle()
             }
         }
@@ -73,7 +81,6 @@ actual class CropProcessor actual constructor() {
                     if (file.exists()) {
                         BitmapFactory.decodeFile(file.absolutePath)
                     } else {
-                        // 兜底：当 assets 相对名
                         context.assets.open(imageSrc).use { BitmapFactory.decodeStream(it) }
                     }
                 }
@@ -90,9 +97,9 @@ actual class CropProcessor actual constructor() {
     }
 
     /**
-     * 结果尺寸：宽=上边长，高=左边长；不再对结果加 degrees（旋转已在源图完成）。
+     * Native：结果尺寸宽=上边长、高=左边长；旋源图后 setPolyToPoly。
      */
-    private fun perspectiveCrop(bitmap: Bitmap, points: List<CropPoint>): Bitmap {
+    private fun perspectiveCropNative(bitmap: Bitmap, points: List<CropPoint>): Bitmap {
         val srcPoints = floatArrayOf(
             points[0].x, points[0].y,
             points[1].x, points[1].y,
@@ -130,5 +137,17 @@ actual class CropProcessor actual constructor() {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         canvas.drawBitmap(bitmap, matrix, paint)
         return result
+    }
+
+    /** Common：ARGB + CPU 单应（与 H5/鸿蒙同算法）。 */
+    private fun perspectiveCropCommon(bitmap: Bitmap, points: List<CropPoint>): Bitmap {
+        val w = bitmap.width
+        val h = bitmap.height
+        val pixels = IntArray(w * h)
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+        val warped = perspectiveWarpArgb(pixels, w, h, points)
+        val out = Bitmap.createBitmap(warped.second, warped.third, Bitmap.Config.ARGB_8888)
+        out.setPixels(warped.first, 0, warped.second, 0, 0, warped.second, warped.third)
+        return out
     }
 }

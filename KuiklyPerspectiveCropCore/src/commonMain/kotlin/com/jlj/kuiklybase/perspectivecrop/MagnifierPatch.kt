@@ -47,11 +47,14 @@ data class MagnifierPatch(
     }
 }
 
-/** 放大镜网格密度：拖动保帧，停指提清。 */
+/** 放大镜网格密度：拖动保帧，停指提清（仅网格兜底路径；Android 原生贴图不用）。 */
 object MagnifierDrawGrid {
-    /** 拖动：24 真机卡顿，回退 12。 */
-    const val DRAG: Int = 12
-    /** 停指：32 已清；48 拖动档曾连带卡顿，停指维持 32。 */
-    const val SETTLED: Int = 32
-    const val SETTLE_DELAY_MS: Long = 120L
+    /**
+     * 拖动网格边长。12 在鸿蒙 KN Compose 上仍卡；6≈36 次 drawRect。
+     * Android 主路径走 BitmapShader，不受此影响。
+     */
+    const val DRAG: Int = 6
+    /** 停指升密；32 在鸿蒙上过重，16 折中。 */
+    const val SETTLED: Int = 16
+    const val SETTLE_DELAY_MS: Long = 160L
 }

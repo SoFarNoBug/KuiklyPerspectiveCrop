@@ -1,0 +1,5 @@
+headers = ohos_image_min.h
+headerFilter = ohos_image_min.h
+package = ohos.image
+linkerOpts = -limage_source_ndk.z -lpixelmap_ndk.z -lz
+---

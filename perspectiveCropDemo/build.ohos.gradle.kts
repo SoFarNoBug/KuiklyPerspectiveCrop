@@ -43,6 +43,17 @@ kotlin {
         binaries.sharedLib("shared") {
             freeCompilerArgs += "-Xadd-light-debug=enable"
             linkerOpts += "--build-id=sha1"
+            // MagnifierSampler.ohos → OH Image NDK
+            linkerOpts += "-limage_source_ndk.z"
+            linkerOpts += "-lpixelmap_ndk.z"
+            linkerOpts += "-lz"
+            // keep @CName exports for NAPI (ELF, no underscore)
+            linkerOpts += "-u"
+            linkerOpts += "perspective_crop_set_resfile_dir"
+            linkerOpts += "-u"
+            linkerOpts += "perspective_crop_set_ohos_dirs"
+            linkerOpts += "-u"
+            linkerOpts += "perspective_crop_magnifier_blit_snapshot"
         }
     }
 

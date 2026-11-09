@@ -116,6 +116,12 @@ data class PerspectiveCropConfig(
     /** JPEG 质量 0–100（仅 [CropOutputFormat.Jpeg] 生效）；默认 92。 */
     val jpegQuality: Int = 92,
     /**
+     * 出图引擎（双策略）：默认 [CropEngine.Auto]（有原生用原生，否则 common CPU）。
+     * Android：Auto/Native → setPolyToPoly；Common → CPU 单应。
+     * 鸿蒙/H5：Auto/Common → CPU；显式 Native 在鸿蒙会明确失败。
+     */
+    val cropEngine: CropEngine = CropEngine.Auto,
+    /**
      * 内容内缩（**Compose dp**，默认 0；对齐 freequadcrop contentInset*）。
      * Fit / 命中 / 框线 / 辅助线共用 [ImageFitMapping]；蒙版仍铺满 Stage。
      * 与宿主「绘制外扩」成对使用；外扩本身不进库。

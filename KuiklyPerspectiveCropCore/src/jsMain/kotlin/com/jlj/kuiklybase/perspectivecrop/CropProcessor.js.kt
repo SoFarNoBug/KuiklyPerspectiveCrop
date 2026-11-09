@@ -20,7 +20,7 @@ actual class CropProcessor actual constructor() {
             throw CropException(CropException.EMPTY_IMAGE_SRC, "imageSrc is empty")
         }
         val decoded = try {
-            decodeJsPixelBufferForCrop(imageSrc, rotationSteps, JS_CROP_MAX_EDGE)
+            decodeJsPixelBufferForCrop(imageSrc, rotationSteps, CROP_MAX_EDGE)
         } catch (e: CropException) {
             throw e
         } catch (e: Exception) {

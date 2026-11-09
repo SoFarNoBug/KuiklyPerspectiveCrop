@@ -75,13 +75,19 @@
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
-| **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**（当前 **仅 Android** `BitmapShader`）；**H5 / iOS / 鸿蒙暂网格兜底**（H5 待 BlitStore 单例后再开 Canvas）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标（Android 主路径） | ADR 0006；M5 |
+| **Q38** | 放大镜绘制主路径 | **主路径原生像素贴图**：**Android** `BitmapShader`；**鸿蒙** KN `MagnifierBlitStore` + NAPI 拉块 + ArkTS Canvas 圆镜；**H5 / iOS** 暂网格（H5 待 BlitStore 单例后再开）；自定义 `MagnifierOverlayPainter` 时强制网格逃生口；拖动全程清晰为目标 | ADR 0006；M5 |
 
 ## Q39（交互对齐 · minCrop / 角点 grab）
 
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
 | **Q39** | minCrop / 自由角抓取 / 单位 | UI 长度（catch / minCrop / inset / 描边等）为 **Compose dp**（× `LocalDensity.density` 再 `/ Fit.scale` 或绘制）；`minCropWidth` 默认 100；catch 默认 20/20/30；自由角 **帧增量** + `cornerGrabOffsetEnabled`（默认关）+ `cornerMaxStepPx`（图像素，默认 0） | ADR 0007、**0008**；Config / Session / Stage |
+
+## Q40（出图双引擎）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙本期仅 Common，显式 Native 明确失败；H5 始终 Common；iOS stub | ADR 0009；`PerspectiveHomography` / Processor actual |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

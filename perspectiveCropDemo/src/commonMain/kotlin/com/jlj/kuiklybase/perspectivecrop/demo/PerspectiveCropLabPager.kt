@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.jlj.kuiklybase.perspectivecrop.CropEngine
 import com.jlj.kuiklybase.perspectivecrop.CropException
 import com.jlj.kuiklybase.perspectivecrop.CropPoint
 import com.jlj.kuiklybase.perspectivecrop.MagnifierPlacement
@@ -231,6 +232,18 @@ private fun PerspectiveCropLabScreen() {
                             }
                         },
                     )
+                    DemoToggleChip(
+                        label = "出图引擎·${cropEngineLabel(cfg.cropEngine)}",
+                        active = true,
+                        onClick = {
+                            applyCfg {
+                                val next = CropEngine.entries.let { all ->
+                                    all[(all.indexOf(cropEngine) + 1) % all.size]
+                                }
+                                copy(cropEngine = next)
+                            }
+                        },
+                    )
                 }
                 LabTab.Gesture -> {
                     DemoToggleChip(
@@ -411,4 +424,10 @@ private fun placementLabel(p: MagnifierPlacement): String = when (p) {
     MagnifierPlacement.TopLeft -> "固定左上"
     MagnifierPlacement.TopRight -> "固定右上"
     MagnifierPlacement.AboveTouch -> "跟着指尖上方"
+}
+
+private fun cropEngineLabel(e: CropEngine): String = when (e) {
+    CropEngine.Auto -> "Auto"
+    CropEngine.Native -> "Native"
+    CropEngine.Common -> "Common"
 }

@@ -259,9 +259,10 @@ fun PerspectiveCropStage(
                                 val img = m.viewToImageClamped(offset.x, offset.y)
                                 session.onDrag(img.x, img.y)
                                 controller.publish()
-                                // 每 2 次 MOVE 采一次样，减轻 getPixels + 重绘压力
+                                // 网格兜底更稀采样（鸿蒙 KN drawRect 贵）；原生贴图仍每 2 帧
                                 magTick++
-                                if (magTick % 2 == 0) {
+                                val magEvery = if (useNativeMagnifier) 2 else 4
+                                if (magTick % magEvery == 0) {
                                     refreshMagnifier(
                                         sampler = sampler,
                                         src = srcState.value,

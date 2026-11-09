@@ -5,8 +5,8 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** 输出最长边硬顶（Q35）。 */
-internal const val JS_CROP_MAX_EDGE = 4096
+/** 输出最长边硬顶（Q35；原 JS_CROP_MAX_EDGE）。 */
+internal const val CROP_MAX_EDGE = 4096
 
 /**
  * 计算将目标矩形像素映射到源四边形的 3×3 单应（行优先）。
@@ -34,7 +34,6 @@ private fun solveHomography(
     u: DoubleArray,
     v: DoubleArray,
 ): DoubleArray {
-    // 8x9 增广：对每点两行
     val a = Array(8) { DoubleArray(9) }
     for (i in 0 until 4) {
         val xi = x[i]
@@ -62,13 +61,10 @@ private fun solveHomography(
         a[r1][7] = -vi * yi
         a[r1][8] = -vi
     }
-    // 高斯消元求 null space（最后一列为 rhs 形式：把 h8 移到右边 → 解 8 元，h8=1）
-    // 改写为 8x8 * h0..h7 = -col8（当 h22=1 时 col8 是常数项）
     val m = Array(8) { DoubleArray(9) }
     for (r in 0 until 8) {
         for (c in 0 until 9) m[r][c] = a[r][c]
     }
-    // 将方程 A[:,0:8] * h[0:8] = -A[:,8] * h8，设 h8=1
     for (r in 0 until 8) {
         m[r][8] = -m[r][8]
     }
@@ -141,10 +137,10 @@ internal fun perspectiveWarpArgb(
             (pointsInSrcSpace[3].y - pointsInSrcSpace[0].y).toDouble(),
         ).roundToInt(),
     )
-    if (max(width, height) > JS_CROP_MAX_EDGE) {
+    if (max(width, height) > CROP_MAX_EDGE) {
         throw CropException(
             CropException.TRANSFORM_FAILED,
-            "output edge ${max(width, height)} exceeds hard cap $JS_CROP_MAX_EDGE",
+            "output edge ${max(width, height)} exceeds hard cap $CROP_MAX_EDGE",
         )
     }
     val h = homographyDestToSrc(pointsInSrcSpace, width, height)

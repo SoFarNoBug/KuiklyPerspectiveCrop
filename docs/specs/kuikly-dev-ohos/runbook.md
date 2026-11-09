@@ -1,42 +1,37 @@
-# 鸿蒙壳冒烟（进行中 2026-11-07）
+# 鸿蒙壳冒烟（进行中 2026-11-09）
 
 ## 结论
 
-- **已打通**：`-c settings.ohos.gradle.kts` → `libshared.so`（`sharedLib("shared")`）→ `entry/libs/arm64-v8a`；hvigor `assembleHap` 产出 unsigned HAP；Core 含 `ohosArm64` stub。
-- **当前阻塞**：本机模拟器为 **x86_64**，Kuikly/本仓只产 **arm64-v8a** so → `hdc install` 报 ABI 不匹配（code 9568347）。需 **arm64 真机** 或 ARM 系统镜像模拟器。
+- **已打通（macOS）**：`./ohos_build.sh` → `libshared.so` → 签名 HAP → 真机 arm64 安装启动。
+- **放大镜（策略 A）**：KN `MagnifierBlitStore` + NAPI `getMagnifierBlit` + ArkTS `KRPerspectiveCropMagnifier` Canvas 圆镜；采样经 OH Image NDK。
+- **裁切**：Common CPU 单应（`cropEngine` Auto/Common）；`cropToFile` → `file://` 缓存；须 `PerspectiveCropOhos.init(resfileDir, cacheDir)`。
 
-## 构建
+## 构建（macOS）
 
-```bat
-:: 仓库根
-set DEVECO_SDK_HOME=D:\DevEco_Studio_26.0\sdk
-ohos_build.bat
+```bash
+# 仓库根；DevEco 默认路径 /Applications/DevEco-Studio.app
+./ohos_build.sh
 ```
 
 产物：
 
 - `ohosApp/entry/libs/arm64-v8a/libshared.so`
 - `ohosApp/entry/src/main/cpp/libshared_api.h`
+- `ohosApp/entry/src/main/resources/resfile/crop_sample.webp`
 
 HAP：
 
-```bat
-cd ohosApp
-ohpm install --all
-:: DevEco node + hvigor
-hvigorw --mode module -p module=entry@default -p product=default -p buildMode=debug assembleHap
+```bash
+# 仓库根
+./ohosApp/runOhosApp.sh
 ```
 
-建议在 DevEco 勾选 **自动签名**，否则只有 `entry-default-unsigned.hap`（部分环境仍可装，但真机通常要 signed）。
+## 签名（必做一次）
 
-## 安装（arm64 设备）
-
-```powershell
-cd ohosApp
-.\runOhosApp.ps1
-```
-
-包名：`com.jlj.kuiklyperspectivecropui`，Ability：`EntryAbility`。
+1. DevEco Studio 打开 `ohosApp`
+2. File → Project Structure → Signing Configs → 勾选 **Automatically generate signature**
+3. 保存后 `build-profile.json5` 的 `signingConfigs` 会写入 `~/.ohos/config/default_…`
+4. 再跑 `./ohosApp/runOhosApp.sh`
 
 ## 工程注意
 
@@ -45,10 +40,15 @@ cd ohosApp
 | Gradle 入口 | `settings.ohos.gradle.kts` + 各模块 `build.ohos.gradle.kts` |
 | Kotlin | `2.0.21-KBA-010`；coroutines 用 `1.8.0-KBA-002`（ohos_arm64） |
 | Kuikly Maven | `getKuiklyOhosVersion()` = `2.30.0-2.0.21-ohos` |
-| render HAR | `@kuikly-open/render@2.30.0`（与短版本对齐） |
-| 裁切/放大镜 | ohos stub → `UNSUPPORTED_PLATFORM` / 空圆 |
+| render HAR | `@kuikly-open/render@2.30.0` |
+| `ohosApp/local.properties` | gitignore；`kuikly.compilePluginEnabled=false` |
+| `PerspectiveCropOhos.init` | NAPI `setPerspectiveCropOhosDirs(resourceDir, cacheDir)` |
+| 放大镜 View | `KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifier` |
+| 放大镜 NAPI | `getMagnifierBlit`；`@CName` blit snapshot 在 Demo shared |
+| 裁切 | Common 单应 + **软件 PNG** 落盘（不走 ImagePacker Native，避免 SIGSEGV）；`cropEngine=Native` → 明确失败 |
+| 链接库 | `image_source_ndk` / `pixelmap_ndk`（解码/放大镜） |
 
 ## 能力边界
 
-- **可验（有 arm64 设备后）**：home / Demo / Lab UI、框选手势。
-- **不可当完成**：真透视出图、真像素放大镜（需后续 ohos actual）。
+- **可验**：home / Demo / Lab UI、框选手势、原生圆镜、`cropToFile` 再显示、Lab 出图引擎切换。
+- **不可当完成**：鸿蒙原生透视引擎（`setPolyToPoly` 等价）。

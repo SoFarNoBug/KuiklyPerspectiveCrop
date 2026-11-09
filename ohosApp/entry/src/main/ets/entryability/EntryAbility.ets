@@ -6,10 +6,14 @@ import window from '@ohos.window';
 import { KuiklyRenderAdapterManager } from '@kuikly-open/render';
 import { LogAdapter } from '../kuikly/adapter/LogAdapter';
 import { RouterAdapter } from '../kuikly/adapter/RouterAdapter';
+import { ResfileHolder } from '../kuikly/ResfileHolder';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    // 早于 Stage；实际 NAPI 注入在 MyNativeManager.loadNative（so 已加载）
+    ResfileHolder.dir = this.context.resourceDir;
+    ResfileHolder.cacheDir = this.context.cacheDir;
   }
 
   onDestroy(): void {
