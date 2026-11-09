@@ -96,5 +96,5 @@ node static_server/serve/index.js
 ## 能力边界（避免误验）
 
 - **可验（M4）**：home / Demo / Lab；拖角真像素放大镜；确认裁切 → `blob:` 再显示；`CropException` 失败面。  
-- **仍非目标**：iOS 真采样/出图（stub）；WebGL 加速；OCR / autoScan。  
-- Android 真机验收仍以 M2/M3 device-check-list 为准。
+- **仍非目标（H5）**：WebGL 加速；OCR / autoScan。  
+- iOS / 鸿蒙 / Android 起服与真机表见各自 runbook / device-check-list（iOS 已非 stub）。

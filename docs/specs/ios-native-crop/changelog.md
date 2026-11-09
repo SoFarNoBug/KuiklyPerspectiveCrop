@@ -1,5 +1,10 @@
 # ios-native-crop · feature changelog
 
+## 2026-11-09（沉淀 iOS runbook）
+
+- 起服经验写入 [`../kuikly-dev-ios/runbook.md`](../kuikly-dev-ios/runbook.md)
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：交叉索引｜待批 0（已达标 0）
+
 ## 2026-11-09（真机验证通过）
 
 - 真机表步骤 1–7 用户确认 OK（含 Auto/Native/Common、`file://`、旋源、原生放大镜）

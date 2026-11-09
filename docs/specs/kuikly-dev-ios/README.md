@@ -6,3 +6,8 @@
 - **速速改**：琐碎改动 → 最小改动 → 条件性 changelog。
 
 规范全文在 `docs/skill-references/`（含 `lang_swift` / `lang_objc` / `platform_ios`）；角色 ACL 在 `.cursor/rules/kuikly-dev-ios.mdc`。
+
+| 文档 | 用途 |
+|---|---|
+| [runbook.md](./runbook.md) | **冒烟步骤、依赖、排障、能力边界**（已验证） |
+| [changelog.md](./changelog.md) | skill / 工作流变更 |
