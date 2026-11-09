@@ -17,6 +17,7 @@
 |---|---|---|
 | Android / 通用 KMP 编码 / 修 Bug / 按计划 / 速速改 | `kuikly-dev-android.mdc` | `kuikly-android-coding` |
 | 鸿蒙（ohosApp / ets / NAPI / ohosArm64）编码 | `kuikly-dev-ohos.mdc` | `kuikly-ohos-coding` |
+| iOS（iosApp / Swift / ObjC / iosMain）编码 | `kuikly-dev-ios.mdc` | `kuikly-ios-coding` |
 | 审查 / review | `kuikly-dev-review.mdc` | `kuikly-code-review` |
 | 烤一下 / grill一下 / 审讯一下 | `grill-with-docs.mdc` | `grill-with-docs` → `grilling` + `domain-modeling` |
 | Kuikly Compose DSL | `kuiklyComposeDSL.mdc` | — |
@@ -28,7 +29,7 @@
 | 闸 | Hook | 拦什么 | 如何放行 |
 |---|---|---|---|
 | 编码前确认闸 | `coding-gate-ask.mjs` | 未选 1/2 就写非文档文件 | 对话选 1/2，或 `gate-unlock.mjs on` |
-| **编码 Skill 硬闸** | `coding-skill-gate.mjs` | 未 Read 码农 SKILL 就写 `.kt`/`.ets`/`.cpp` 等 | **Read** `kuikly-android-coding` 或 `kuikly-ohos-coding` 的 `SKILL.md`；或说「速速改」；或 `skill-gate-unlock.mjs on` |
+| **编码 Skill 硬闸** | `coding-skill-gate.mjs` | 未 Read 码农 SKILL 就写 `.kt`/`.ets`/`.swift`/`.m`/`.mm`/`.cpp` 等 | **Read** `kuikly-android-coding` / `kuikly-ohos-coding` / `kuikly-ios-coding` 的 `SKILL.md`；或说「速速改」；或 `skill-gate-unlock.mjs on` |
 
 说明：确认闸解锁 **≠** Skill 硬闸武装。Implement Plan 时两道都要过。  
 Skill 硬闸文档：`docs/context/coding-skill-gate.md`；确认闸：`docs/context/coding-gate.md`。
@@ -36,7 +37,7 @@ Skill 硬闸文档：`docs/context/coding-skill-gate.md`；确认闸：`docs/con
 ## Plan 与 grill-with-docs
 
 - 设计空间大、用户说「烤一下 / grill一下 / 审讯一下」→ 先 grill，再落 CONTEXT/ADR / 计划。
-- 用户已确认计划且说执行 → **先 Read** 对应码农 Skill（Android / 鸿蒙）→ 再改业务源码（hook 会验）。
+- 用户已确认计划且说执行 → **先 Read** 对应码农 Skill（Android / 鸿蒙 / iOS）→ 再改业务源码（hook 会验）。
 
 ## 里程碑
 

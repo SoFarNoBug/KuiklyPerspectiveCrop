@@ -1,5 +1,5 @@
 ---
-description: 确认 Plan 后的编码执行必须先走码农 skill（Android→kuikly-android-coding；鸿蒙→kuikly-ohos-coding），禁止只对照 Plan 写码。硬拦见 coding-skill-gate hook。
+description: 确认 Plan 后的编码执行必须先走码农 skill（Android→kuikly-android-coding；鸿蒙→kuikly-ohos-coding；iOS→kuikly-ios-coding），禁止只对照 Plan 写码。硬拦见 coding-skill-gate hook。
 alwaysApply: true
 ---
 
@@ -10,9 +10,10 @@ alwaysApply: true
 ## 硬约束（Agent）
 
 1. **第一步**必须按改动面 `Read` 对应 Skill + `project.yaml`。未读完**禁止**改业务代码。
-   - **Android / 通用 Kotlin KMP（非 ohos 壳）**：`.cursor/skills/kuikly-android-coding/SKILL.md`
+   - **Android / 通用 Kotlin KMP（非 ohos/iOS 壳）**：`.cursor/skills/kuikly-android-coding/SKILL.md`
    - **鸿蒙**（`ohosApp/`、`.ets`/`.c`/`.cpp`、`ohosArm64Main`、NAPI/Drawing）：`.cursor/skills/kuikly-ohos-coding/SKILL.md`
-   - 双端同改：两个 Skill 都要 Read。
+   - **iOS**（`iosApp/`、`.swift`/`.m`/`.mm`、`iosMain`、UIKit）：`.cursor/skills/kuikly-ios-coding/SKILL.md`
+   - 多端同改：对应 Skill 都要 Read。
 2. 路径固定为 **按计划行事**（`an-ji-hua-xing-shi`）。禁止把「对着 Plan 勾 todo」当成完整流程。
 3. **编码前**按 SKILL §规范全文路由读完本轮命中的 `norms[].ref`；只读 Rule 摘要**不算**。
 4. 收尾必须输出 SKILL **§实现回报**（含 selfcheck 逐行三态表）；缺栏视为本单编码 skill **未执行**。
@@ -21,7 +22,7 @@ alwaysApply: true
 ## 硬拦（Hook · 机械兜底）
 
 - 脚本：`.cursor/hooks/coding-skill-gate.mjs`（已挂 `hooks.json`）
-- **未**在本会话 Read 过 `kuikly-android-coding/SKILL.md` **或** `kuikly-ohos-coding/SKILL.md` 时，对 `.kt` / `.java` / `.kts` / `.ets` / `.c` / `.cpp` / `.h` 的 Write/StrReplace/Delete **deny**
+- **未**在本会话 Read 过 `kuikly-android-coding` / `kuikly-ohos-coding` / `kuikly-ios-coding` 的 `SKILL.md` 时，对 `.kt` / `.java` / `.kts` / `.ets` / `.c` / `.cpp` / `.h` / `.swift` / `.m` / `.mm` 的 Write/StrReplace/Delete **deny**
 - 武装方式：Read 上述任一 SKILL（推荐）｜用户说「速速改」｜`node .cursor/hooks/skill-gate-unlock.mjs on`
 - 关闭：`CODING_SKILL_GATE=off` 或 `skill-gate-unlock.mjs disable`（本机）
 - **注意**：编码前确认闸解锁（选 1 / 执行计划）**不等于** Skill 硬闸武装；Implement Plan 仍须先 Read SKILL
@@ -33,7 +34,7 @@ alwaysApply: true
 
 ## 常见失败（禁止再犯）
 
-- 只开 Plan 附件就开始改 Core / Demo / ohosApp。
+- 只开 Plan 附件就开始改 Core / Demo / ohosApp / iosApp。
 - 编译通过就勾完 todo，不写规范自检。
 - 码农代写审查报告或越权扮演 review skill。
 - 以为确认闸放行后即可改源码（Skill 硬闸仍会拦）。

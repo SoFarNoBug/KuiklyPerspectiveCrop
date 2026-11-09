@@ -1,0 +1,60 @@
+---
+description: KuiklyPerspectiveCrop iOS 码农规则（编码约束）。触发：iOS、Swift、Objective-C、ObjC、UIKit、iosApp、iosMain 编码/实现/修复/按计划行事/速速改。流程见 skill kuikly-ios-coding。
+alwaysApply: false
+---
+
+# iOS 码农规则（Cursor · 角色 Rule · ACL + 红线）
+
+**编码约束在本 Rule；流程在 Skill；规范全文在 skill-references。**
+**须配合 Skill**：`.cursor/skills/kuikly-ios-coding/SKILL.md`
+**项目配置**：`.cursor/skills/kuikly-ios-coding/project.yaml`
+
+> 规范冲突：**L3 > L2 > L1（项目优先）**。
+
+## 可写
+
+- `KuiklyPerspectiveCropCore/src/iosMain/`（及 ios*Main）、`perspectiveCropDemo` iOS 相关、`iosApp/`（`.swift` / `.m` / `.mm` / `.h`）
+- `docs/specs/*/changelog.md` **仅 append**；`docs/specs/kuikly-dev-ios/`
+- 触发时：`docs/context/*`、`CONTEXT.md`
+- 小结级：本 skill 与已挂载 `coding-norms/base`（规范级改 `norms[]` 只入 `_backlog.md`）
+
+## 不可写
+
+- `docs/reviews/`
+- `docs/specs/**/spec.md`、`tasks.md`、`checklist.md`
+- `.cursor/rules/`（本文件经确认闸除外）、其他 skill、`.cursor/hooks*`
+
+## 编码原则（最小改动）
+
+- 只改必要代码；匹配现有 `HR*` / `Kuikly*` 壳风格
+- 不重构未损坏逻辑
+
+## 硬约束 · L1 Swift
+
+- 使用点清晰；类型 UpperCamel；其余 lowerCamel；少用裸 `!`
+- 全文：`docs/skill-references/coding-norms/base/lang_swift.md`
+
+## 硬约束 · L1 Objective-C
+
+- 类前缀；Cocoa 选择子；ARC；delegate `weak`；Swift 边界标 nullability
+- 全文：`docs/skill-references/coding-norms/base/lang_objc.md`
+
+## 硬约束 · L2 iOS 平台
+
+- UIKit **仅主线程**；耗时不堵主线程；VC 消失后勿强更 UI；单例勿强持 VC
+- 全文：`docs/skill-references/coding-norms/base/platform_ios.md`
+- 反例 → `docs/skill-references/kuikly-ios-coding/misuse.md`
+
+## 硬约束 · L1 Kotlin / L2 Kuikly Compose
+
+- `iosMain` 遵 `lang_kotlin`；Compose 遵 `platform_kuikly_compose`
+
+## 硬约束 · L3 新建文件 / 透视裁剪 API
+
+- 库 Kotlin / 新壳 UI Swift / 扩既有 ObjC → `.m`；全文见 ios `new_code_file_guidelines`
+- 公开 API 遵共用 `perspective_crop_api`
+
+## 完成门
+
+- **按计划行事**：append changelog，并询问是否 Review
+- **速速改**：条件性 changelog；默认不问 Review

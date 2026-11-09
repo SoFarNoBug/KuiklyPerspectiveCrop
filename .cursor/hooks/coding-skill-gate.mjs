@@ -3,10 +3,10 @@
  * 编码 Skill 硬闸 · Cursor hooks（beforeSubmitPrompt / preToolUse / postToolUse）
  *
  * 目的：拦住「Implement Plan / 按计划改码」时未 Read 码农 SKILL.md
- * 就写入业务源码（.kt / .java / .kts / .ets / .c / .cpp / .h）。
+ * 就写入业务源码（.kt / .java / .kts / .ets / .c / .cpp / .h / .swift / .m / .mm）。
  *
  * 武装（任一条即可写业务源）：
- * 1. 本会话 postToolUse 观测到 Read …/kuikly-android-coding 或 kuikly-ohos-coding /SKILL.md
+ * 1. 本会话 postToolUse 观测到 Read …/kuikly-android-coding 或 kuikly-ohos-coding 或 kuikly-ios-coding /SKILL.md
  * 2. 用户提示命中「速速改 / 跳过 skill」→ 速速改武装（TTL）
  * 3. node .cursor/hooks/skill-gate-unlock.mjs on
  * 4. CODING_SKILL_GATE=off 或 .cursor/hooks/.skill-gate-off
@@ -66,10 +66,10 @@ const WRITE_KEYWORD = /(write|edit|create|delete|remove|rename|move|patch|apply|
 const FAST_PROMPT_RE =
   /(速速改|速速开工|跳过\s*skill|跳过编码\s*skill|跳过\s*编码skill|CODING_SKILL_GATE\s*=\s*off)/i;
 
-const SKILL_PATH_RE = /kuikly-(android|ohos)-coding[/\\]SKILL\.md$/i;
+const SKILL_PATH_RE = /kuikly-(android|ohos|ios)-coding[/\\]SKILL\.md$/i;
 
 /** 业务源码扩展名（需 skill 武装后才可写） */
-const CODE_EXT = new Set(['.kt', '.java', '.kts', '.ets', '.c', '.cpp', '.h', '.hpp']);
+const CODE_EXT = new Set(['.kt', '.java', '.kts', '.ets', '.c', '.cpp', '.h', '.hpp', '.swift', '.m', '.mm']);
 
 /** 始终放行（文档 / 闸门自身 / skills 元数据） */
 const EXEMPT_SEGMENTS = [
@@ -159,11 +159,11 @@ function deny(target, times, tool) {
   emit({
     permission: 'deny',
     user_message:
-      '编码 Skill 硬闸：请先 Read `.cursor/skills/kuikly-android-coding/SKILL.md` 或 `kuikly-ohos-coding/SKILL.md`（及 project.yaml）再改业务源码；琐碎改可说「速速改」。',
+      '编码 Skill 硬闸：请先 Read `.cursor/skills/kuikly-android-coding` / `kuikly-ohos-coding` / `kuikly-ios-coding` 的 `SKILL.md`（及 project.yaml）再改业务源码；琐碎改可说「速速改」。',
     agent_message:
       `编码 Skill 硬闸：本次操作（${tool} → ${target || '(无路径)'}）已被阻止（第 ${times}/${MAX_DENY} 次）。` +
-      `禁止继续改 .kt/.java/.kts。` +
-      `正确顺序：1) Read \`.cursor/skills/kuikly-android-coding/SKILL.md\` 与同目录 project.yaml；` +
+      `禁止继续改业务源码（含 .kt/.ets/.swift/.m/.mm 等）。` +
+      `正确顺序：1) Read 对应码农 \`.cursor/skills/kuikly-*-coding/SKILL.md\` 与同目录 project.yaml；` +
       `2) 按 skill「按计划行事」编码并输出 §实现回报。` +
       `琐碎改：用户说「速速改」后重试。` +
       `手动武装：node .cursor/hooks/skill-gate-unlock.mjs on（20 分钟）。` +
@@ -229,7 +229,7 @@ try {
     log(`SKILL-ARM sid=${sid} ok=${ok} path=${target}`);
     allow({
       additional_context:
-        '编码 Skill 硬闸：已观测到 Read kuikly-android-coding/SKILL.md，本会话可写业务源码（20 分钟）。请继续读 project.yaml 与命中 norms，收尾交 §实现回报。'
+        '编码 Skill 硬闸：已观测到 Read kuikly-*-coding/SKILL.md，本会话可写业务源码（20 分钟）。请继续读 project.yaml 与命中 norms，收尾交 §实现回报。'
     });
   }
 
@@ -273,7 +273,7 @@ try {
   if (times >= MAX_DENY) {
     log(`FUSE-OPEN ${target} deny×${times}`);
     allow({
-      additional_context: `⚠️ 编码 Skill 硬闸：${target} 被拦 ${times} 次后已自动放行。请补跑 kuikly-android-coding。`
+      additional_context: `⚠️ 编码 Skill 硬闸：${target} 被拦 ${times} 次后已自动放行。请补跑对应 kuikly-*-coding。`
     });
   }
 

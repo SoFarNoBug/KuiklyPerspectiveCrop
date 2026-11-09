@@ -1,0 +1,3 @@
+# 代数真源。代数 == norms 条数。
+# 七条：Swift / Objective-C / iOS平台 / Kotlin / KuiklyCompose / 新建文件准则 / 透视裁剪API。
+v7
