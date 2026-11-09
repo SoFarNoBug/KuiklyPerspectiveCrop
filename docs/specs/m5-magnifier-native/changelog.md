@@ -1,5 +1,11 @@
 # M5 changelog
 
+## 2026-11-09（关 ohos P1-concurrency：BlitStore 原子快照）
+
+- `MagnifierBlitStore.ohos`：发布整包不可变快照，snapshot 先读稳定引用再拷贝数组
+- 关联审查：`docs/reviews/review-ohos-native-crop.md`
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：审查 P1 整改｜待批 0
+
 ## 2026-11-09（鸿蒙策略 A：原生圆镜）
 
 - `PlatformMagnifier.ohos`：`platformSupportsNativeMagnifier=true`；`MagnifierBlitStore` + `MakeKuiklyComposeNode`

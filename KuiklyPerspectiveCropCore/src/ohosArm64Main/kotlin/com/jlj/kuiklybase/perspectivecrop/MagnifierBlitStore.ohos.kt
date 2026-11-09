@@ -5,72 +5,15 @@ import kotlin.concurrent.Volatile
 /**
  * @CreateDate: 2026/11/09
  * @Author: jlj
- * @Description: Ohos 放大镜像素仓；ArkTS View 经 NAPI 拉 [snapshot]，避免 props 传 IntArray。
+ * @Description: Ohos 放大镜像素仓；整包不可变快照 + @Volatile 引用替换，供 NAPI 原子读取。
  */
 object MagnifierBlitStore {
 
     @Volatile
-    var generation: Int = 0
-        private set
+    private var _state: MagnifierBlitSnapshot = MagnifierBlitSnapshot.EMPTY
 
-    @Volatile
-    private var _argb: IntArray? = null
-
-    @Volatile
-    private var _width: Int = 0
-
-    @Volatile
-    private var _height: Int = 0
-
-    @Volatile
-    var borderWidth: Float = 2f
-        private set
-
-    @Volatile
-    var borderColor: Int = 0xFFFFFFFF.toInt()
-        private set
-
-    @Volatile
-    var showCross: Boolean = false
-        private set
-
-    @Volatile
-    var crossColor: Int = 0xFFFFFFFF.toInt()
-        private set
-
-    @Volatile
-    var crossLineWidth: Float = 3f
-        private set
-
-    @Volatile
-    var crossLineLength: Float = 15f
-        private set
-
-    @Volatile
-    var showCropLineMirror: Boolean = true
-        private set
-
-    @Volatile
-    var cropLineColor: Int = 0xFFFF3B30.toInt()
-        private set
-
-    @Volatile
-    var cropLineWidth: Float = 2f
-        private set
-
-    @Volatile
-    var touchViewX: Float = 0f
-        private set
-
-    @Volatile
-    var touchViewY: Float = 0f
-        private set
-
-    @Volatile
-    private var _viewPointsXy: FloatArray = FloatArray(0)
-
-    val viewPointsXy: FloatArray
-        get() = _viewPointsXy.copyOf()
+    val generation: Int
+        get() = _state.generation
 
     fun publish(
         patch: MagnifierPatch?,
@@ -79,12 +22,8 @@ object MagnifierBlitStore {
         touchViewX: Float = 0f,
         touchViewY: Float = 0f,
     ) {
-        showCropLineMirror = config.showMagnifierCropLineMirror
-        cropLineColor = config.borderColor.toInt()
-        cropLineWidth = config.borderWidthPx.coerceAtLeast(1f)
-        this.touchViewX = touchViewX
-        this.touchViewY = touchViewY
-        _viewPointsXy = if (viewPoints.size == 4) {
+        val nextGen = _state.generation + 1
+        val pointsXy = if (viewPoints.size == 4) {
             floatArrayOf(
                 viewPoints[0].x, viewPoints[0].y,
                 viewPoints[1].x, viewPoints[1].y,
@@ -94,86 +33,96 @@ object MagnifierBlitStore {
         } else {
             FloatArray(0)
         }
+        val mirror = config.showMagnifierCropLineMirror
+        val cropColor = config.borderColor.toInt()
+        val cropW = config.borderWidthPx.coerceAtLeast(1f)
 
         if (patch == null || patch.width <= 0 || patch.height <= 0) {
-            clearPixelsOnly()
-            generation += 1
+            _state = MagnifierBlitSnapshot(
+                generation = nextGen,
+                width = 0,
+                height = 0,
+                argbPixels = IntArray(0),
+                borderWidth = 2f,
+                borderColor = 0xFFFFFFFF.toInt(),
+                showCross = false,
+                crossColor = 0xFFFFFFFF.toInt(),
+                crossLineWidth = 3f,
+                crossLineLength = 15f,
+                showCropLineMirror = mirror,
+                cropLineColor = cropColor,
+                cropLineWidth = cropW,
+                touchViewX = touchViewX,
+                touchViewY = touchViewY,
+                viewPointsXy = pointsXy,
+            )
             return
         }
         val w = patch.width
         val h = patch.height
         val pixels = patch.argbPixels
         if (pixels.size < w * h) {
-            clearPixelsOnly()
-            generation += 1
+            _state = MagnifierBlitSnapshot(
+                generation = nextGen,
+                width = 0,
+                height = 0,
+                argbPixels = IntArray(0),
+                borderWidth = 2f,
+                borderColor = 0xFFFFFFFF.toInt(),
+                showCross = false,
+                crossColor = 0xFFFFFFFF.toInt(),
+                crossLineWidth = 3f,
+                crossLineLength = 15f,
+                showCropLineMirror = mirror,
+                cropLineColor = cropColor,
+                cropLineWidth = cropW,
+                touchViewX = touchViewX,
+                touchViewY = touchViewY,
+                viewPointsXy = pointsXy,
+            )
             return
         }
-        val existing = _argb
-        val buf = if (existing != null && existing.size == w * h) {
-            existing
-        } else {
-            IntArray(w * h).also { _argb = it }
-        }
-        pixels.copyInto(buf, 0, 0, w * h)
-        _width = w
-        _height = h
-        borderWidth = config.magnifierBorderWidth.coerceAtLeast(1f)
-        borderColor = config.magnifierBorderColor.toInt()
-        showCross = config.showMagnifierCenterCross
-        crossColor = config.magnifierCrossColor.toInt()
-        crossLineWidth = config.magnifierCrossLineWidth.coerceAtLeast(1f)
-        crossLineLength = config.magnifierCrossLineLength.coerceAtLeast(1f)
-        generation += 1
-    }
-
-    fun clear() {
-        clearPixelsOnly()
-        showCropLineMirror = false
-        _viewPointsXy = FloatArray(0)
-        generation += 1
-    }
-
-    /**
-     * 只读快照（拷贝像素与点），供 NAPI/@CName 跨语言读取。
-     */
-    fun snapshot(): MagnifierBlitSnapshot {
-        val w = _width
-        val h = _height
-        val src = _argb
-        val argb = if (src != null && w > 0 && h > 0 && src.size >= w * h) {
-            src.copyOf(w * h)
-        } else {
-            IntArray(0)
-        }
-        return MagnifierBlitSnapshot(
-            generation = generation,
-            width = if (argb.isEmpty()) 0 else w,
-            height = if (argb.isEmpty()) 0 else h,
+        // 新缓冲，禁止原地改旧数组（避免 snapshot 读到半更新像素）
+        val argb = IntArray(w * h)
+        pixels.copyInto(argb, 0, 0, w * h)
+        _state = MagnifierBlitSnapshot(
+            generation = nextGen,
+            width = w,
+            height = h,
             argbPixels = argb,
-            borderWidth = borderWidth,
-            borderColor = borderColor,
-            showCross = showCross,
-            crossColor = crossColor,
-            crossLineWidth = crossLineWidth,
-            crossLineLength = crossLineLength,
-            showCropLineMirror = showCropLineMirror,
-            cropLineColor = cropLineColor,
-            cropLineWidth = cropLineWidth,
+            borderWidth = config.magnifierBorderWidth.coerceAtLeast(1f),
+            borderColor = config.magnifierBorderColor.toInt(),
+            showCross = config.showMagnifierCenterCross,
+            crossColor = config.magnifierCrossColor.toInt(),
+            crossLineWidth = config.magnifierCrossLineWidth.coerceAtLeast(1f),
+            crossLineLength = config.magnifierCrossLineLength.coerceAtLeast(1f),
+            showCropLineMirror = mirror,
+            cropLineColor = cropColor,
+            cropLineWidth = cropW,
             touchViewX = touchViewX,
             touchViewY = touchViewY,
-            viewPointsXy = _viewPointsXy.copyOf(),
+            viewPointsXy = pointsXy,
         )
     }
 
-    private fun clearPixelsOnly() {
-        _argb = null
-        _width = 0
-        _height = 0
+    fun clear() {
+        _state = MagnifierBlitSnapshot.EMPTY.copy(generation = _state.generation + 1)
+    }
+
+    /**
+     * 只读快照：先取稳定引用，再拷贝可变数组，供 NAPI/@CName 跨语言读取。
+     */
+    fun snapshot(): MagnifierBlitSnapshot {
+        val s = _state
+        return s.copy(
+            argbPixels = s.argbPixels.copyOf(),
+            viewPointsXy = s.viewPointsXy.copyOf(),
+        )
     }
 }
 
 /**
- * MagnifierBlitStore 跨语言快照；[argbPixels] 为拷贝，行优先 ARGB8888。
+ * MagnifierBlitStore 跨语言快照；[argbPixels] 为行优先 ARGB8888（发布后视为只读）。
  */
 data class MagnifierBlitSnapshot(
     val generation: Int,
@@ -207,5 +156,26 @@ data class MagnifierBlitSnapshot(
             out[o++] = ((c ushr 24) and 0xFF).toByte()
         }
         return out
+    }
+
+    companion object {
+        val EMPTY = MagnifierBlitSnapshot(
+            generation = 0,
+            width = 0,
+            height = 0,
+            argbPixels = IntArray(0),
+            borderWidth = 2f,
+            borderColor = 0xFFFFFFFF.toInt(),
+            showCross = false,
+            crossColor = 0xFFFFFFFF.toInt(),
+            crossLineWidth = 3f,
+            crossLineLength = 15f,
+            showCropLineMirror = false,
+            cropLineColor = 0xFFFF3B30.toInt(),
+            cropLineWidth = 2f,
+            touchViewX = 0f,
+            touchViewY = 0f,
+            viewPointsXy = FloatArray(0),
+        )
     }
 }

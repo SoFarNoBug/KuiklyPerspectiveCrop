@@ -156,6 +156,15 @@ export class KRPerspectiveCropMagnifierView extends KuiklyRenderBaseView {
     }
   }
 
+  /** API 18+：用 UIContext 绑定的 px2vp，避免全局弃用 API。 */
+  private pxToVp(px: number): number {
+    const ui = this.getUIContext();
+    if (ui == null) {
+      return 0;
+    }
+    return ui.px2vp(px);
+  }
+
   paint(): void {
     const ctx = this.context;
     if (ctx == null) {
@@ -168,16 +177,16 @@ export class KRPerspectiveCropMagnifierView extends KuiklyRenderBaseView {
       return;
     }
     // Kuikly Compose：坐标 = vp × density（≈物理 px）；Canvas 默认单位 vp
-    const cx = px2vp(this.magCx);
-    const cy = px2vp(this.magCy);
-    const radius = px2vp(this.magRadius);
+    const cx = this.pxToVp(this.magCx);
+    const cy = this.pxToVp(this.magCy);
+    const radius = this.pxToVp(this.magRadius);
     const diam = radius * 2;
-    const borderW = px2vp(this.borderWidth);
-    const cropLineW = px2vp(this.cropLineWidth);
-    const crossLW = px2vp(this.crossLineWidth);
-    const crossLen = px2vp(this.crossLineLength);
-    const touchX = px2vp(this.touchViewX);
-    const touchY = px2vp(this.touchViewY);
+    const borderW = this.pxToVp(this.borderWidth);
+    const cropLineW = this.pxToVp(this.cropLineWidth);
+    const crossLW = this.pxToVp(this.crossLineWidth);
+    const crossLen = this.pxToVp(this.crossLineLength);
+    const touchX = this.pxToVp(this.touchViewX);
+    const touchY = this.pxToVp(this.touchViewY);
 
     ctx.save();
     ctx.beginPath();
@@ -201,10 +210,10 @@ export class KRPerspectiveCropMagnifierView extends KuiklyRenderBaseView {
       for (let i = 0; i < 4; i++) {
         const i0 = i * 2;
         const i1 = ((i + 1) % 4) * 2;
-        const x0 = px2vp(this.viewPointsXy[i0]) + dx;
-        const y0 = px2vp(this.viewPointsXy[i0 + 1]) + dy;
-        const x1 = px2vp(this.viewPointsXy[i1]) + dx;
-        const y1 = px2vp(this.viewPointsXy[i1 + 1]) + dy;
+        const x0 = this.pxToVp(this.viewPointsXy[i0]) + dx;
+        const y0 = this.pxToVp(this.viewPointsXy[i0 + 1]) + dy;
+        const x1 = this.pxToVp(this.viewPointsXy[i1]) + dx;
+        const y1 = this.pxToVp(this.viewPointsXy[i1 + 1]) + dy;
         if (i === 0) {
           ctx.moveTo(x0, y0);
         }
