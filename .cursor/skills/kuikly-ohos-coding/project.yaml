@@ -1,0 +1,55 @@
+# 项目配置（受限子集；挂载契约见 docs/skill-references/SCHEMA.md）
+project_id: kuikly-perspective-crop
+role_rule: .cursor/rules/kuikly-dev-ohos.mdc
+docs:
+  workflow_readme: docs/specs/kuikly-dev-ohos/README.md
+  skill_changelog: docs/specs/kuikly-dev-ohos/changelog.md
+  feature_changelog: docs/specs/<name>/changelog.md
+  tasks_optional: docs/specs/<name>/tasks.md
+  file_map: docs/context/file-map.md
+  context_glob: docs/context/*
+  reviews_dir: docs/reviews/
+  device_check_list_dir: docs/reviews/device-check-list/
+review_skill: kuikly-code-review
+version_counts: norms
+gate_on: meta_only
+sediment: on
+content_root: ../../../docs/skill-references/kuikly-ohos-coding
+mounts:
+  anti_patterns: ../../../docs/skill-references/kuikly-ohos-coding/misuse.md
+  backlog: ../../../docs/skill-references/kuikly-ohos-coding/_backlog.md
+  sediment_process: ../../../docs/skill-references/templates/sediment_process.md
+  version_file: ../../../docs/skill-references/kuikly-ohos-coding/_version.txt
+norms:
+  - id: lang_arkts
+    title: ArkTS语言
+    layer: L1
+    ref: ../../../docs/skill-references/coding-norms/base/lang_arkts.md
+  - id: lang_c
+    title: C语言
+    layer: L1
+    ref: ../../../docs/skill-references/coding-norms/base/lang_c.md
+  - id: lang_cpp
+    title: C++语言
+    layer: L1
+    ref: ../../../docs/skill-references/coding-norms/base/lang_cpp.md
+  - id: platform_ohos
+    title: 鸿蒙平台
+    layer: L2
+    ref: ../../../docs/skill-references/coding-norms/base/platform_ohos.md
+  - id: lang_kotlin
+    title: Kotlin语言
+    layer: L1
+    ref: ../../../docs/skill-references/coding-norms/base/lang_kotlin.md
+  - id: platform_kuikly_compose
+    title: KuiklyCompose平台
+    layer: L2
+    ref: ../../../docs/skill-references/coding-norms/base/platform_kuikly_compose.md
+  - id: new_code_file_guidelines
+    title: 新建代码文件准则
+    layer: L3
+    ref: ../../../docs/skill-references/kuikly-ohos-coding/project/new_code_file_guidelines.md
+  - id: perspective_crop_api
+    title: 透视裁剪API准则
+    layer: L3
+    ref: ../../../docs/skill-references/kuikly-android-coding/project/perspective_crop_api.md

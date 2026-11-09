@@ -36,7 +36,11 @@
 |---|---|---|
 | L1 | [`base/lang_kotlin.md`](base/lang_kotlin.md) | `lang_kotlin` |
 | L1 | [`base/lang_java.md`](base/lang_java.md) | `lang_java` |
+| L1 | [`base/lang_arkts.md`](base/lang_arkts.md) | `lang_arkts` |
+| L1 | [`base/lang_c.md`](base/lang_c.md) | `lang_c` |
+| L1 | [`base/lang_cpp.md`](base/lang_cpp.md) | `lang_cpp` |
 | L2 | [`base/platform_android.md`](base/platform_android.md) | `platform_android` |
+| L2 | [`base/platform_ohos.md`](base/platform_ohos.md) | `platform_ohos` |
 | L2 | [`base/platform_kuikly_compose.md`](base/platform_kuikly_compose.md) | `platform_kuikly_compose` |
 
 未用到的语言/平台**不建空壳**。各仓在自己的 `project.yaml` → `norms[]` 写明 `layer:` 与 `ref`。
@@ -49,6 +53,15 @@
 | L3 | `../kuikly-android-coding/project/perspective_crop_api.md` | `perspective_crop_api` |
 
 > 本仓 `kuikly-android-coding` **未挂载** `lang_java`（纯 Kotlin/KMP）。`base/lang_java.md` 仍留在共享货架，供需要 Java 的仓挂载。
+
+## 消费方示例（kuikly-ohos-coding · L3 不共享）
+
+| layer | 文件 | norms id |
+|---|---|---|
+| L3 | `../kuikly-ohos-coding/project/new_code_file_guidelines.md` | `new_code_file_guidelines` |
+| L3 | `../kuikly-android-coding/project/perspective_crop_api.md` | `perspective_crop_api`（与 Android 码农共用全文） |
+
+> 本仓 `kuikly-ohos-coding` 挂载 `lang_arkts` / `lang_c` / `lang_cpp` / `platform_ohos`，并按改动面附加 `lang_kotlin` / `platform_kuikly_compose`。
 
 ## 移植到其他仓
 
