@@ -90,7 +90,7 @@ KuiklyPerspectiveCrop/
 - [x] Core 含桥；Demo 无重复桥源文件  
 - [x] `KuiklyPerspectiveCropIOS` + podspec 存在；iosApp **symlink** 同 Swift（path-pod 因无法 import Demo 放弃）  
 - [x] Demo 模拟器 `BUILD SUCCEEDED` + launch home（2026-11-10）  
-- [ ] `pod trunk push`：待 commit + tag `0.0.1` + 网络；`pod trunk me` 曾 Net::OpenTimeout  
+- [x] `pod trunk push`：`KuiklyPerspectiveCrop 0.0.1` 已上架（2026-11-10；壳改 ObjC 运行时取桥） 
 - [x] README / CONTRIBUTING 已补 CocoaPods 接入
 
 ## 风险 / 决策点（确认计划时请拍板）
