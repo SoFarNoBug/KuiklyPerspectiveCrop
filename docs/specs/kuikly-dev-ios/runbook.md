@@ -62,7 +62,7 @@ xcrun simctl launch "$UDID" com.jlj.kuiklyperspectivecropui.iosApp
 | `assets://` | Bundle 搜索：main → `allBundles` → `allFrameworks`；样例图随 Demo pod resources 进包 |
 | CG 位图 | 用 `kCGImageAlphaPremultipliedLast`；**勿** `kCGImageAlphaLast`（`CGBitmapContextCreate` 失败 → 裁切炸 / 黑镜） |
 | 放大镜 View | 类名 **`KRPerspectiveCropMagnifier`**（与 `viewName()` 一致）；源在 `KuiklyPerspectiveCropIOS/`，Demo 经 `iosApp/.../Views/` **symlink**；iOS **无需** `registerExternalRenderView` |
-| 放大镜桥 | Core `PerspectiveCropIosMagnifierBridge`（Demo framework **export** Core）；壳 `import perspectiveCropDemo` |
+| 放大镜桥 | Core `PerspectiveCropIosMagnifierBridge`（Demo framework **export** Core）；壳经 ObjC 名运行时取桥 |
 | 裁切引擎 | Lab 可切 Auto / Native / Common；默认 Auto→CI |
 
 ## 排障

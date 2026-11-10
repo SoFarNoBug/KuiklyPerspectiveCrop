@@ -71,7 +71,7 @@ pod 'KuiklyPerspectiveCrop', '0.0.1'
 ```
 
 配套 Maven：`io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
-壳 Swift 默认 `import perspectiveCropDemo`（本仓 Demo）；消费方请改成自己的 shared 模块名。
+壳经 ObjC 名 `PerspectiveCropIosMagnifierBridge` 运行时取桥（宿主须 link 含该桥的 KN framework，并 `framework.export` Core）。
 
 ### 鸿蒙
 

@@ -1,14 +1,30 @@
 import OpenKuiklyIOSRender
 import UIKit
-import perspectiveCropDemo
 
 /**
  * @CreateDate: 2026/11/09
  * @Author: jlj
- * @Description: iOS 放大镜原生圆镜（Q38）；像素来自 PerspectiveCropIosMagnifierBridge / MagnifierBlitStore（Core，经宿主 KN framework 导出）。
+ * @Description: iOS 放大镜原生圆镜（Q38）；像素来自 PerspectiveCropIosMagnifierBridge / MagnifierBlitStore（Core，经宿主 KN framework 在运行时导出）。
  *
- * 消费方若 KMP 模块名不是 perspectiveCropDemo，将本文件的 import 改成其 shared 模块名即可。
+ * 不 import 宿主 KMP 模块名：经 exact ObjC 名在进程内取桥，CocoaPods 包可独立 lint/发布。
  */
+@objc protocol PerspectiveCropIosMagnifierBridging {
+    func imageOrNull() -> UIImage?
+    func borderWidth() -> Float
+    func borderColorArgb() -> Int32
+    func showCross() -> Bool
+    func crossColorArgb() -> Int32
+    func crossLineWidth() -> Float
+    func crossLineLength() -> Float
+    func showCropLineMirror() -> Bool
+    func cropLineColorArgb() -> Int32
+    func cropLineWidth() -> Float
+    func touchViewX() -> Float
+    func touchViewY() -> Float
+    func viewPointCount() -> Int32
+    func viewPointAt(index: Int32) -> Float
+}
+
 @objc(KRPerspectiveCropMagnifier)
 public final class KRPerspectiveCropMagnifier: KRView {
 
@@ -66,7 +82,7 @@ public final class KRPerspectiveCropMagnifier: KRView {
 
     public override func draw(_ rect: CGRect) {
         guard active, radius > 0, let ctx = UIGraphicsGetCurrentContext() else { return }
-        let bridge = PerspectiveCropIosMagnifierBridge.shared
+        guard let bridge = Self.resolveBridge() else { return }
         let diam = radius * 2
         let circle = CGRect(x: cx - radius, y: cy - radius, width: diam, height: diam)
 
@@ -130,5 +146,18 @@ public final class KRPerspectiveCropMagnifier: KRView {
         let g = CGFloat((argb >> 8) & 0xff) / 255
         let b = CGFloat(argb & 0xff) / 255
         return UIColor(red: r, green: g, blue: b, alpha: a)
+    }
+
+    /// Core `@ObjCName(exact)` → 进程内类名 `PerspectiveCropIosMagnifierBridge`（宿主须 link 含该桥的 KN framework）。
+    private static func resolveBridge() -> PerspectiveCropIosMagnifierBridging? {
+        guard let cls = NSClassFromString("PerspectiveCropIosMagnifierBridge") as? NSObject.Type else {
+            return nil
+        }
+        let sharedSel = NSSelectorFromString("shared")
+        guard cls.responds(to: sharedSel),
+              let obj = cls.perform(sharedSel)?.takeUnretainedValue() else {
+            return nil
+        }
+        return obj as? PerspectiveCropIosMagnifierBridging
     }
 }

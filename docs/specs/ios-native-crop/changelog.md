@@ -4,9 +4,9 @@
 
 - 桥 `PerspectiveCropIosMagnifierBridge` 迁 Core；`@ObjCName(exact)`；`viewPointCount` / `viewPointAt`
 - 新建 `KuiklyPerspectiveCropIOS/` + 根/子 podspec `0.0.1`；iosApp symlink 同 Swift
-- Demo：`api` + `framework.export(Core)`，Swift 可见桥；D3：壳仍 `import perspectiveCropDemo`（独立 path-pod 编不过）
+- Demo：`api` + `framework.export(Core)`；D3：壳改 ObjC 运行时取桥（不 import 宿主模块名，便于 `pod trunk push`）
 - 模拟器：`xcodebuild` BUILD SUCCEEDED 并 launch home
-- trunk push：待 git tag `0.0.1`（本单未自动 commit）
+- trunk push：`0.0.1`（OpenKuikly 在 Xcode 27 下需本地把依赖 deployment 提到 15 才能过完整 lint；本推送用 `--skip-import-validation` 仅当仍卡依赖时）
 - 治理收尾：门禁 跳过｜三问 否/否/否｜理由：发布接线非规范晋升｜待批 0（已达标 0）
 
 ## 2026-11-09（沉淀 iOS runbook）

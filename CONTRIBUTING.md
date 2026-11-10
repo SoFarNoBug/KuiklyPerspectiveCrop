@@ -91,7 +91,7 @@ CENTRAL_USERNAME=… CENTRAL_PASSWORD=… GPG_KEY_PASSWORD=… ./publish-maven.s
 ## 发布到 CocoaPods（iOS 原生放大镜）
 
 源：`KuiklyPerspectiveCropIOS/` + 根 `KuiklyPerspectiveCrop.podspec`（`0.0.1`）。  
-Demo 经 symlink 引用同文件；`perspectiveCropDemo` framework **export** Core 以便 Swift 见桥。
+Demo 经 symlink 引用同文件；`perspectiveCropDemo` framework **export** Core；壳经 ObjC 名运行时取桥（勿再 `import` 宿主模块名）。
 
 ```bash
 # 需已 commit + 打 tag 0.0.1 并 push 到 GitHub
