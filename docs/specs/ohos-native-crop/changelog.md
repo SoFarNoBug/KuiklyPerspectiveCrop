@@ -1,5 +1,12 @@
 # ohos-native-crop · feature changelog
 
+## 2026-11-10（ohpm HAR 发布接线）
+
+- 新建 `KuiklyPerspectiveCropOhos/` → `@jlj/kuikly-perspective-crop-ohos@0.0.1`（已 `ohpm publish`，中心仓审核中）
+- 壳经 `PerspectiveCropOhosNative.configure` 注入 blit；Demo `ohosApp` path 依赖 + 删本地 Magnifier ets
+- `author` 须含 `email`（中心仓 400）；签名钥用 PKCS#8 加密私钥
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：发布接线｜待批 0（已达标 0）
+
 ## 2026-11-09（关审查 P2：文件头 / NAPI 校验 / UIContext.px2vp）
 
 - `OhosPerspectiveCropNative`：补 `@CreateDate` / `@Author` / `@Description`（关 `P2-file-header`）

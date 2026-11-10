@@ -5,7 +5,7 @@ import {
 } from '@kuikly-open/render';
 import { ComponentContent } from '@kit.ArkUI';
 import { image } from '@kit.ImageKit';
-import Napi from 'libentry.so';
+import { PerspectiveCropOhosNative } from './PerspectiveCropOhosNative';
 
 const PROP_ACTIVE = 'magActive';
 const PROP_CX = 'magCx';
@@ -107,7 +107,12 @@ export class KRPerspectiveCropMagnifierView extends KuiklyRenderBaseView {
 
   private pullBlit(): void {
     try {
-      const blit = Napi.getMagnifierBlit();
+      const blit = PerspectiveCropOhosNative.getMagnifierBlitOrNull();
+      if (blit == null) {
+        this.hasPixels = false;
+        this.releasePixelMap();
+        return;
+      }
       this.borderWidth = blit.borderWidth;
       this.borderColor = blit.borderColor;
       this.showCross = blit.showCross;

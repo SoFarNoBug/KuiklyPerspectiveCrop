@@ -82,7 +82,24 @@ PerspectiveCropOhos.init(resfileDir, cacheDir)
 // cacheDir 可省略；为空时无参 saveToFile 会失败
 ```
 
-Demo 壳经 NAPI 转发，见 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt`。
+原生放大镜 View 另加 ohpm（须在 `KuiklyViewDelegate` 注册，并注入 blit NAPI）：
+
+```bash
+ohpm install @jlj/kuikly-perspective-crop-ohos
+```
+
+```typescript
+import {
+  KRPerspectiveCropMagnifierView,
+  PerspectiveCropOhosNative
+} from '@jlj/kuikly-perspective-crop-ohos';
+import Napi from 'libentry.so'; // 宿主 so，须导出 getMagnifierBlit
+
+PerspectiveCropOhosNative.configure(() => Napi.getMagnifierBlit());
+// map.set(KRPerspectiveCropMagnifierView.VIEW_NAME, () => new KRPerspectiveCropMagnifierView());
+```
+
+配套 Maven Core `0.0.1-2.30.0`。Demo 壳 NAPI 转发见 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt`。
 
 ### H5
 

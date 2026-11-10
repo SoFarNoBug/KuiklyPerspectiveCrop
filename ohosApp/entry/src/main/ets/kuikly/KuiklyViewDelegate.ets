@@ -3,8 +3,8 @@ import {
   KRRenderModuleExportCreator,
   KRRenderViewExportCreator
 } from '@kuikly-open/render';
+import { KRPerspectiveCropMagnifierView } from '@jlj/kuikly-perspective-crop-ohos';
 import { KRMyView } from './components/KRMyView';
-import { KRPerspectiveCropMagnifierView } from './components/KRPerspectiveCropMagnifier';
 import { KRBridgeModule } from './modules/KRBridgeModule';
 import { KRMyModule } from './modules/KRMyModule';
 

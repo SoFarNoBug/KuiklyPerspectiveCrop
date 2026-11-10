@@ -1,0 +1,22 @@
+{
+  "name": "@jlj/kuikly-perspective-crop-ohos",
+  "version": "0.0.1",
+  "description": "Kuikly PerspectiveCrop Ohos native magnifier view (KRPerspectiveCropMagnifier)",
+  "main": "src/main/ets/Index.ets",
+  "author": {
+    "name": "jlj",
+    "email": "1396275290@qq.com"
+  },
+  "license": "MIT",
+  "obfuscated": false,
+  "artifactType": "original",
+  "compatibleSdkVersion": "5.0.0(12)",
+  "compatibleSdkType": "OpenHarmony",
+  "repository": "https://github.com/SoFarNoBug/KuiklyPerspectiveCrop",
+  "homepage": "https://github.com/SoFarNoBug/KuiklyPerspectiveCrop#readme",
+  "keywords": ["kuikly", "perspective-crop", "magnifier", "ohos", "harmonyos"],
+  "dependencies": {
+    "@kuikly-open/render": "2.30.0"
+  },
+  "devDependencies": {}
+}

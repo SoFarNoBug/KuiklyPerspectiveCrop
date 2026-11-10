@@ -80,7 +80,7 @@ node static_server/serve/index.js
 ## 发布到 Maven Central（别人可直接依赖）
 
 模块：`:KuiklyPerspectiveCropCore` → `io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
-鸿蒙（`settings.ohos.gradle.kts`）本阶段不发。
+鸿蒙 KMP 仍走同一 Maven 坐标；原生放大镜 ArkTS 另走 ohpm（见下）。
 
 ```bash
 CENTRAL_USERNAME=… CENTRAL_PASSWORD=… GPG_KEY_PASSWORD=… ./publish-maven.sh
@@ -96,6 +96,15 @@ Demo 经 symlink 引用同文件；`perspectiveCropDemo` framework **export** Co
 ```bash
 # 需已 commit + 打 tag 0.0.1 并 push 到 GitHub
 pod trunk push KuiklyPerspectiveCrop.podspec
+```
+
+## 发布到 ohpm（鸿蒙原生放大镜）
+
+源：`KuiklyPerspectiveCropOhos/` → `@jlj/kuikly-perspective-crop-ohos@0.0.1`。  
+前置：`ohpm config` 已设 `key_path` / `publish_id` / `publish_registry`（对齐 Echo）。
+
+```bash
+cd KuiklyPerspectiveCropOhos && bash publish-ohos.sh
 ```
 
 ## 编码规范（AI / 人工）

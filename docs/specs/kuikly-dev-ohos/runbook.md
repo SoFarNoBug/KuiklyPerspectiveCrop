@@ -43,8 +43,8 @@ HAP：
 | render HAR | `@kuikly-open/render@2.30.0` |
 | `ohosApp/local.properties` | gitignore；`kuikly.compilePluginEnabled=false` |
 | `PerspectiveCropOhos.init` | NAPI `setPerspectiveCropOhosDirs(resourceDir, cacheDir)` |
-| 放大镜 View | `KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifier` |
-| 放大镜 NAPI | `getMagnifierBlit`；`@CName` blit snapshot 在 Demo shared |
+| 放大镜 View | ohpm `@jlj/kuikly-perspective-crop-ohos`；`KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifier` |
+| 放大镜 NAPI | 宿主 `getMagnifierBlit` → `PerspectiveCropOhosNative.configure`；`@CName` blit 在 Demo shared |
 | 裁切 | `Auto`/`Native` → Drawing `SetPolyToPoly`；`Common` → CPU 单应；落盘 **软件 PNG**（不走 ImagePacker Native，避免 SIGSEGV） |
 | 链接库 | `image_source_ndk` / `pixelmap_ndk` / `native_drawing`（解码/放大镜/Native 出图） |
 
