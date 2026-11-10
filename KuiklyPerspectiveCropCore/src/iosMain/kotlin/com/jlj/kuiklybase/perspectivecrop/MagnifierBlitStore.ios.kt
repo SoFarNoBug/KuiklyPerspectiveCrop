@@ -2,13 +2,15 @@ package com.jlj.kuiklybase.perspectivecrop
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGImageRelease
+import platform.Foundation.NSData
 import platform.UIKit.UIImage
+import platform.UIKit.UIImagePNGRepresentation
 import kotlin.concurrent.Volatile
 
 /**
  * @CreateDate: 2026/11/09
  * @Author: jlj
- * @Description: iOS 放大镜像素仓；原生 View 读 UIImage，避免 props 传 IntArray。
+ * @Description: iOS 放大镜像素仓；原生 View 读 RGBA NSData / PNG / UIImage，避免 props 传 IntArray。
  */
 object MagnifierBlitStore {
 
@@ -18,6 +20,20 @@ object MagnifierBlitStore {
 
     @Volatile
     private var _image: UIImage? = null
+
+    /** PNG 字节；壳侧用 `UIImage(data:)` 解码。 */
+    @Volatile
+    private var _pngData: NSData? = null
+
+    /** 顶左行优先 RGBA；壳侧直接 CGImageCreate，绕开 KN UIImage 桥。 */
+    @Volatile
+    private var _rgbaData: NSData? = null
+
+    @Volatile
+    private var _blitWidth: Int = 0
+
+    @Volatile
+    private var _blitHeight: Int = 0
 
     @Volatile
     var borderWidth: Float = 2f
@@ -71,6 +87,14 @@ object MagnifierBlitStore {
 
     fun uiImageOrNull(): UIImage? = _image
 
+    fun pngDataOrNull(): NSData? = _pngData
+
+    fun rgbaDataOrNull(): NSData? = _rgbaData
+
+    fun blitWidth(): Int = _blitWidth
+
+    fun blitHeight(): Int = _blitHeight
+
     @OptIn(ExperimentalForeignApi::class)
     fun publish(
         patch: MagnifierPatch?,
@@ -108,18 +132,39 @@ object MagnifierBlitStore {
             generation += 1
             return
         }
-        val cg = try {
-            argbToCgImage(pixels, w, h)
+
+        // 先落 RGBA NSData（壳主路径）；CG/PNG 失败也不丢像素。
+        val rgbaBytes = argbToRgbaBytes(pixels, w, h)
+        val rgbaData = try {
+            rgbaBytes.toNSDataCopy()
         } catch (_: Exception) {
             clearImageOnly()
             generation += 1
             return
         }
-        try {
-            _image = UIImage.imageWithCGImage(cg)
-        } finally {
-            CGImageRelease(cg)
+        _rgbaData = rgbaData
+        _blitWidth = w
+        _blitHeight = h
+
+        val cg = try {
+            argbToCgImage(pixels, w, h)
+        } catch (_: Exception) {
+            null
         }
+        if (cg != null) {
+            try {
+                val raw = UIImage.imageWithCGImage(cg)
+                val png = raw?.let { UIImagePNGRepresentation(it) }
+                _pngData = if (png != null && png.length.toInt() > 0) png else null
+                _image = _pngData?.let { UIImage.imageWithData(it) } ?: raw
+            } finally {
+                CGImageRelease(cg)
+            }
+        } else {
+            _pngData = null
+            _image = null
+        }
+
         borderWidth = config.magnifierBorderWidth.coerceAtLeast(1f)
         borderColor = config.magnifierBorderColor.toInt()
         showCross = config.showMagnifierCenterCross
@@ -138,5 +183,9 @@ object MagnifierBlitStore {
 
     private fun clearImageOnly() {
         _image = null
+        _pngData = null
+        _rgbaData = null
+        _blitWidth = 0
+        _blitHeight = 0
     }
 }

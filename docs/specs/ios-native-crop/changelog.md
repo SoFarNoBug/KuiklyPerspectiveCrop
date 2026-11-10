@@ -1,5 +1,67 @@
 # ios-native-crop · feature changelog
 
+## 2026-11-10（用户确认：放大镜+旋源四角 OK）
+
+- Duo：#6 圆镜像素/触点、#7 0/90/180/270 裁切与放大镜均正常
+- 收尾：去掉 `KPC-Mag` 排查日志；采样行翻转与 UIGraphics 旋源保留
+- 真机表 [`device-check-list/ios-native-crop.md`](../../reviews/device-check-list/ios-native-crop.md) #6 #7 → OK
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：验收收口｜待批 0（已达标 0）
+
+## 2026-11-10（旋源 90/270：UIGraphics 顺时针）
+
+- 根因：`rotateUiImage` 把 UIKit CTM 套进 CGBitmapContext（Y 向上）→ 90°/270° 裁切与放大镜同坏；0°/180° 仍可看似正常
+- 改回 `UIGraphicsBeginImageContextWithOptions` + `UIImage.drawInRect`，与 Stage `rotationZ` / Android `postRotate` 顺时针对齐
+- 采样行翻转保留（红顶蓝底证据：绘制保序，缓冲相对预览 Y 颠倒）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：旋源坐标系｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜倒像：采样行翻转）
+
+- 红顶蓝底标记：镜顶红 → 壳 `UIImage.draw` 保序；景物仍倒 → `IosCropBuffer` 相对 Stage 预览 Y 颠倒
+- `MagnifierSampler.ios` 拷贝 patch 时 `srcY = (H-1)-(top+y)`；不改 decode/出图
+- 去掉临时红蓝标记
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：倒镜像证据修复｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜倒像：去掉 CG Y 翻转）
+
+- 贴图改 `UIImage(cgImage:).draw(in:)`；RGBA 顶左行优先，对齐 Android/鸿蒙，不再 `translate+scale(-1)` 二次翻转
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：倒像/触点｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜灰底：弃协议强转 + 修 CGDataProvider）
+
+- 日志：`publish ok 96x96 rgbaLen=36864`，但 `as? PerspectiveCropIosMagnifierBridging` 失败 → `path=no-bridge` 只铺灰底
+- 壳改 `MagBridge`：`method(for:)` / `perform`，不再 `as?` Swift 协议
+- `argbToCgImage`：撤回 `NSData as CFDataRef`（KN ClassCast `_NSInlineData`→`CPointer`），恢复 BitmapContext+memcpy
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：灰镜根因修复｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜灰底：RGBA 直传 + 协议 optional）
+
+- `argbToCgImage`：改 `CGImageCreate` + `NSData`/`CGDataProvider`（顶左 RGBA）；抽出 `argbToRgbaBytes` / `toNSDataCopy`
+- `MagnifierBlitStore`：始终存 `_rgbaData`+宽高；CG/PNG 失败仍可供壳贴图
+- Bridge：`rgbaDataOrNull` / `blitWidth` / `blitHeight`
+- Swift：`pngDataOrNull`/`rgba*` 标 `@objc optional`，避免缺方法导致 `as?` 全失败只剩灰底；优先 RGBA→`CGImage`
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：灰镜像素通道｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜镜内黑屏：像素自持 + 壳贴图）
+
+- `argbToCgImage`：`CGBitmapContextCreate(data=null)` + `memcpy`
+- `MagnifierBlitStore.publish`：`UIImagePNGRepresentation` 往返，强制 UIImage 自持像素
+- Swift `draw`：先铺灰底；有 `cgImage` 时用翻转后的 `CGContextDrawImage` 贴图
+- 排障：Pods 链的是 `build/cocoapods/framework`，仅编 `bin/…/podDebugFramework` 不会进模拟器，须 `syncFramework` / Xcode 脚本同步后再装
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：黑镜缓冲+贴图｜待批 0（已达标 0）
+
+## 2026-11-10（放大镜桥协议选择子 + px→pt）
+
+- `PerspectiveCropIosMagnifierBridging.viewPointAt`：加 `@objc(viewPointAtIndex:)` 对齐 KN 头；否则 `as?` 失败 → `draw` 直接 return、拖角完全无镜
+- 桥为 nil 时仍画深灰圆+白边（不再静默空白）
+- 承接同日 px→pt：几何/线宽 `/ UIScreen.main.scale`
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：桥选择子个案｜待批 0（已达标 0）
+
+## 2026-11-10（iOS 放大镜 px→pt）
+
+- `KRPerspectiveCropMagnifier.draw`：Compose/BlitStore 的 cx/cy/radius、触点、框线点、边框/十字线宽线长统一 `/ UIScreen.main.scale` 再画（对齐鸿蒙 `px2vp`；prop 仍存原始 px）
+- 真机表 [`device-check-list/ios-native-crop.md`](../../reviews/device-check-list/ios-native-crop.md) #6：补直径 ~14% Stage 宽期望；结果置「待复验」（Duo 展开 + 普通机）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：壳单位换算个案｜待批 0（已达标 0）
+
 ## 2026-11-10（CocoaPods 壳发布接线）
 
 - 桥 `PerspectiveCropIosMagnifierBridge` 迁 Core；`@ObjCName(exact)`；`viewPointCount` / `viewPointAt`

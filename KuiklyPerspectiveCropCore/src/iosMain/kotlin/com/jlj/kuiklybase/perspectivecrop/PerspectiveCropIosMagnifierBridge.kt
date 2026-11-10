@@ -2,6 +2,7 @@ package com.jlj.kuiklybase.perspectivecrop
 
 import kotlin.experimental.ExperimentalObjCName
 import kotlin.native.ObjCName
+import platform.Foundation.NSData
 import platform.UIKit.UIImage
 
 /**
@@ -15,6 +16,16 @@ object PerspectiveCropIosMagnifierBridge {
     fun generation(): Int = MagnifierBlitStore.generation
 
     fun imageOrNull(): UIImage? = MagnifierBlitStore.uiImageOrNull()
+
+    /** PNG 字节；壳用 `UIImage(data:)` 本地解码，避免 KN UIImage 跨桥绘制失败。 */
+    fun pngDataOrNull(): NSData? = MagnifierBlitStore.pngDataOrNull()
+
+    /** 顶左行优先 RGBA；壳 `CGImageCreate`，不依赖 KN UIImage。 */
+    fun rgbaDataOrNull(): NSData? = MagnifierBlitStore.rgbaDataOrNull()
+
+    fun blitWidth(): Int = MagnifierBlitStore.blitWidth()
+
+    fun blitHeight(): Int = MagnifierBlitStore.blitHeight()
 
     fun borderWidth(): Float = MagnifierBlitStore.borderWidth
 

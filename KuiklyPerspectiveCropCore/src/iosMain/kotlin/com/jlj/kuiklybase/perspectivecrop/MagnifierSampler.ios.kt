@@ -76,8 +76,11 @@ actual class MagnifierSampler actual constructor() {
         val out = IntArray(need)
         val src = buf.argb
         val sw = buf.width
+        // 证据（2026-11-10）：红顶蓝底标记 → 壳 UIImage.draw 保序；镜内景物仍倒 →
+        // IosCropBuffer 相对 Stage 预览为 Y 颠倒。拷贝时按行翻转，使触点区域与正立方向对齐。
+        // 不改 decode/出图路径（裁切已验无明显颠倒）。
         for (y in 0 until h) {
-            val srcRow = (top + y) * sw + left
+            val srcRow = ((buf.height - 1) - (top + y)) * sw + left
             val dstRow = y * w
             for (x in 0 until w) {
                 out[dstRow + x] = src[srcRow + x]

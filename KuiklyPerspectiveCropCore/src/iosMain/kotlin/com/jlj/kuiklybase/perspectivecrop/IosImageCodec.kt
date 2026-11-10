@@ -6,6 +6,8 @@ import kotlinx.cinterop.usePinned
 import platform.CoreGraphics.CGAffineTransformMakeScale
 import platform.CoreGraphics.CGBitmapContextCreate
 import platform.CoreGraphics.CGBitmapContextCreateImage
+import platform.CoreGraphics.CGBitmapContextGetBytesPerRow
+import platform.CoreGraphics.CGBitmapContextGetData
 import platform.CoreGraphics.CGColorSpaceCreateDeviceRGB
 import platform.CoreGraphics.CGColorSpaceRelease
 import platform.CoreGraphics.CGContextConcatCTM
@@ -19,16 +21,27 @@ import platform.CoreGraphics.CGImageGetWidth
 import platform.CoreGraphics.CGImageRef
 import platform.CoreGraphics.CGImageRelease
 import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGSizeMake
 import platform.CoreGraphics.kCGBitmapByteOrder32Big
+import platform.posix.memcpy
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.plus
+import kotlinx.cinterop.reinterpret
 import platform.Foundation.NSBundle
 import platform.Foundation.NSData
 import platform.Foundation.NSDate
+import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfFile
 import platform.Foundation.timeIntervalSince1970
 import platform.Foundation.writeToFile
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
+import platform.UIKit.UIGraphicsEndImageContext
+import platform.UIKit.UIGraphicsGetCurrentContext
+import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePNGRepresentation
+import platform.UIKit.drawInRect
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -160,35 +173,27 @@ private fun loadUiImage(path: String): UIImage? {
 }
 
 /**
- * 旋源：纯 CGBitmapContext（底左原点），避免 UIGraphics 已翻转 CTM + 再手工旋转的双重翻转。
+ * 旋源：与 Stage `rotationZ = steps*90`、Android `Matrix.postRotate`、CropGeometry 顺时针一致。
+ *
+ * 必须用 UIGraphics（Y 向下）+ `UIImage.drawInRect`。同一套 Translate/Rotate 数字若套进
+ * CGBitmapContext（Y 向上）会在 90°/270° 方向错乱（裁切与放大镜同坏）。
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun rotateUiImage(image: UIImage, steps: Int): UIImage {
-    if (steps == 0) return image
+    val s = ((steps % 4) + 4) % 4
+    if (s == 0) return image
     val src = image.CGImage
         ?: throw CropException(CropException.DECODE_FAILED, "rotate: UIImage has no CGImage")
     val srcW = CGImageGetWidth(src).toInt().coerceAtLeast(1)
     val srcH = CGImageGetHeight(src).toInt().coerceAtLeast(1)
-    val swap = steps % 2 != 0
+    val swap = s % 2 != 0
     val outW = if (swap) srcH else srcW
     val outH = if (swap) srcW else srcH
-    val colorSpace = CGColorSpaceCreateDeviceRGB()
-        ?: throw CropException(CropException.DECODE_FAILED, "rotate: colorSpace null")
-    val ctx = CGBitmapContextCreate(
-        null,
-        outW.toULong(),
-        outH.toULong(),
-        8u,
-        (outW * 4).toULong(),
-        colorSpace,
-        iosRgbaBitmapInfo,
-    )
-    CGColorSpaceRelease(colorSpace)
-    if (ctx == null) {
-        throw CropException(CropException.DECODE_FAILED, "rotate: CGBitmapContextCreate failed")
-    }
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(outW.toDouble(), outH.toDouble()), false, 1.0)
     try {
-        when (steps) {
+        val ctx = UIGraphicsGetCurrentContext()
+            ?: throw CropException(CropException.DECODE_FAILED, "rotate: UIGraphics context null")
+        when (s) {
             1 -> {
                 CGContextTranslateCTM(ctx, outW.toDouble(), 0.0)
                 CGContextRotateCTM(ctx, PI / 2.0)
@@ -202,17 +207,11 @@ private fun rotateUiImage(image: UIImage, steps: Int): UIImage {
                 CGContextRotateCTM(ctx, -PI / 2.0)
             }
         }
-        CGContextDrawImage(ctx, CGRectMake(0.0, 0.0, srcW.toDouble(), srcH.toDouble()), src)
-        val outCg = CGBitmapContextCreateImage(ctx)
-            ?: throw CropException(CropException.DECODE_FAILED, "rotate: CreateImage null")
-        try {
-            return UIImage.imageWithCGImage(outCg)
-                ?: throw CropException(CropException.DECODE_FAILED, "rotate: UIImage null")
-        } finally {
-            CGImageRelease(outCg)
-        }
+        image.drawInRect(CGRectMake(0.0, 0.0, srcW.toDouble(), srcH.toDouble()))
+        return UIGraphicsGetImageFromCurrentImageContext()
+            ?: throw CropException(CropException.DECODE_FAILED, "rotate: UIGraphicsGetImage null")
     } finally {
-        CGContextRelease(ctx)
+        UIGraphicsEndImageContext()
     }
 }
 
@@ -279,9 +278,33 @@ internal fun cgImageToArgb(image: CGImageRef, width: Int, height: Int): IntArray
     return argb
 }
 
+/** ARGB IntArray → 顶左行优先 RGBA ByteArray（不做垂直翻转；由调用方/绘制 CTM 处理）。 */
+internal fun argbToRgbaBytes(argb: IntArray, width: Int, height: Int): ByteArray {
+    val bytes = ByteArray(width * height * 4)
+    var p = 0
+    val n = width * height
+    for (i in 0 until n) {
+        val pixel = argb[i]
+        bytes[p] = ((pixel ushr 16) and 0xFF).toByte()
+        bytes[p + 1] = ((pixel ushr 8) and 0xFF).toByte()
+        bytes[p + 2] = (pixel and 0xFF).toByte()
+        bytes[p + 3] = ((pixel ushr 24) and 0xFF).toByte()
+        p += 4
+    }
+    return bytes
+}
+
+@OptIn(ExperimentalForeignApi::class)
+internal fun ByteArray.toNSDataCopy(): NSData =
+    usePinned { pinned ->
+        NSData.create(bytes = pinned.addressOf(0), length = size.toULong())
+            ?: throw CropException(CropException.TRANSFORM_FAILED, "NSData.create failed")
+    }
+
 @OptIn(ExperimentalForeignApi::class)
 internal fun argbToCgImage(argb: IntArray, width: Int, height: Int): CGImageRef {
-    // CGBitmap 第 0 行为底；ARGB 为顶左行优先 → 按行倒序写入
+    // CGBitmap 第 0 行为底；ARGB 为顶左行优先 → 按行倒序写入。
+    // 勿用 CGDataProviderCreateWithCFData(NSData as CFDataRef)：KN 会 ClassCast _NSInlineData→CPointer。
     val bytes = ByteArray(width * height * 4)
     val stride = width * 4
     for (y in 0 until height) {
@@ -299,26 +322,37 @@ internal fun argbToCgImage(argb: IntArray, width: Int, height: Int): CGImageRef 
     }
     val colorSpace = CGColorSpaceCreateDeviceRGB()
         ?: throw CropException(CropException.TRANSFORM_FAILED, "CGColorSpaceCreateDeviceRGB failed")
-    return bytes.usePinned { pinned ->
-        val ctx = CGBitmapContextCreate(
-            pinned.addressOf(0),
-            width.toULong(),
-            height.toULong(),
-            8u,
-            (width * 4).toULong(),
-            colorSpace,
-            iosRgbaBitmapInfo,
-        )
-        CGColorSpaceRelease(colorSpace)
-        if (ctx == null) {
-            throw CropException(CropException.TRANSFORM_FAILED, "CGBitmapContextCreate(argb) failed")
+    val ctx = CGBitmapContextCreate(
+        null,
+        width.toULong(),
+        height.toULong(),
+        8u,
+        (width * 4).toULong(),
+        colorSpace,
+        iosRgbaBitmapInfo,
+    )
+    CGColorSpaceRelease(colorSpace)
+    if (ctx == null) {
+        throw CropException(CropException.TRANSFORM_FAILED, "CGBitmapContextCreate(argb) failed")
+    }
+    try {
+        val ctxData = CGBitmapContextGetData(ctx)
+            ?: throw CropException(CropException.TRANSFORM_FAILED, "CGBitmapContextGetData null")
+        val bpr = CGBitmapContextGetBytesPerRow(ctx).toInt().coerceAtLeast(stride)
+        bytes.usePinned { pinned ->
+            if (bpr == stride) {
+                memcpy(ctxData, pinned.addressOf(0), (width * height * 4).toULong())
+            } else {
+                val dst = ctxData.reinterpret<ByteVar>()
+                for (y in 0 until height) {
+                    memcpy(dst + y * bpr, pinned.addressOf(y * stride), stride.toULong())
+                }
+            }
         }
-        try {
-            CGBitmapContextCreateImage(ctx)
-                ?: throw CropException(CropException.TRANSFORM_FAILED, "CGBitmapContextCreateImage null")
-        } finally {
-            CGContextRelease(ctx)
-        }
+        return CGBitmapContextCreateImage(ctx)
+            ?: throw CropException(CropException.TRANSFORM_FAILED, "CGBitmapContextCreateImage null")
+    } finally {
+        CGContextRelease(ctx)
     }
 }
 
