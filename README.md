@@ -64,6 +64,15 @@ PerspectiveCropIos.init(cacheDir)
 
 `assets://` 默认在 main Bundle 与已加载 Bundle 中按资源名查找。
 
+KMP 层用 Maven Core；**原生放大镜 View**另加 CocoaPods（类名 `KRPerspectiveCropMagnifier`，Kuikly 按名解析，无需 `registerExternalRenderView`）：
+
+```ruby
+pod 'KuiklyPerspectiveCrop', '0.0.1'
+```
+
+配套 Maven：`io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
+壳 Swift 默认 `import perspectiveCropDemo`（本仓 Demo）；消费方请改成自己的 shared 模块名。
+
 ### 鸿蒙
 
 注入 hap `resourceDir`（解码 `assets://`）与可写缓存目录：

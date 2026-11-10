@@ -5,13 +5,17 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
     //trick: for the same plugin versions in all sub-modules
-    id("com.android.application").version("7.4.2").apply(false)
-    id("com.android.library").version("7.4.2").apply(false)
+    // vanniktech maven-publish 0.30 需要 AGP ≥ 8.0（对齐 KuiklyEcho）
+    id("com.android.application").version("8.3.2").apply(false)
+    id("com.android.library").version("8.3.2").apply(false)
     kotlin("android").version("2.1.21").apply(false)
     kotlin("multiplatform").version("2.1.21").apply(false)
     id("com.google.devtools.ksp").version("2.1.21-2.0.1").apply(false)
     id("org.jetbrains.compose").version("1.7.3").apply(false)
     kotlin("plugin.compose").version("2.1.21").apply(false)
+    // Maven Central 发布（KMP 多 target / 签名 / POM / 上传）
+    id("com.vanniktech.maven.publish").version("0.30.0").apply(false)
+    id("org.jetbrains.dokka").version("1.9.20").apply(false)
 }
 
 // H5：绕过 GitHub 拉 yarn/node（本机常超时）。Yarn 用本地 ivy 镜像；Node 用 PATH。

@@ -1,5 +1,14 @@
 # ios-native-crop · feature changelog
 
+## 2026-11-10（CocoaPods 壳发布接线）
+
+- 桥 `PerspectiveCropIosMagnifierBridge` 迁 Core；`@ObjCName(exact)`；`viewPointCount` / `viewPointAt`
+- 新建 `KuiklyPerspectiveCropIOS/` + 根/子 podspec `0.0.1`；iosApp symlink 同 Swift
+- Demo：`api` + `framework.export(Core)`，Swift 可见桥；D3：壳仍 `import perspectiveCropDemo`（独立 path-pod 编不过）
+- 模拟器：`xcodebuild` BUILD SUCCEEDED 并 launch home
+- trunk push：待 git tag `0.0.1`（本单未自动 commit）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：发布接线非规范晋升｜待批 0（已达标 0）
+
 ## 2026-11-09（沉淀 iOS runbook）
 
 - 起服经验写入 [`../kuikly-dev-ios/runbook.md`](../kuikly-dev-ios/runbook.md)

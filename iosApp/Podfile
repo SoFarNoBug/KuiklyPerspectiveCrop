@@ -7,6 +7,7 @@ target 'iosApp' do
   # Local KuiklyUI (2.30.x) — avoids slow GitHub clone of trunk OpenKuiklyIOSRender
   pod 'OpenKuiklyIOSRender', :path => '../../KuiklyUI'
   pod 'perspectiveCropDemo', :path => '../perspectiveCropDemo'
+  # 放大镜 View 源在 ../KuiklyPerspectiveCropIOS（CocoaPods 发布真源）；Demo 经 Xcode 引用同文件，不 path-pod（避免 Pod 目标无法 import perspectiveCropDemo）
 
   pod 'SDWebImage'
 end

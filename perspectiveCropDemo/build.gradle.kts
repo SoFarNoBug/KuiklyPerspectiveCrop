@@ -52,6 +52,8 @@ kotlin {
             freeCompilerArgs = freeCompilerArgs + getCommonCompilerArgs()
             isStatic = true
             license = "MIT"
+            // 导出 Core，使 Swift 经 import perspectiveCropDemo 可见 PerspectiveCropIosMagnifierBridge
+            export(project(":KuiklyPerspectiveCropCore"))
         }
         extraSpecAttributes["resources"] = "['src/commonMain/assets/**']"
     }
@@ -59,7 +61,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":KuiklyPerspectiveCropCore"))
+                api(project(":KuiklyPerspectiveCropCore"))
                 implementation("com.tencent.kuikly-open:core:${Version.getKuiklyVersion()}")
                 implementation("com.tencent.kuikly-open:core-annotations:${Version.getKuiklyVersion()}")
                 implementation("com.tencent.kuikly-open:compose:${Version.getKuiklyVersion()}")

@@ -77,6 +77,27 @@ node static_server/serve/index.js
 - [docs/reviews/](docs/reviews/README.md)
 - 真机勾选：`docs/reviews/device-check-list/`
 
+## 发布到 Maven Central（别人可直接依赖）
+
+模块：`:KuiklyPerspectiveCropCore` → `io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
+鸿蒙（`settings.ohos.gradle.kts`）本阶段不发。
+
+```bash
+CENTRAL_USERNAME=… CENTRAL_PASSWORD=… GPG_KEY_PASSWORD=… ./publish-maven.sh
+```
+
+消费方只需 `mavenCentral()` + README 里的 `implementation(...)`。
+
+## 发布到 CocoaPods（iOS 原生放大镜）
+
+源：`KuiklyPerspectiveCropIOS/` + 根 `KuiklyPerspectiveCrop.podspec`（`0.0.1`）。  
+Demo 经 symlink 引用同文件；`perspectiveCropDemo` framework **export** Core 以便 Swift 见桥。
+
+```bash
+# 需已 commit + 打 tag 0.0.1 并 push 到 GitHub
+pod trunk push KuiklyPerspectiveCrop.podspec
+```
+
 ## 编码规范（AI / 人工）
 
 技能与自检素材在 [docs/skill-references/](docs/skill-references/README.md)；Cursor skills 在 `.cursor/skills/`。
