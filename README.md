@@ -1,6 +1,10 @@
 # KuiklyPerspectiveCrop
 
-斜拍照片上框选文档或物体，裁剪并做透视校正。基于 **Kuikly Compose** 的多端库。
+斜拍一张，四点框住，一裁校正。
+
+文档、快递单、白板——从透视畸变里拉回正视。**Kuikly Compose DSL** 多端库，Android / iOS / 鸿蒙 / H5 同一套 API。
+
+不做 OCR，不做自动扫边；检到的点可以直接灌进来。
 
 | 项 | 值 |
 |---|---|
