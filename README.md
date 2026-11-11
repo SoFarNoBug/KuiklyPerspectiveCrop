@@ -212,6 +212,7 @@ fun CropPage(imageSrc: String) {
 | 期望 H5 原生清晰镜 | 只有网格兜底 | 当前设计如此；清晰镜看 Android / iOS / 鸿蒙 |
 | `imageSrc` 协议错 / H5 跨域无 CORS | `DECODE_FAILED` | 核对 `file://` / `content://` / `assets://` / 可访问 URL |
 | 业务皮肤写进库默认 Painter | 升级被覆盖、污染默认主题 | 皮肤只放宿主；用六层 SPI 注入 |
+| Android 折叠开合未声明 `configChanges` | Activity 重建 → Kuikly 页重挂，Compose `remember` 全丢（像回首页） | 宿主 Activity 对齐 KuiklyUI：`configChanges` 含 `screenSize` / `smallestScreenSize` / `screenLayout` / `orientation`；尺寸由 `rootViewSizeDidChanged` 刷新。本仓 Demo 已加；接入方勿漏 |
 
 Demo 起服级排障（白屏、webpack、UMD 等）见 [CONTRIBUTING.md](CONTRIBUTING.md) 与各端 runbook，不在本表展开。
 

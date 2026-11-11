@@ -26,6 +26,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    // AGP 8+ 默认不生成 BuildConfig；壳异常适配器要用 BuildConfig.DEBUG
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
