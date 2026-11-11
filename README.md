@@ -200,9 +200,11 @@ suspend fun cropToFile(path: String): String
 | `cornerGrabOffsetEnabled` | `false` | 自由角保留「手指−角点」按压偏移 | 多数不用；默认帧增量即可 |
 | `cornerMaxStepPx` | `0` | 自由角单帧最大位移（**图像素**；≤0 不限） | 甩动大跳时再限 |
 | `contentInsetLeft/Top/Right/Bottom` | `0` | 内容区内缩（dp；蒙版仍满屏） | 裁剪区外还要摆控件时开 |
+| `showOperationUI` | **`true`** | 绘制选区操作 UI（六层叠层 + 原生镜） | 只要底图/仍可拖 → 关（对齐旧库 hideOperationUI 取反） |
 | `showMagnifier` | **`true`** | 绘制放大镜 | 不要镜 → 关 |
 | `showGuideLines` | `false` | 九宫格（整图 Fit） | 要构图辅助线 → 开 |
 | `showEdgeMidPoints` | `false` | 绘制边线中点 | 要边上圆点 → 开；关后仍可拖边 |
+| `showCornerBorder` | **`true`** | 角点描边 | 白实心无红圈 → 关 |
 | `showMagnifierCropLineMirror` | **`true`** | 镜内再画裁剪框线段 | 镜里只要图 → 关 |
 | `showMagnifierCenterCross` | `false` | 镜心十字 | 要对准像素 → 开 |
 | `magnifierRadiusRatio` | `0.07` | 镜半径占视图宽比 | 调镜大小 |
@@ -212,7 +214,9 @@ suspend fun cropToFile(path: String): String
 | `magnifierCacheMaxEdgePx` | **`2048`** | 采样缓存最长边（**真实 px**） | 低端卡/省内存 → `1024` |
 | `maskAlpha` | `0.55` | 蒙版透明度 | 换品牌皮 |
 | `borderWidthPx` / `borderColor` | `2` / 红 | 框线（字段名历史遗留，语义为 dp） | 换皮 |
-| `cornerRadiusPx` / `cornerColor` | `8` / 红 | 角点（dp） | 换皮 |
+| `cornerRadiusPx` | `8` | 角点半径（dp） | 换皮 |
+| `cornerFillColor` / `cornerFillAlpha` | 白 / `1` | 角点填充（ARGB + 0–1 α） | Accent Ring 默认白芯 |
+| `cornerBorderWidth` / `cornerBorderColor` | `2` / 红 | 角点描边（dp；须 `showCornerBorder`） | 换皮 |
 | `guideLineWidth` / `guideLineColor` | `1` / 半透明白 | 辅助线 | 开了九宫格再调 |
 | `outputFormat` / `jpegQuality` | `Jpeg` / `92` | 导出格式与 JPEG 质量 | 要 PNG 或调质量时 |
 | `cropEngine` | **`Auto`** | 出图引擎：`Auto` / `Native` / `Common` | 强制原生或强制 CPU 时改 |

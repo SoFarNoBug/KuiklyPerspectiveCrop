@@ -1,5 +1,11 @@
 # ios-native-crop · feature changelog
 
+## 2026-11-10 · 修 BlitResolve 编译并装 Duo
+
+- [MODIFY] `KuiklyPerspectiveCropIOS/KRPerspectiveCropMagnifier.swift`：绘制侧用 `blit.image`（`resolveBlitCGImage` 返回 `BlitResolve`，此前当 `CGImage?` 导致编不过）
+- Duo：`xcodebuild` + `simctl install/launch` `com.jlj.kuiklyperspectivecropui.iosApp`（UDID `B5558DE3-…`）
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：编译类型错｜待批 0（已达标 0）
+
 ## 2026-11-10（用户确认：放大镜+旋源四角 OK）
 
 - Duo：#6 圆镜像素/触点、#7 0/90/180/270 裁切与放大镜均正常

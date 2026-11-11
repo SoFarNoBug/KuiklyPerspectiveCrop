@@ -1,6 +1,6 @@
 # 开发决策台账（已锁定）
 
-> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；Q16–Q22 @ 2026-11-07 M2；Q23–Q32 @ 2026-11-07 M3；**Q33–Q37 @ 2026-11-07 M4**）。  
+> **SoT**：本文件锁定已定结论（Q1–Q15 @ 2026-11-06；Q16–Q22 @ 2026-11-07 M2；Q23–Q32 @ 2026-11-07 M3；**Q33–Q37 @ 2026-11-07 M4**；**Q41 @ 2026-11-10** 操作 UI / 角点 fill·border）。  
 > ADR 只收「难逆转 + 需后果说明」的子集；里程碑是**分期施工单**，不得改写本表已定项。  
 > 冲突时：**本表 > ADR 摘要 > milestones 措辞 > 代码注释**。
 
@@ -88,6 +88,12 @@
 | ID | 议题 | 已定 | 落点 |
 |---|---|---|---|
 | **Q40** | 出图引擎可切换 | Config `cropEngine`：`Auto`（默认）/ `Native` / `Common`；Common = 上移自 H5 的 CPU 单应；Android Native=`setPolyToPoly`；鸿蒙 Native=`OH_Drawing_MatrixSetPolyToPoly`+Canvas（Auto→Native）；iOS Native=Core Image 四点透视 hypot dest（Auto→Native）；H5 始终 Common | ADR 0009；`PerspectiveHomography` / Processor actual |
+
+## Q41（操作 UI 总开关 · 角点 fill/border · Accent Ring）
+
+| ID | 议题 | 已定 | 落点 |
+|---|---|---|---|
+| **Q41** | 操作 UI / 角点描边 | ① `showOperationUI` 默认 `true`；`false` = Stage **整包不画**选区叠层（六层 + 原生镜），**手势仍可用**（对齐旧库 `hideOperationUI` 取反；细 `show*` 一票否决）。② 删除模糊名 `cornerColor`；角点用 `cornerFillColor` + `cornerFillAlpha`（Float 0–1）+ `showCornerBorder` / `cornerBorderWidth` / `cornerBorderColor`。③ 边中点只复用填充色 × `cornerFillAlpha * 0.85`，无中点描边 Config。④ 默认主题 **Accent Ring**：框线红；角点白芯 + 描边默认开（宽 2、红）；蒙版 α 0.55。⑤ Lab 只演示 `showCornerBorder`，不演示 `showOperationUI`。术语禁用 chrome，用「操作 UI / 选区叠层」 | Config；DefaultCorner/EdgeMid；Stage；CONTEXT；Demo Lab |
 
 ## 分期映射（不得挪已定能力出 v0.1）
 

@@ -154,9 +154,9 @@ internal fun DemoBottomBar(content: @Composable () -> Unit) {
 }
 
 /**
- * Lab 用 dp 滑杆（整数档）；[valueRange] 默认 0..100。
+ * Lab 用滑杆；[valueRange] 默认 0..100。
  * 样式对齐框架 Compose `MaterialDemo`：压矮轨道 + [SliderDefaults.colors]。
- * 0 = 关闭对应命中（catch 语义）。
+ * catch 下 0 = 关闭对应命中。[formatValue]/[snapToInt]/[steps] 供 α / 半档线宽。
  */
 @Composable
 internal fun DemoDpSlider(
@@ -164,11 +164,14 @@ internal fun DemoDpSlider(
     value: Float,
     valueRange: ClosedFloatingPointRange<Float> = 0f..100f,
     onValueChange: (Float) -> Unit,
+    formatValue: (Float) -> String = { "${it.roundToInt()} dp" },
+    snapToInt: Boolean = true,
+    steps: Int? = null,
 ) {
     val lo = valueRange.start
     val hi = valueRange.endInclusive
-    val span = (hi - lo).coerceAtLeast(1f)
-    val steps = (span.roundToInt() - 1).coerceAtLeast(0)
+    val span = (hi - lo).coerceAtLeast(1e-3f)
+    val resolvedSteps = steps ?: ((span.roundToInt() - 1).coerceAtLeast(0))
     val trackInactive = Color(0xFF3A4150)
     Column(
         modifier = Modifier
@@ -187,7 +190,7 @@ internal fun DemoDpSlider(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = "${value.roundToInt()} dp",
+                text = formatValue(value),
                 color = DemoTheme.TextPrimary,
                 fontSize = 11.sp,
                 lineHeight = 11.sp,
@@ -196,9 +199,11 @@ internal fun DemoDpSlider(
         // MaterialDemo：Modifier.height(12.dp)；CanvasDemo：colors 换主题色
         Slider(
             value = value.coerceIn(lo, hi),
-            onValueChange = { onValueChange(it.roundToInt().toFloat()) },
+            onValueChange = { raw ->
+                onValueChange(if (snapToInt) raw.roundToInt().toFloat() else raw)
+            },
             valueRange = valueRange,
-            steps = steps,
+            steps = resolvedSteps,
             colors = SliderDefaults.colors(
                 thumbColor = DemoTheme.Primary,
                 activeTrackColor = DemoTheme.Primary,

@@ -79,7 +79,7 @@ public final class KRPerspectiveCropMagnifier: KRView {
             height: diam
         )
         let bridge = MagBridge.resolve()
-        let blitImage = Self.resolveBlitCGImage(bridge: bridge)
+        let blit = Self.resolveBlitCGImage(bridge: bridge)
 
         ctx.saveGState()
         ctx.addEllipse(in: circle)
@@ -87,7 +87,7 @@ public final class KRPerspectiveCropMagnifier: KRView {
         UIColor(red: 0x22 / 255.0, green: 0x22 / 255.0, blue: 0x22 / 255.0, alpha: 1).setFill()
         ctx.fillEllipse(in: circle)
 
-        if let cgImage = blitImage {
+        if let cgImage = blit.image {
             // 顶左 RGBA；UIImage.draw（勿再对 CGContext 做 Y 翻转）。
             UIImage(cgImage: cgImage).draw(in: circle)
         }

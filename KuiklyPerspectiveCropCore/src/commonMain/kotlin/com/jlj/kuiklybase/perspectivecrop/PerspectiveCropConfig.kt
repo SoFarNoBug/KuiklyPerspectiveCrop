@@ -1,7 +1,7 @@
 package com.jlj.kuiklybase.perspectivecrop
 
 /**
- * 样式与行为旋钮。默认值对齐 [docs/decisions.md]（Q7/Q9/Q14/Q19/Q26/Q29/Q31）。
+ * 样式与行为旋钮。默认值对齐 [docs/decisions.md]（Q7/Q9/Q14/Q19/Q26/Q29/Q31/Q41）。
  *
  * UI 长度字段为 **Compose dp 数字**（ADR 0008）；Stage 经 `LocalDensity` 换成视图 px
  * 再进命中 / Fit / 绘制。字段名里的 `Px` 为历史命名，语义仍是 dp。
@@ -67,6 +67,12 @@ data class PerspectiveCropConfig(
     val cornerMaxStepPx: Float = 0f,
     /** 最小内角（度）；0 表示不校验。 */
     val minAngleLimit: Float = 20f,
+    /**
+     * 是否绘制选区操作 UI（蒙版 / 框线 / 角点 / 边中点 / 九宫格 / 放大镜，含原生镜）。
+     * 默认 true。false = 整包不画叠层，**手势仍可用**（对齐旧库 `hideOperationUI` 取反）。
+     * 为 false 时细 `show*`（放大镜 / 九宫格等）不再生效。
+     */
+    val showOperationUI: Boolean = true,
     /** 是否绘制放大镜（真像素实现在 M3，属 v0.1 / Q14）。 */
     val showMagnifier: Boolean = true,
     /** 是否绘制边线中点（默认关）。 */
@@ -79,7 +85,16 @@ data class PerspectiveCropConfig(
     val borderColor: Long = 0xFFFF3B30,
     /** 角点圆半径（**Compose dp**；字段名历史遗留）。 */
     val cornerRadiusPx: Float = 8f,
-    val cornerColor: Long = 0xFFFF3B30,
+    /** 角点填充色 ARGB（默认白；Accent Ring）。 */
+    val cornerFillColor: Long = 0xFFFFFFFF,
+    /** 角点填充透明度 0–1（与 [maskAlpha] 同单位）；默认 1。 */
+    val cornerFillAlpha: Float = 1f,
+    /** 是否绘制角点描边（默认开；Accent Ring 白芯红圈）。 */
+    val showCornerBorder: Boolean = true,
+    /** 角点描边宽度（**Compose dp**）。 */
+    val cornerBorderWidth: Float = 2f,
+    /** 角点描边色 ARGB（默认与框线同红）。 */
+    val cornerBorderColor: Long = 0xFFFF3B30,
     /** 辅助线宽度（**Compose dp**）。 */
     val guideLineWidth: Float = 1f,
     /** 辅助线颜色 ARGB。 */
@@ -156,6 +171,7 @@ fun PerspectiveCropConfig.toViewPx(density: Float): PerspectiveCropConfig {
         minCropWidth = minCropWidth * d,
         borderWidthPx = borderWidthPx * d,
         cornerRadiusPx = cornerRadiusPx * d,
+        cornerBorderWidth = cornerBorderWidth * d,
         guideLineWidth = guideLineWidth * d,
         magnifierBorderWidth = magnifierBorderWidth * d,
         magnifierCrossLineWidth = magnifierCrossLineWidth * d,

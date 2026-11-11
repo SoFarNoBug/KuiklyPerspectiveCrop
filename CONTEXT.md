@@ -52,6 +52,14 @@ _Avoid_: 未 init 时静默落盘；把 init 绑死到 Demo 包名；只查 main
 可分别注入的叠层绘制扩展点：**蒙版 / 框线 / 角点 / 边线中点 / 九宫格辅助线 / 放大镜**；库提供默认实现，业务皮肤只进 Demo（改变样式）。可有门面聚合，但分层必须可单独替换。
 _Avoid_: 非本仓 Drawer 前缀；把换皮收成「只能整包换一个 Painter」当唯一扩展方式
 
+**showOperationUI（选区操作 UI）**:
+是否绘制选区叠层（六层 + 原生放大镜）；**默认 true**。false = 整包不画，手势仍可用；细 `show*` 一票否决。
+_Avoid_: chrome；以 `hideOperationUI` 作新库主名；关总开关仍漏画原生镜
+
+**cornerFill / cornerBorder（角点填充与描边）**:
+角点样式：`cornerFillColor` + `cornerFillAlpha`（0–1）+ `showCornerBorder` / `cornerBorderWidth` / `cornerBorderColor`。默认 Accent Ring（白芯 + 红描边开）。边中点只复用填充色 × α×0.85，无独立描边字段。
+_Avoid_: `cornerColor`（已删除的模糊名）；把描边语义塞进填充 ARGB 高位当唯一手段
+
 **rectMode**:
 矩形模式：角点拖动保持轴对齐矩形；默认关闭，自由凸四边形为主路径。
 

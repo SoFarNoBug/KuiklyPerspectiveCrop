@@ -82,10 +82,15 @@ fun PerspectiveCropStage(
         src,
         rotationSteps,
         imageW,
+        activeConfig.showOperationUI,
         activeConfig.showMagnifier,
         activeConfig.magnifierCacheMaxEdgePx,
     ) {
-        if (src.isEmpty() || imageW <= 0f || !activeConfig.showMagnifier) return@LaunchedEffect
+        if (src.isEmpty() || imageW <= 0f ||
+            !activeConfig.showOperationUI || !activeConfig.showMagnifier
+        ) {
+            return@LaunchedEffect
+        }
         val warmSrc = src
         val warmRot = rotationSteps
         val warmW = imageW
@@ -101,7 +106,11 @@ fun PerspectiveCropStage(
     LaunchedEffect(touchView, magnifierPatch?.touchViewX, magnifierPatch?.touchViewY, useNativeMagnifier) {
         if (useNativeMagnifier) return@LaunchedEffect
         val patch = magnifierPatch ?: return@LaunchedEffect
-        if (!touchView.isSpecified || !activeConfig.showMagnifier) return@LaunchedEffect
+        if (!touchView.isSpecified ||
+            !activeConfig.showOperationUI || !activeConfig.showMagnifier
+        ) {
+            return@LaunchedEffect
+        }
         if (patch.drawGrid >= MagnifierDrawGrid.SETTLED) return@LaunchedEffect
         delay(MagnifierDrawGrid.SETTLE_DELAY_MS)
         val latest = magnifierPatch ?: return@LaunchedEffect
@@ -240,15 +249,21 @@ fun PerspectiveCropStage(
                             session.onDragStart(downImg.x, downImg.y, map.scale)
                             controller.publish()
                             onDragActiveChangedState.value?.invoke(true)
-                            refreshMagnifier(
-                                sampler = sampler,
-                                src = srcState.value,
-                                rotation = rotationState.value,
-                                imageSize = imageSizeState.value,
-                                map = map,
-                                touch = down.position,
-                                config = viewConfigState.value,
-                            )?.also { magnifierPatch = it }
+                            // 操作 UI 关着不采样放大镜（避免空转调 refreshMagnifier）
+                            val dragCfg = viewConfigState.value
+                            val sampleMagnifier =
+                                dragCfg.showOperationUI && dragCfg.showMagnifier
+                            if (sampleMagnifier) {
+                                refreshMagnifier(
+                                    sampler = sampler,
+                                    src = srcState.value,
+                                    rotation = rotationState.value,
+                                    imageSize = imageSizeState.value,
+                                    map = map,
+                                    touch = down.position,
+                                    config = dragCfg,
+                                )?.also { magnifierPatch = it }
+                            }
                             var magTick = 0
 
                             drag(pointerId = down.id) { change ->
@@ -259,6 +274,7 @@ fun PerspectiveCropStage(
                                 val img = m.viewToImageClamped(offset.x, offset.y)
                                 session.onDrag(img.x, img.y)
                                 controller.publish()
+                                if (!sampleMagnifier) return@drag
                                 // 网格兜底更稀采样（鸿蒙 KN drawRect 贵）；原生贴图仍每 2 帧
                                 magTick++
                                 val magEvery = if (useNativeMagnifier) 2 else 4
@@ -283,56 +299,59 @@ fun PerspectiveCropStage(
                         }
                     },
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    if (viewPoints.size == 4) {
-                        with(overlayPainters.mask) { drawMask(viewPoints, viewConfig) }
-                        val map = mapping
-                        if (map != null) {
-                            with(overlayPainters.guide) {
-                                drawGuides(
-                                    viewPoints,
-                                    viewConfig,
-                                    map.contentLeft,
-                                    map.contentTop,
-                                    map.contentW,
-                                    map.contentH,
-                                )
+                // Q41：showOperationUI=false 整包跳过选区叠层（含原生镜）；手势仍走 Session
+                if (viewConfig.showOperationUI) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        if (viewPoints.size == 4) {
+                            with(overlayPainters.mask) { drawMask(viewPoints, viewConfig) }
+                            val map = mapping
+                            if (map != null) {
+                                with(overlayPainters.guide) {
+                                    drawGuides(
+                                        viewPoints,
+                                        viewConfig,
+                                        map.contentLeft,
+                                        map.contentTop,
+                                        map.contentW,
+                                        map.contentH,
+                                    )
+                                }
                             }
-                        }
-                        with(overlayPainters.border) { drawBorder(viewPoints, viewConfig) }
-                        with(overlayPainters.corner) { drawCorners(viewPoints, viewConfig) }
-                        with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, viewConfig) }
-                        // 网格兜底：非原生平台，或注入了自定义放大镜画家
-                        if (!useNativeMagnifier &&
-                            viewConfig.showMagnifier &&
-                            touchView.isSpecified
-                        ) {
-                            with(overlayPainters.magnifier) {
-                                drawMagnifier(
-                                    viewPoints,
-                                    touchView.x,
-                                    touchView.y,
-                                    viewConfig,
-                                    magnifierPatch,
-                                )
+                            with(overlayPainters.border) { drawBorder(viewPoints, viewConfig) }
+                            with(overlayPainters.corner) { drawCorners(viewPoints, viewConfig) }
+                            with(overlayPainters.edgeMid) { drawEdgeMids(viewMids, viewConfig) }
+                            // 网格兜底：非原生平台，或注入了自定义放大镜画家
+                            if (!useNativeMagnifier &&
+                                viewConfig.showMagnifier &&
+                                touchView.isSpecified
+                            ) {
+                                with(overlayPainters.magnifier) {
+                                    drawMagnifier(
+                                        viewPoints,
+                                        touchView.x,
+                                        touchView.y,
+                                        viewConfig,
+                                        magnifierPatch,
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                if (useNativeMagnifier &&
-                    viewConfig.showMagnifier &&
-                    touchView.isSpecified
-                ) {
-                    PlatformMagnifierOverlay(
-                        modifier = Modifier.fillMaxSize(),
-                        patch = magnifierPatch,
-                        touchViewX = touchView.x,
-                        touchViewY = touchView.y,
-                        containerW = containerW,
-                        containerH = containerH,
-                        config = viewConfig,
-                        viewPoints = viewPoints,
-                    )
+                    if (useNativeMagnifier &&
+                        viewConfig.showMagnifier &&
+                        touchView.isSpecified
+                    ) {
+                        PlatformMagnifierOverlay(
+                            modifier = Modifier.fillMaxSize(),
+                            patch = magnifierPatch,
+                            touchViewX = touchView.x,
+                            touchViewY = touchView.y,
+                            containerW = containerW,
+                            containerH = containerH,
+                            config = viewConfig,
+                            viewPoints = viewPoints,
+                        )
+                    }
                 }
             }
         }
@@ -348,7 +367,7 @@ private fun refreshMagnifier(
     touch: Offset,
     config: PerspectiveCropConfig,
 ): MagnifierPatch? {
-    if (!config.showMagnifier) return null
+    if (!config.showOperationUI || !config.showMagnifier) return null
     val (iw, ih) = imageSize
     val img = map.viewToImageClamped(touch.x, touch.y)
     return sampler.sample(

@@ -62,6 +62,15 @@ private enum class CatchSliderKind {
     Mid,
 }
 
+/** 外观 Tab：同时只展开一根视觉滑杆。 */
+private enum class AppearanceSliderKind {
+    None,
+    CornerRadius,
+    BorderWidth,
+    CornerBorderWidth,
+    CornerFillAlpha,
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PerspectiveCropLabScreen() {
@@ -72,6 +81,7 @@ private fun PerspectiveCropLabScreen() {
     var altSkin by remember { mutableStateOf(false) }
     var tab by remember { mutableStateOf(LabTab.Appearance) }
     var catchSlider by remember { mutableStateOf(CatchSliderKind.None) }
+    var appearanceSlider by remember { mutableStateOf(AppearanceSliderKind.None) }
     var resultSrc by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
     var cropping by remember { mutableStateOf(false) }
@@ -152,7 +162,7 @@ private fun PerspectiveCropLabScreen() {
         Text(
             text = when (tab) {
                 LabTab.Appearance ->
-                    "产品页大多用默认。只有改样式、切矩形模式、或要内缩显示时，再动下面开关。"
+                    "色板/滑杆改 Config；「改变样式」换 Painter。快捷预设只动框/角颜色与描边。"
                 LabTab.Gesture ->
                     "手感类默认已按文档/快递单裁常用打开。觉得难点/拖边怪时再改下面开关。"
                 LabTab.Magnifier ->
@@ -172,6 +182,65 @@ private fun PerspectiveCropLabScreen() {
         ) {
             when (tab) {
                 LabTab.Appearance -> {
+                    for (preset in LabAppearancePreset.entries) {
+                        DemoToggleChip(
+                            label = preset.chipLabel(),
+                            active = cfg.matchesAppearancePreset(preset),
+                            onClick = { applyCfg { withAppearancePreset(preset) } },
+                        )
+                    }
+                    DemoToggleChip(
+                        label = "框线色·${paletteColorShortName(cfg.borderColor)}",
+                        active = true,
+                        onClick = {
+                            applyCfg {
+                                copy(
+                                    borderColor = nextPaletteColor(
+                                        borderColor,
+                                        LabAppearancePalettes.strokeColors,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "角点填充·${paletteColorShortName(cfg.cornerFillColor)}",
+                        active = true,
+                        onClick = {
+                            applyCfg {
+                                copy(
+                                    cornerFillColor = nextPaletteColor(
+                                        cornerFillColor,
+                                        LabAppearancePalettes.fillColors,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "角点描边色·${paletteColorShortName(cfg.cornerBorderColor)}",
+                        active = true,
+                        onClick = {
+                            applyCfg {
+                                copy(
+                                    cornerBorderColor = nextPaletteColor(
+                                        cornerBorderColor,
+                                        LabAppearancePalettes.strokeColors,
+                                    ),
+                                )
+                            }
+                        },
+                    )
+                    val maskDeep = cfg.maskAlpha >= 0.45f
+                    DemoToggleChip(
+                        label = if (maskDeep) "蒙版·深" else "蒙版·浅",
+                        active = maskDeep,
+                        onClick = {
+                            applyCfg {
+                                copy(maskAlpha = if (maskAlpha >= 0.45f) 0.30f else 0.55f)
+                            }
+                        },
+                    )
                     // chip = 接产品时的痛点/要不要开；非字段名。
                     DemoToggleChip(
                         label = if (cfg.showMagnifier) "绘制放大镜·开" else "绘制放大镜·关",
@@ -191,6 +260,59 @@ private fun PerspectiveCropLabScreen() {
                         },
                         active = cfg.showEdgeMidPoints,
                         onClick = { applyCfg { copy(showEdgeMidPoints = !showEdgeMidPoints) } },
+                    )
+                    DemoToggleChip(
+                        label = if (cfg.showCornerBorder) "角点描边·开" else "角点描边·关",
+                        active = cfg.showCornerBorder,
+                        onClick = { applyCfg { copy(showCornerBorder = !showCornerBorder) } },
+                    )
+                    DemoToggleChip(
+                        label = "角点半径·${cfg.cornerRadiusPx.toInt()}dp",
+                        active = appearanceSlider == AppearanceSliderKind.CornerRadius,
+                        onClick = {
+                            appearanceSlider =
+                                if (appearanceSlider == AppearanceSliderKind.CornerRadius) {
+                                    AppearanceSliderKind.None
+                                } else {
+                                    AppearanceSliderKind.CornerRadius
+                                }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "框线宽·${cfg.borderWidthPx.toInt()}dp",
+                        active = appearanceSlider == AppearanceSliderKind.BorderWidth,
+                        onClick = {
+                            appearanceSlider =
+                                if (appearanceSlider == AppearanceSliderKind.BorderWidth) {
+                                    AppearanceSliderKind.None
+                                } else {
+                                    AppearanceSliderKind.BorderWidth
+                                }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "角描边宽·${cornerBorderWidthLabel(cfg.cornerBorderWidth)}dp",
+                        active = appearanceSlider == AppearanceSliderKind.CornerBorderWidth,
+                        onClick = {
+                            appearanceSlider =
+                                if (appearanceSlider == AppearanceSliderKind.CornerBorderWidth) {
+                                    AppearanceSliderKind.None
+                                } else {
+                                    AppearanceSliderKind.CornerBorderWidth
+                                }
+                        },
+                    )
+                    DemoToggleChip(
+                        label = "角填充透明·${(cfg.cornerFillAlpha * 100).toInt()}%",
+                        active = appearanceSlider == AppearanceSliderKind.CornerFillAlpha,
+                        onClick = {
+                            appearanceSlider =
+                                if (appearanceSlider == AppearanceSliderKind.CornerFillAlpha) {
+                                    AppearanceSliderKind.None
+                                } else {
+                                    AppearanceSliderKind.CornerFillAlpha
+                                }
+                        },
                     )
                     DemoToggleChip(
                         label = if (altSkin) "改变样式·开" else "改变样式·关",
@@ -360,6 +482,46 @@ private fun PerspectiveCropLabScreen() {
                 }
             }
         }
+        if (tab == LabTab.Appearance) {
+            when (appearanceSlider) {
+                AppearanceSliderKind.None -> Unit
+                AppearanceSliderKind.CornerRadius -> DemoDpSlider(
+                    label = "角点半径",
+                    value = cfg.cornerRadiusPx,
+                    valueRange = 4f..20f,
+                    onValueChange = { v -> applyCfg { copy(cornerRadiusPx = v) } },
+                )
+                AppearanceSliderKind.BorderWidth -> DemoDpSlider(
+                    label = "框线宽",
+                    value = cfg.borderWidthPx,
+                    valueRange = 1f..6f,
+                    onValueChange = { v -> applyCfg { copy(borderWidthPx = v) } },
+                )
+                AppearanceSliderKind.CornerBorderWidth -> DemoDpSlider(
+                    label = "角点描边宽",
+                    value = cfg.cornerBorderWidth,
+                    valueRange = 0.5f..6f,
+                    snapToInt = false,
+                    steps = 10,
+                    formatValue = { "${cornerBorderWidthLabel(it)} dp" },
+                    onValueChange = { v ->
+                        val snapped = (kotlin.math.round(v * 2f) / 2f).coerceIn(0.5f, 6f)
+                        applyCfg { copy(cornerBorderWidth = snapped) }
+                    },
+                )
+                AppearanceSliderKind.CornerFillAlpha -> DemoDpSlider(
+                    label = "角点填充透明",
+                    value = cfg.cornerFillAlpha,
+                    valueRange = 0.2f..1f,
+                    snapToInt = false,
+                    steps = 15,
+                    formatValue = { "${(it * 100).toInt()}%" },
+                    onValueChange = { v ->
+                        applyCfg { copy(cornerFillAlpha = v.coerceIn(0.2f, 1f)) }
+                    },
+                )
+            }
+        }
         if (tab == LabTab.Gesture) {
             when (catchSlider) {
                 CatchSliderKind.None -> Unit
@@ -430,4 +592,9 @@ private fun cropEngineLabel(e: CropEngine): String = when (e) {
     CropEngine.Auto -> "Auto"
     CropEngine.Native -> "Native"
     CropEngine.Common -> "Common"
+}
+
+private fun cornerBorderWidthLabel(w: Float): String {
+    val tenths = kotlin.math.round(w * 10f).toInt()
+    return if (tenths % 10 == 0) "${tenths / 10}" else "${tenths / 10}.${tenths % 10}"
 }

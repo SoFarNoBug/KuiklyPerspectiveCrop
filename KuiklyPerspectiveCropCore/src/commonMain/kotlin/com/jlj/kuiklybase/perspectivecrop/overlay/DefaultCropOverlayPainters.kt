@@ -60,10 +60,20 @@ object DefaultBorderOverlayPainter : BorderOverlayPainter {
 object DefaultCornerOverlayPainter : CornerOverlayPainter {
     override fun DrawScope.drawCorners(viewPoints: List<CropPoint>, config: PerspectiveCropConfig) {
         if (viewPoints.size != 4) return
-        val color = Color(config.cornerColor)
+        val fill = Color(config.cornerFillColor).copy(alpha = config.cornerFillAlpha)
         val r = config.cornerRadiusPx
+        val borderStroke = if (config.showCornerBorder) {
+            Stroke(width = config.cornerBorderWidth.coerceAtLeast(0.5f))
+        } else {
+            null
+        }
+        val borderColor = Color(config.cornerBorderColor)
         for (p in viewPoints) {
-            drawCircle(color = color, radius = r, center = Offset(p.x, p.y))
+            val center = Offset(p.x, p.y)
+            drawCircle(color = fill, radius = r, center = center)
+            if (borderStroke != null) {
+                drawCircle(color = borderColor, radius = r, center = center, style = borderStroke)
+            }
         }
     }
 }
@@ -71,7 +81,7 @@ object DefaultCornerOverlayPainter : CornerOverlayPainter {
 object DefaultEdgeMidOverlayPainter : EdgeMidOverlayPainter {
     override fun DrawScope.drawEdgeMids(viewMids: List<CropPoint>, config: PerspectiveCropConfig) {
         if (!config.showEdgeMidPoints || viewMids.size != 4) return
-        val color = Color(config.cornerColor).copy(alpha = 0.85f)
+        val color = Color(config.cornerFillColor).copy(alpha = config.cornerFillAlpha * 0.85f)
         val r = config.cornerRadiusPx * 0.75f
         for (p in viewMids) {
             drawCircle(color = color, radius = r, center = Offset(p.x, p.y))
