@@ -27,7 +27,6 @@ import com.tencent.kuikly.compose.foundation.layout.padding
 import com.tencent.kuikly.compose.material3.Text
 import com.tencent.kuikly.compose.setContent
 import com.tencent.kuikly.compose.ui.Modifier
-import com.tencent.kuikly.compose.ui.platform.LocalActivity
 import com.tencent.kuikly.compose.ui.unit.dp
 import com.tencent.kuikly.compose.ui.unit.sp
 import com.tencent.kuikly.core.annotations.Page
@@ -74,7 +73,6 @@ private enum class AppearanceSliderKind {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PerspectiveCropLabScreen() {
-    val statusBarHeight = LocalActivity.current.pageData.statusBarHeight
     val controller = rememberPerspectiveCropController()
     val scope = rememberCoroutineScope()
     var cfg by remember { mutableStateOf(PerspectiveCropConfig()) }
@@ -82,9 +80,12 @@ private fun PerspectiveCropLabScreen() {
     var tab by remember { mutableStateOf(LabTab.Appearance) }
     var catchSlider by remember { mutableStateOf(CatchSliderKind.None) }
     var appearanceSlider by remember { mutableStateOf(AppearanceSliderKind.None) }
+    /** Duo OCCLUSION 避让；默认开。读 pageData.reservedRegions，非 Core Config。 */
+    var avoidReservedRegions by remember { mutableStateOf(true) }
     var resultSrc by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
     var cropping by remember { mutableStateOf(false) }
+    val occlusion = rememberLabOcclusionInsets(avoid = avoidReservedRegions)
 
     fun applyCfg(block: PerspectiveCropConfig.() -> PerspectiveCropConfig) {
         cfg = cfg.block()
@@ -129,8 +130,14 @@ private fun PerspectiveCropLabScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(DemoTheme.Background)
-            .padding(top = statusBarHeight.dp),
+            .padding(top = occlusion.top.dp),
     ) {
+        // 业界/FoldAvoid：只让会撞 OCCLUSION 的顶栏 Chip；Stage/底栏全宽不垫
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = occlusion.left.dp, end = occlusion.right.dp),
+        ) {
         DemoTopBar(title = DemoCopy.TITLE_LAB)
         Row(
             modifier = Modifier
@@ -162,7 +169,7 @@ private fun PerspectiveCropLabScreen() {
         Text(
             text = when (tab) {
                 LabTab.Appearance ->
-                    "色板/滑杆改 Config；「改变样式」换 Painter。快捷预设只动框/角颜色与描边。"
+                    "色板/滑杆改 Config；「遮挡避让」读系统 reservedRegions（非 Core）。快捷预设只动框/角颜色与描边。"
                 LabTab.Gesture ->
                     "手感类默认已按文档/快递单裁常用打开。觉得难点/拖边怪时再改下面开关。"
                 LabTab.Magnifier ->
@@ -182,6 +189,11 @@ private fun PerspectiveCropLabScreen() {
         ) {
             when (tab) {
                 LabTab.Appearance -> {
+                    DemoToggleChip(
+                        label = if (avoidReservedRegions) "遮挡避让·开" else "遮挡避让·关",
+                        active = avoidReservedRegions,
+                        onClick = { avoidReservedRegions = !avoidReservedRegions },
+                    )
                     for (preset in LabAppearancePreset.entries) {
                         DemoToggleChip(
                             label = preset.chipLabel(),
@@ -542,6 +554,7 @@ private fun PerspectiveCropLabScreen() {
                 )
             }
         }
+        } // end chrome Column（OCCLUSION 左右垫）
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             PerspectiveCropStage(
                 modifier = Modifier.fillMaxSize(),

@@ -19,7 +19,6 @@ import com.tencent.kuikly.compose.foundation.layout.fillMaxWidth
 import com.tencent.kuikly.compose.foundation.layout.padding
 import com.tencent.kuikly.compose.setContent
 import com.tencent.kuikly.compose.ui.Modifier
-import com.tencent.kuikly.compose.ui.platform.LocalActivity
 import com.tencent.kuikly.compose.ui.unit.dp
 import com.tencent.kuikly.core.annotations.Page
 import kotlinx.coroutines.launch
@@ -41,13 +40,14 @@ internal class PerspectiveCropDemoPager : BasePager() {
 
 @Composable
 private fun PerspectiveCropMinimalScreen() {
-    val statusBarHeight = LocalActivity.current.pageData.statusBarHeight
     val controller = rememberPerspectiveCropController()
     val scope = rememberCoroutineScope()
     var rectMode by remember { mutableStateOf(false) }
     var resultSrc by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
     var cropping by remember { mutableStateOf(false) }
+    // 最小页始终避让 Duo OCCLUSION（无开关）
+    val occlusion = rememberLabOcclusionInsets(avoid = true)
 
     fun runCrop() {
         if (cropping) return
@@ -72,21 +72,28 @@ private fun PerspectiveCropMinimalScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(DemoTheme.Background)
-            .padding(top = statusBarHeight.dp),
+            .padding(top = occlusion.top.dp),
     ) {
-        DemoTopBar(
-            title = DemoCopy.TITLE_DEMO,
-            trailing = {
-                DemoToggleChip(
-                    label = if (rectMode) DemoCopy.RECT_ON else DemoCopy.RECT_OFF,
-                    active = rectMode,
-                    onClick = {
-                        rectMode = !rectMode
-                        controller.updateConfig(controller.config.copy(rectMode = rectMode))
-                    },
-                )
-            },
-        )
+        // 仅顶栏让开 OCCLUSION；Stage/底栏全宽（对齐 FoldAvoid）
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = occlusion.left.dp, end = occlusion.right.dp),
+        ) {
+            DemoTopBar(
+                title = DemoCopy.TITLE_DEMO,
+                trailing = {
+                    DemoToggleChip(
+                        label = if (rectMode) DemoCopy.RECT_ON else DemoCopy.RECT_OFF,
+                        active = rectMode,
+                        onClick = {
+                            rectMode = !rectMode
+                            controller.updateConfig(controller.config.copy(rectMode = rectMode))
+                        },
+                    )
+                },
+            )
+        }
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             PerspectiveCropStage(
                 modifier = Modifier.fillMaxSize(),

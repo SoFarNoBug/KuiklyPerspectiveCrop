@@ -1,5 +1,16 @@
 # demo-ui-polish changelog
 
+## 2026-11-11 · Lab reservedRegions 遮挡避让
+
+- [ADD] `LabReservedRegionAvoid.kt`：`rememberReservedRegionsTick` + OCCLUSION→内边距（叠 safeArea/statusBar）
+- [MODIFY] Lab 外观 Chip「遮挡避让·开/关」默认开；根 Column 套避让 padding；关时仅 statusBar 顶垫
+- [MODIFY] 最小 Demo 页始终同一避让（无开关）
+- [MODIFY] README 避坑：Duo 挖孔须宿主自读 `reservedRegions`
+- [FIX] OCCLUSION 只垫左右（对齐 FoldAvoid）；不再按区域累加 top/bottom，避免竖条/挖孔把整页顶飞
+- [FIX] 左右垫只套顶栏/Chip（及 Lab 滑杆）；Stage/底栏全宽，对齐 Apple + FoldAvoid「只挪撞遮挡的控件」
+- 治理收尾：门禁 跳过｜三问 否/否/否｜理由：Demo 布局避让，无库行为｜待批 0（已达标 0）
+- 真机验证：本单无真机验证（Duo 验收表待审核员）
+
 ## 2026-11-08 · Lab catch 滑杆按 chip 展开
 
 - [MODIFY] Lab 手势：角/边/中点各一 chip（显示当前 dp）；点开才展开对应滑杆，再点收起；同时只开一根
