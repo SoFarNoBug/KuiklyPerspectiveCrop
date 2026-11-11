@@ -9,13 +9,30 @@
 | Maven 坐标 | `io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0` |
 | Kuikly | `2.30.0-2.1.21`（经腾讯 Maven 镜像拉取） |
 
-> 维护本仓（起服、里程碑、ADR）见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+> 本文件给**接入方**。维护本仓（起服、里程碑、ADR）见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+## 前置条件
+
+1. 已有 **Kuikly Compose** 宿主工程（本库不是独立 App SDK）。
+2. 宿主能解析 **同一 Kuikly 版本**（`2.30.0-2.1.21`）；公开 API 经 `api` 传递 Kuikly Compose。
+3. 出图前按端完成 **初始化**（见下；H5 除外）；否则抛 `CropException(code = NOT_INITIALIZED)`。
 
 ## 非目标
 
 本库**不做** OCR、边缘检测或内置 autoScan。外部检测结果可通过 `writePoints` / `applyAutoScanPoints` 注入四点。
 
-## 添加依赖
+## 各端依赖清单
+
+| 端 | 必加 | 原生放大镜另加 | 接完成功标准 |
+|---|---|---|---|
+| **Android** | Maven Core | 无（Core 内 `BitmapShader`） | `init` 后 `cropToFile()` 出路径；拖角见清晰圆镜 |
+| **iOS** | Maven Core（进 KN framework） | CocoaPods `KuiklyPerspectiveCrop` **1.0.0** | `init(cacheDir)` 后可落盘；拖角见圆镜像素（非灰底） |
+| **鸿蒙** | Maven Core（ohosArm64） | ohpm `@jlj/kuikly-perspective-crop-ohos@1.0.0` | `init` + 注册 View + blit；拖角见圆镜 |
+| **H5** | Maven Core（JS 变体） | 无单独 npm/H5 包 | 无需 `PerspectiveCrop*.init`；`cropToFile()` 得 `blob:`；镜为网格兜底 |
+
+版本后缀与 Kuikly 对齐：`1.0.0-2.30.0` ↔ Kuikly `2.30.0-2.1.21`。CocoaPods / ohpm 主版本与库主版本对齐为 `1.0.0`（无 `-2.30.0` 后缀）。
+
+## 添加依赖（Maven Core · 全端）
 
 ```kotlin
 repositories {
@@ -28,9 +45,7 @@ dependencies {
 }
 ```
 
-版本后缀与 Kuikly 对齐：库默认 `1.0.0-2.30.0` 对应 Kuikly `2.30.0-2.1.21`。本仓 Demo 使用 `implementation(project(":KuiklyPerspectiveCropCore"))`。
-
-公开 API 通过 `api` 传递 Kuikly Compose；消费方需能解析同一 Kuikly 版本。
+把 Core 编进宿主的 **Kotlin Multiplatform / Kuikly 共享模块**（或 Android 直接依赖）。不要只加原生 Pod/HAR 却不加 Core——裁切与 Stage 在 Core 里。
 
 ## 概念流
 
@@ -42,95 +57,163 @@ PerspectiveCropStage   // Image + 叠层框选 + 放大镜
 crop() → PlatformImage  或  cropToFile() → String
 ```
 
-## 各端初始化
+## 各端初始化与原生镜
 
-出图 / `saveToFile` 前必须按端初始化（未 init 会抛 `CropException`，`code = NOT_INITIALIZED`）。
+出图 / `saveToFile` 前必须按端初始化（H5 除外）。
 
 ### Android
 
-在 `Application.onCreate`（或等价入口）调用：
+**依赖**：仅 Maven Core。  
+**落点**：`Application.onCreate`（或等价最早入口）。
 
 ```kotlin
-PerspectiveCropAndroid.init(application)
+import com.jlj.kuiklybase.perspectivecrop.PerspectiveCropAndroid
+
+class App : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        PerspectiveCropAndroid.init(this)
+    }
+}
 ```
 
 ### iOS
 
-注入可写缓存目录（如 `NSCachesDirectory`），供 `cropToFile()` / `PlatformImage.saveToFile()` 落盘：
+**依赖**：
 
-```kotlin
-PerspectiveCropIos.init(cacheDir)
-```
-
-`assets://` 默认在 main Bundle 与已加载 Bundle 中按资源名查找。
-
-KMP 层用 Maven Core；**原生放大镜 View**另加 CocoaPods（类名 `KRPerspectiveCropMagnifier`，Kuikly 按名解析，无需 `registerExternalRenderView`）：
+1. 共享 KN 模块：`implementation("…KuiklyPerspectiveCropCore:1.0.0-2.30.0")`，并在产生 framework 时 **export** Core（让壳运行时能取到 `PerspectiveCropIosMagnifierBridge`）。
+2. App `Podfile` 另加原生镜：
 
 ```ruby
 pod 'KuiklyPerspectiveCrop', '1.0.0'
 ```
 
-配套 Maven：`io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0`。  
-壳经 ObjC 名 `PerspectiveCropIosMagnifierBridge` 运行时取桥（宿主须 link 含该桥的 KN framework，并 `framework.export` Core）。
+**落点**：App 启动时注入可写缓存目录（`cropToFile` / `saveToFile` 用）：
+
+```swift
+// 推荐：KN 暴露的桥（本仓 Demo：PerspectiveCropIosBridge）
+let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+PerspectiveCropIosBridge.shared.configure(cacheDir: caches.path)
+```
+
+等价 Kotlin：`PerspectiveCropIos.init(cacheDir)`。
+
+**说明**：
+
+- 类名 `KRPerspectiveCropMagnifier` 由 Kuikly 按名解析，**无需** `registerExternalRenderView`。
+- 壳经 ObjC 名 `PerspectiveCropIosMagnifierBridge` 读 blit；若未 link / 未 export Core，圆镜会灰底无像素。
+- `assets://` 在 main Bundle 与已加载 Bundle 中按资源名查找。
 
 ### 鸿蒙
 
-注入 hap `resourceDir`（解码 `assets://`）与可写缓存目录：
+**依赖**：
 
-```kotlin
-PerspectiveCropOhos.init(resfileDir, cacheDir)
-// cacheDir 可省略；为空时无参 saveToFile 会失败
-```
-
-原生放大镜 View 另加 ohpm（须在 `KuiklyViewDelegate` 注册，并注入 blit NAPI）：
+1. KMP ohosArm64：Maven Core `1.0.0-2.30.0`。
+2. 原生镜：
 
 ```bash
-ohpm install @jlj/kuikly-perspective-crop-ohos
+ohpm install @jlj/kuikly-perspective-crop-ohos@1.0.0
 ```
+
+**落点（三处都要）**：
+
+1. Kotlin：`PerspectiveCropOhos.init(resfileDir, cacheDir)`（`resfileDir` 解 `assets://`；`cacheDir` 可空，空则带 path 的 `saveToFile` 会失败）。本仓 Demo 经 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt` 从壳转发。
+2. 注册 View（`KuiklyViewDelegate`）：
+
+```typescript
+import { KRPerspectiveCropMagnifierView } from '@jlj/kuikly-perspective-crop-ohos';
+
+map.set(
+  KRPerspectiveCropMagnifierView.VIEW_NAME,
+  () => new KRPerspectiveCropMagnifierView(),
+);
+```
+
+3. 注入 blit（宿主 so 须导出 `getMagnifierBlit`，可对照 Demo `libentry`）：
 
 ```typescript
 import {
   KRPerspectiveCropMagnifierView,
-  PerspectiveCropOhosNative
+  PerspectiveCropOhosNative,
 } from '@jlj/kuikly-perspective-crop-ohos';
-import Napi from 'libentry.so'; // 宿主 so，须导出 getMagnifierBlit
+import Napi from 'libentry.so';
 
 PerspectiveCropOhosNative.configure(() => Napi.getMagnifierBlit());
-// map.set(KRPerspectiveCropMagnifierView.VIEW_NAME, () => new KRPerspectiveCropMagnifierView());
 ```
-
-配套 Maven Core `1.0.0-2.30.0`。Demo 壳 NAPI 转发见 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt`。
 
 ### H5
 
-无对等 `PerspectiveCrop*.init`。`cropToFile()` 成功时可能返回 `blob:` URL，可再作预览 `imageSrc`。
+- **只依赖 Maven Core 的 JS 变体**；没有单独 npm / H5 壳包。
+- **无** `PerspectiveCropAndroid/Ios/Ohos.init`。
+- `cropToFile()` 成功时常返回 **`blob:`** ObjectURL，可再赋给预览 `imageSrc`；刷新或 revoke 后失效。
+- 放大镜目前为采样缓存 + **网格绘制兜底**（非原生贴图）。
 
 ## 最小接入示例
 
 ```kotlin
-val controller = rememberPerspectiveCropController()
-val scope = rememberCoroutineScope()
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import com.jlj.kuiklybase.perspectivecrop.CropException
+import com.jlj.kuiklybase.perspectivecrop.PerspectiveCropStage
+import com.jlj.kuiklybase.perspectivecrop.rememberPerspectiveCropController
+import com.tencent.kuikly.compose.foundation.layout.fillMaxSize
+import com.tencent.kuikly.compose.ui.Modifier
+import kotlinx.coroutines.launch
 
-PerspectiveCropStage(
-    modifier = Modifier.fillMaxSize(),
-    controller = controller,
-    imageSrc = imageSrc, // 或先 controller.applyImageSrc(src)
-)
+@Composable
+fun CropPage(imageSrc: String) {
+    val controller = rememberPerspectiveCropController()
+    val scope = rememberCoroutineScope()
 
-// 确认裁切
-scope.launch {
-    try {
-        val outSrc = controller.cropToFile()
-        // 展示 outSrc
-    } catch (e: CropException) {
-        // "${e.code}: ${e.message}"
+    PerspectiveCropStage(
+        modifier = Modifier.fillMaxSize(),
+        controller = controller,
+        imageSrc = imageSrc, // 或先 controller.applyImageSrc(src)
+    )
+
+    // 确认裁切（按钮 onClick 里调用）
+    fun onConfirm() {
+        scope.launch {
+            try {
+                val outSrc = controller.cropToFile()
+                // 展示 outSrc
+            } catch (e: CropException) {
+                // "${e.code}: ${e.message}"
+            }
+        }
     }
 }
 ```
 
 常用命令：`controller.resetFullImage()`、`controller.rotateClockwise()`、`controller.canCrop()`、`controller.updateConfig(…)`。
 
-完整最小页对照：`perspectiveCropDemo/.../demo/PerspectiveCropDemoPager.kt`。
+完整最小页：`perspectiveCropDemo/.../demo/PerspectiveCropDemoPager.kt`。
+
+### 接入自检
+
+1. 依赖：该端「必加」已进工程；需要镜的端「另加」也已进。
+2. 启动后完成对应 `init` / 注册 / blit（H5 跳过）。
+3. 设好 `imageSrc` → 拖角/边 → 点确认 → `cropToFile()` 有路径或 `blob:`，失败为带 `code` 的 `CropException`（不静默成功）。
+4. Android / iOS / 鸿蒙：拖角圆镜应见贴图像素；H5 可为网格。
+
+## 接入避坑（高频）
+
+| 坑 | 典型现象 | 怎么避 |
+|---|---|---|
+| 只加 CocoaPods / ohpm，不加 Maven Core | 没有 Stage / 裁切 API | Core 必加；原生包只补放大镜壳 |
+| 未按端 `init`（H5 除外） | `CropException(NOT_INITIALIZED)` / 落盘失败 | Android `Application`；iOS 启动注入 `cacheDir`；鸿蒙 `init` + 壳转发 |
+| iOS 未 export Core / 桥链不上 | 圆镜灰底、无贴图像素 | KN framework **export** Core；开 **xcworkspace**；Pod `KuiklyPerspectiveCrop` |
+| iOS 打开裸 `xcodeproj` | Pod / KN 链失败 | 必须 `*.xcworkspace` |
+| 鸿蒙未 `map.set` 放大镜 View | 无镜或占位异常 | `KuiklyViewDelegate` 注册 `KRPerspectiveCropMagnifierView` |
+| 鸿蒙未 `PerspectiveCropOhosNative.configure(blit)` | 黑镜 / 无像素 | 宿主 so 导出 `getMagnifierBlit` 并 configure |
+| `showOperationUI = false` 当成「只藏手柄」 | 六层叠层 + 原生镜整包不画；手势仍可用 | 要隐藏操作 UI 才关；细控用 `showMagnifier` 等 |
+| 把 `config.toViewPx(density)` 再 `updateConfig` | 框线/命中区被放大两次 | 公开 Config 保持 **dp**；`lengthsAreViewPx` 不是产品开关 |
+| H5 当持久文件路径用 `cropToFile()` | 刷新后预览失效 | 返回常为 `blob:`，需立刻展示或自行转存 |
+| 期望 H5 原生清晰镜 | 只有网格兜底 | 当前设计如此；清晰镜看 Android / iOS / 鸿蒙 |
+| `imageSrc` 协议错 / H5 跨域无 CORS | `DECODE_FAILED` | 核对 `file://` / `content://` / `assets://` / 可访问 URL |
+| 业务皮肤写进库默认 Painter | 升级被覆盖、污染默认主题 | 皮肤只放宿主；用六层 SPI 注入 |
+
+Demo 起服级排障（白屏、webpack、UMD 等）见 [CONTRIBUTING.md](CONTRIBUTING.md) 与各端 runbook，不在本表展开。
 
 ## 相机 / 相册 → `imageSrc`
 
