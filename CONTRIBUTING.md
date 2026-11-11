@@ -79,7 +79,7 @@ node static_server/serve/index.js
 
 ## 发布到 Maven Central（别人可直接依赖）
 
-模块：`:KuiklyPerspectiveCropCore` → `io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
+模块：`:KuiklyPerspectiveCropCore` → `io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0`。  
 鸿蒙 KMP 仍走同一 Maven 坐标；原生放大镜 ArkTS 另走 ohpm（见下）。
 
 ```bash
@@ -90,17 +90,17 @@ CENTRAL_USERNAME=… CENTRAL_PASSWORD=… GPG_KEY_PASSWORD=… ./publish-maven.s
 
 ## 发布到 CocoaPods（iOS 原生放大镜）
 
-源：`KuiklyPerspectiveCropIOS/` + 根 `KuiklyPerspectiveCrop.podspec`（`0.0.1`）。  
+源：`KuiklyPerspectiveCropIOS/` + 根 `KuiklyPerspectiveCrop.podspec`（`1.0.0`）。  
 Demo 经 symlink 引用同文件；`perspectiveCropDemo` framework **export** Core；壳经 ObjC 名运行时取桥（勿再 `import` 宿主模块名）。
 
 ```bash
-# 需已 commit + 打 tag 0.0.1 并 push 到 GitHub
+# 需已 commit + 打 tag 1.0.0 并 push 到 GitHub
 pod trunk push KuiklyPerspectiveCrop.podspec
 ```
 
 ## 发布到 ohpm（鸿蒙原生放大镜）
 
-源：`KuiklyPerspectiveCropOhos/` → `@jlj/kuikly-perspective-crop-ohos@0.0.1`。  
+源：`KuiklyPerspectiveCropOhos/` → `@jlj/kuikly-perspective-crop-ohos@1.0.0`。  
 前置：`ohpm config` 已设 `key_path` / `publish_id` / `publish_registry`（对齐 Echo）。
 
 ```bash

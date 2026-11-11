@@ -1,6 +1,6 @@
 {
   "name": "@jlj/kuikly-perspective-crop-ohos",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Kuikly PerspectiveCrop Ohos native magnifier view (KRPerspectiveCropMagnifier)",
   "main": "src/main/ets/Index.ets",
   "author": {

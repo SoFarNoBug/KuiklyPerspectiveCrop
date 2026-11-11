@@ -11,12 +11,12 @@
 #   CENTRAL_USERNAME / CENTRAL_PASSWORD  — central.sonatype.com User Token
 #   GPG_KEY_PASSWORD                     — 本机密钥口令
 #   GPG_KEY_ID（可选）                   — 默认 E03218FD37956AC6AE94223E041C34E7F024F7A0
-#   MAVEN_VERSION（可选）                — 默认 0.0.1-2.30.0
+#   MAVEN_VERSION（可选）                — 默认 1.0.0-2.30.0
 
 set -euo pipefail
 
 MODULE=KuiklyPerspectiveCropCore
-VERSION="${MAVEN_VERSION:-0.0.1-2.30.0}"
+VERSION="${MAVEN_VERSION:-1.0.0-2.30.0}"
 GPG_KEY_ID="${GPG_KEY_ID:-E03218FD37956AC6AE94223E041C34E7F024F7A0}"
 GPG_BIN="${GPG_BIN:-$(command -v gpg || true)}"
 if [ -z "$GPG_BIN" ]; then

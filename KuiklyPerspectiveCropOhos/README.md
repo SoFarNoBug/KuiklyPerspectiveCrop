@@ -4,10 +4,10 @@ Kuikly 斜拍透视裁剪的 **鸿蒙** 原生放大镜 View（`KRPerspectiveCro
 KMP 算法与 Compose 在 Maven Central；本包只发 ArkTS 壳。
 
 - 包名：`@jlj/kuikly-perspective-crop-ohos`
-- 版本：`0.0.1`
+- 版本：`1.0.0`
 - View 名：`KRPerspectiveCropMagnifier`（Kuikly 按名创建，须在 Delegate 注册）
 - 依赖：`@kuikly-open/render@2.30.0`
-- 配套 Core：`io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`
+- 配套 Core：`io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0`
 
 ## 集成
 

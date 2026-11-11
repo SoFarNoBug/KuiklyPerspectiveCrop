@@ -6,7 +6,7 @@
 |---|---|
 | 发布模块 | `KuiklyPerspectiveCropCore` |
 | 包名 | `com.jlj.kuiklybase.perspectivecrop` |
-| Maven 坐标 | `io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0` |
+| Maven 坐标 | `io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0` |
 | Kuikly | `2.30.0-2.1.21`（经腾讯 Maven 镜像拉取） |
 
 > 维护本仓（起服、里程碑、ADR）见 [CONTRIBUTING.md](CONTRIBUTING.md)。
@@ -24,11 +24,11 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0")
+    implementation("io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0")
 }
 ```
 
-版本后缀与 Kuikly 对齐：库默认 `0.0.1-2.30.0` 对应 Kuikly `2.30.0-2.1.21`。本仓 Demo 使用 `implementation(project(":KuiklyPerspectiveCropCore"))`。
+版本后缀与 Kuikly 对齐：库默认 `1.0.0-2.30.0` 对应 Kuikly `2.30.0-2.1.21`。本仓 Demo 使用 `implementation(project(":KuiklyPerspectiveCropCore"))`。
 
 公开 API 通过 `api` 传递 Kuikly Compose；消费方需能解析同一 Kuikly 版本。
 
@@ -67,10 +67,10 @@ PerspectiveCropIos.init(cacheDir)
 KMP 层用 Maven Core；**原生放大镜 View**另加 CocoaPods（类名 `KRPerspectiveCropMagnifier`，Kuikly 按名解析，无需 `registerExternalRenderView`）：
 
 ```ruby
-pod 'KuiklyPerspectiveCrop', '0.0.1'
+pod 'KuiklyPerspectiveCrop', '1.0.0'
 ```
 
-配套 Maven：`io.github.sofarnobug:KuiklyPerspectiveCropCore:0.0.1-2.30.0`。  
+配套 Maven：`io.github.sofarnobug:KuiklyPerspectiveCropCore:1.0.0-2.30.0`。  
 壳经 ObjC 名 `PerspectiveCropIosMagnifierBridge` 运行时取桥（宿主须 link 含该桥的 KN framework，并 `framework.export` Core）。
 
 ### 鸿蒙
@@ -99,7 +99,7 @@ PerspectiveCropOhosNative.configure(() => Napi.getMagnifierBlit());
 // map.set(KRPerspectiveCropMagnifierView.VIEW_NAME, () => new KRPerspectiveCropMagnifierView());
 ```
 
-配套 Maven Core `0.0.1-2.30.0`。Demo 壳 NAPI 转发见 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt`。
+配套 Maven Core `1.0.0-2.30.0`。Demo 壳 NAPI 转发见 `perspectiveCropDemo/.../PerspectiveCropOhosNative.kt`。
 
 ### H5
 
