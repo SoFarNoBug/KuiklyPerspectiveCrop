@@ -1,6 +1,6 @@
 # KuiklyPerspectiveCrop
 
-斜拍一张，四点框住，一裁校正。
+四点框住斜拍照，一裁校正。
 
 文档、快递单、白板——从透视畸变里拉回正视。**Kuikly Compose DSL** 多端库，Android / iOS / 鸿蒙 / H5 同一套 API。
 
